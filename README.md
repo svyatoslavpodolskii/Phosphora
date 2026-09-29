@@ -1,4 +1,4 @@
-# Phosphored
+# Phosphora
 
 Local-first PWA: одна карта заметок, людей, проектов и задач. Svelte + TypeScript + Vite. Данные — SQLite WASM в Worker, официальный OPFS SAH pool VFS. Без аккаунта и сервера данных.
 
