@@ -8,15 +8,16 @@ const isolationHeaders = {
 };
 
 export default defineConfig({
-  base: '/phosphored/',
+  // One build works at a domain root and under any GitHub Pages repository path.
+  base: './',
   plugins: [
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       manifest: {
-        name: 'Phosphored — живая карта',
-        short_name: 'Phosphored',
+        name: 'Phosphora — живая карта',
+        short_name: 'Phosphora',
         lang: 'ru',
         start_url: '.',
         display: 'standalone',

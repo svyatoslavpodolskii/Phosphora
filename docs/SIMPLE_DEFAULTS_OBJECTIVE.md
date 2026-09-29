@@ -1,4 +1,4 @@
-Продолжай разработку текущего Phosphored.
+Продолжай разработку текущего Phosphora.
 
 Не проводи повторный общий аудит всего репозитория и не переписывай работающие подсистемы без причины. Изучи затронутый код и его зависимости, затем внеси изменения production-quality.
 
@@ -14,7 +14,7 @@
 
 # 1. Главная цель продукта
 
-Phosphored должен стать новым типом personal knowledge workspace.
+Phosphora должен стать новым типом personal knowledge workspace.
 
 Это не:
 
@@ -29,7 +29,7 @@ Phosphored должен стать новым типом personal knowledge work
 
 Главный принцип:
 
-**Phosphored не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
+**Phosphora не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
 
 И второй принцип:
 
@@ -45,7 +45,7 @@ Phosphored должен стать новым типом personal knowledge work
 * отсутствие необходимости понимать внутреннюю архитектуру;
 * ощущение, что система заранее понимает намерение пользователя.
 
-Первые пять минут Phosphored должен казаться проще Obsidian.
+Первые пять минут Phosphora должен казаться проще Obsidian.
 
 Через годы использования он должен оказаться значительно глубже.
 
@@ -684,7 +684,7 @@ Search → Atom B → Link C → Atom D → Back
 
 Пользователь не должен быть graph designer.
 
-Phosphored должен contextual помогать замечать:
+Phosphora должен contextual помогать замечать:
 
 * orphan notes;
 * overloaded hubs;
@@ -698,7 +698,7 @@ Phosphored должен contextual помогать замечать:
 
 При создании можно мягко предложить:
 
-`Связать: + Юрий + Phosphored`
+`Связать: + Юрий + Phosphora`
 
 При drag рядом с подходящей целью может появиться affordance:
 
@@ -886,7 +886,7 @@ Secondary action:
 
 # 28. Native backup - один файл
 
-Главный backup Phosphored:
+Главный backup Phosphora:
 
 **одна кнопка → один файл.**
 
@@ -927,7 +927,7 @@ Import:
 
 # 29. Offline-first
 
-Phosphored прежде всего local-first.
+Phosphora прежде всего local-first.
 
 После первого успешного запуска offline работают:
 
@@ -1075,7 +1075,7 @@ Obsidian plugin выключен по умолчанию.
 * Atom `.md` export;
 * branch import/export.
 
-Если plugin выключен, Phosphored работает полностью.
+Если plugin выключен, Phosphora работает полностью.
 
 # 35. Direct Obsidian Vault
 
@@ -1114,7 +1114,7 @@ Obsidian plugin выключен по умолчанию.
 Например:
 
 Projects
-→ Phosphored
+→ Phosphora
 → Physics
 → Plugins
 
@@ -1152,7 +1152,7 @@ Spatial metadata должна путешествовать вместе с Markd
 
 # 38. Markdown Export
 
-Native backup остаётся одним `.phosphored`.
+Native backup остаётся одним `.phosphora`.
 
 Markdown export относится к Obsidian/interop plugin.
 
@@ -1446,7 +1446,7 @@ activate(app) {
 
 Plugin package:
 
-`.phosphored`
+`.phosphora`
 
 с:
 
@@ -1525,7 +1525,7 @@ Plugin использует controlled extension surfaces:
 * settings;
 * inspector contribution.
 
-Даже с 10 plugins Phosphored должен выглядеть одним продуктом.
+Даже с 10 plugins Phosphora должен выглядеть одним продуктом.
 
 # 52. Views использовать редко
 
@@ -1535,7 +1535,7 @@ Dedicated View использовать только там, где он объ�
 
 Kanban - хороший пример.
 
-Не превращать Phosphored в приложение с 20 tabs.
+Не превращать Phosphora в приложение с 20 tabs.
 
 View появляется только если соответствующая capability/plugin включена.
 
@@ -1778,7 +1778,7 @@ Camera interaction всегда имеет highest interactive priority.
 
 # 61. Signature interactions
 
-Phosphored должен иметь несколько interactions, которые ощущаются уникально.
+Phosphora должен иметь несколько interactions, которые ощущаются уникально.
 
 ### Spatial Search
 
@@ -1812,7 +1812,7 @@ Atom естественно превращается из точки знани�
 
 После реализации задай вопрос:
 
-**может ли человек, который никогда не видел Phosphored, открыть его и начать пользоваться без инструкции?**
+**может ли человек, который никогда не видел Phosphora, открыть его и начать пользоваться без инструкции?**
 
 Если ему для базового действия нужно понимать:
 
@@ -1834,7 +1834,7 @@ Atom естественно превращается из точки знани�
 
 Default experience:
 
-Пользователь открывает Phosphored.
+Пользователь открывает Phosphora.
 
 Видит спокойное пространство.
 
@@ -1942,7 +1942,7 @@ Back возвращает в прежний spatial context.
 
 Итоговая цель:
 
-**Phosphored должен быть настолько простым, что им можно начать пользоваться без обучения, и настолько глубоким, что через годы пользователь всё ещё не упрётся в его возможности.**
+**Phosphora должен быть настолько простым, что им можно начать пользоваться без обучения, и настолько глубоким, что через годы пользователь всё ещё не упрётся в его возможности.**
 
 Инженерия должна быть сложной.
 

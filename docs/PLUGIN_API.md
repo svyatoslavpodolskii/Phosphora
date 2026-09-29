@@ -1,6 +1,6 @@
 # Plugin API v1
 
-Рабочий пример находится в `plugins/example/`. Соберите его командой `node scripts/package-plugin.mjs`: получится `artifacts/quick-idea.phosphored`. В настройках выберите один файл `.phosphored`, проверьте разрешения и подтвердите установку. Пакет — ZIP с `manifest.json`, `main.js`, необязательными `style.css` и `assets/`. Отдельные файлы доступны только в режиме разработчика. Код, ресурсы и настройки сохраняются в SQLite и доступны offline.
+Рабочий пример находится в `plugins/example/`. Соберите его командой `node scripts/package-plugin.mjs`: получится `artifacts/quick-idea.phosphora`. В настройках выберите один файл `.phosphora`, проверьте разрешения и подтвердите установку. Пакет — ZIP с `manifest.json`, `main.js`, необязательными `style.css` и `assets/`. Отдельные файлы доступны только в режиме разработчика. Код, ресурсы и настройки сохраняются в SQLite и доступны offline.
 
 ```js
 export async function activate(app) {

@@ -13,14 +13,14 @@ test('full storage backup restores through staged OPFS and rejects damaged input
  const stream=await file.createReadStream();const chunks:Buffer[]=[];for await(const chunk of stream!)chunks.push(chunk as Buffer);const bytes=Buffer.concat(chunks);
  await closeSettings(page);await importMap(page,{atoms:[original,makeAtom({title:'Later thought'})],links:[]});await openSettings(page);
  await page.getByLabel('Режим автосвязей',{exact:true}).selectOption('automatic');
- await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'broken.phosphored',mimeType:'application/octet-stream',buffer:Buffer.from('broken')});
+ await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'broken.phosphora',mimeType:'application/octet-stream',buffer:Buffer.from('broken')});
  await expect(page.getByRole('alert')).toBeVisible();await closeSettings(page);expect((await readMap(page)).atoms).toHaveLength(2);
  const corrupt=new Uint8Array(512);corrupt.set(new TextEncoder().encode('SQLite format 3\0'));
  const corruptPackage=await packStorage(corrupt,'Damaged database');
- await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'damaged.phosphored',mimeType:'application/octet-stream',buffer:Buffer.from(corruptPackage)});
+ await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'damaged.phosphora',mimeType:'application/octet-stream',buffer:Buffer.from(corruptPackage)});
  await page.getByRole('button',{name:'Восстановить хранилище',exact:true}).click();
  await expect(page.getByRole('alert')).toBeVisible();await closeSettings(page);expect((await readMap(page)).atoms).toHaveLength(2);
- await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'backup.phosphored',mimeType:'application/octet-stream',buffer:bytes});
+ await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'backup.phosphora',mimeType:'application/octet-stream',buffer:bytes});
  await page.getByRole('button',{name:'Восстановить хранилище',exact:true}).click();await expect(page.getByRole('dialog',{name:'Настройки',exact:true})).toHaveCount(0);
  await expect(page.locator('canvas')).toBeVisible();const restored=await readMap(page);expect(restored.atoms).toEqual([original]);
  await openSettings(page);await expect(page.getByLabel('Режим автосвязей',{exact:true})).toHaveValue('off');
@@ -32,7 +32,7 @@ test('full storage backup restores through staged OPFS and rejects damaged input
  await expect(page.locator('.workspace-switch')).toContainText('Separate workspace');
  await expect(page.locator('footer')).toContainText('0 атомов');
  await importMap(page,{atoms:[makeAtom({title:'Replace only here'})],links:[]});
- await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'backup.phosphored',mimeType:'application/octet-stream',buffer:bytes});
+ await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'backup.phosphora',mimeType:'application/octet-stream',buffer:bytes});
  await page.getByRole('button',{name:'Восстановить хранилище',exact:true}).click();
  await expect(page.getByRole('dialog',{name:'Настройки',exact:true})).toHaveCount(0);
  await expect(page.locator('.workspace-switch')).toContainText('Separate workspace');

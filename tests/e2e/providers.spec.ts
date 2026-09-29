@@ -3,7 +3,7 @@ import {zipSync,strToU8} from 'fflate';
 import {openSettings,closeSettings,readMap} from './helpers';
 async function install(page:Page,id:string,name:string,permissions:string[],source:string,extra:Record<string,Uint8Array>={}){
  await openSettings(page);await page.getByRole('button',{name:'Плагины →',exact:true}).click();await page.getByText('Установить плагин',{exact:true}).click();
- await page.getByLabel('Пакет плагина',{exact:true}).setInputFiles({name:id+'.phosphored',mimeType:'application/zip',buffer:Buffer.from(zipSync({'manifest.json':strToU8(JSON.stringify({id,name,version:'1.0.0',apiVersion:1,permissions})),'main.js':strToU8(source),...extra}))});
+ await page.getByLabel('Пакет плагина',{exact:true}).setInputFiles({name:id+'.phosphora',mimeType:'application/zip',buffer:Buffer.from(zipSync({'manifest.json':strToU8(JSON.stringify({id,name,version:'1.0.0',apiVersion:1,permissions})),'main.js':strToU8(source),...extra}))});
  await page.getByRole('button',{name:'Разрешить и установить',exact:true}).click();await expect(page.locator('.plugin-row').filter({hasText:name})).toBeVisible();await closeSettings(page);
 }
 async function command(page:Page,name:string){await page.getByRole('button',{name:'Меню карты',exact:true}).click();await page.getByRole('button',{name,exact:true}).click();}

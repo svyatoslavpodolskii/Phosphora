@@ -37,5 +37,5 @@ it('packages one checked file and uses a filesystem-safe timestamp name',async()
  const bytes=new Uint8Array(512);bytes.set(new TextEncoder().encode('SQLite format 3\0'));
  const packed=await packStorage(bytes,'Личные заметки');expect((await unpackStorage(packed)).database).toEqual(bytes);
  packed[packed.length-100]^=1;await expect(unpackStorage(packed)).rejects.toThrow();
- expect(backupFilename('Моя:база/',new Date(2026,8,17,16,30,2))).toBe('Моя_база__2026-09-17_16-30-02.phosphored');
+ expect(backupFilename('Моя:база/',new Date(2026,8,17,16,30,2))).toBe('Моя_база__2026-09-17_16-30-02.phosphora');
 });

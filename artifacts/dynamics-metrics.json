@@ -2,63 +2,63 @@
   {
     "count": 100,
     "kind": "branch",
-    "ms": 44,
+    "ms": 54,
     "overlaps": 0,
     "area": 3825017
   },
   {
     "count": 100,
     "kind": "molecule",
-    "ms": 326,
+    "ms": 387,
     "overlaps": 0,
     "area": 2879491
   },
   {
     "count": 100,
     "kind": "compact",
-    "ms": 164,
+    "ms": 169,
     "overlaps": 0,
     "area": 2494867
   },
   {
     "count": 500,
     "kind": "branch",
-    "ms": 668,
+    "ms": 613,
     "overlaps": 0,
     "area": 35725479
   },
   {
     "count": 500,
     "kind": "molecule",
-    "ms": 1459,
+    "ms": 1347,
     "overlaps": 0,
     "area": 25358943
   },
   {
     "count": 500,
     "kind": "compact",
-    "ms": 747,
+    "ms": 836,
     "overlaps": 0,
     "area": 22382434
   },
   {
     "count": 1000,
     "kind": "branch",
-    "ms": 740,
+    "ms": 898,
     "overlaps": 0,
     "area": 61992030
   },
   {
     "count": 1000,
     "kind": "molecule",
-    "ms": 1518,
+    "ms": 1661,
     "overlaps": 0,
     "area": 39246676
   },
   {
     "count": 1000,
     "kind": "compact",
-    "ms": 1092,
+    "ms": 1074,
     "overlaps": 0,
     "area": 33908702
   }

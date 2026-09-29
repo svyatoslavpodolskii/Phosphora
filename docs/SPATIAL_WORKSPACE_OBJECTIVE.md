@@ -1,12 +1,12 @@
-Продолжай разработку текущего Phosphored.
+Продолжай разработку текущего Phosphora.
 
 Не проводи повторный аудит всего репозитория и не переписывай работающие части без причины. Изучи только затронутые подсистемы и их зависимости.
 
 Работай как сильный senior/staff engineer, product engineer и interaction designer.
 
-Задача этой итерации не просто закрыть список функций. Нужно заложить фундамент Phosphored как нового типа personal knowledge workspace.
+Задача этой итерации не просто закрыть список функций. Нужно заложить фундамент Phosphora как нового типа personal knowledge workspace.
 
-Phosphored не должен быть:
+Phosphora не должен быть:
 
 * Obsidian с другим интерфейсом;
 * mind-map;
@@ -41,7 +41,7 @@ Smoothness, continuity, spatial memory, offline reliability и сохранно�
 
 # 1. Главная модель продукта: Gigagraph + Local Graph
 
-Phosphored не имеет folder-first интерфейса.
+Phosphora не имеет folder-first интерфейса.
 
 Поэтому graph является не дополнительной визуализацией базы, а **главным рабочим столом продукта**.
 
@@ -647,7 +647,7 @@ Progressive detail:
 
 Очень важный архитектурный принцип.
 
-Сам Phosphored должен полноценно работать без:
+Сам Phosphora должен полноценно работать без:
 
 * Obsidian;
 * Markdown folder structure;
@@ -674,9 +674,9 @@ Core отвечает за:
 
 ---
 
-# 18. Native Phosphored backup: один файл
+# 18. Native Phosphora backup: один файл
 
-Основной export/backup Phosphored должен быть **одним файлом**.
+Основной export/backup Phosphora должен быть **одним файлом**.
 
 Экспорт в папку с сотнями `.md` не является основным backup mechanism.
 
@@ -690,7 +690,7 @@ Core отвечает за:
 
 или лучше:
 
-* один `.phosphored` archive, внутри которого SQLite + минимальный manifest/version metadata.
+* один `.phosphora` archive, внутри которого SQLite + минимальный manifest/version metadata.
 
 Выбери наиболее надёжную архитектуру.
 
@@ -745,7 +745,7 @@ Obsidian interoperability не должна загрязнять core.
 
 Создать полноценный bundled **Obsidian Plugin**.
 
-Если plugin отключён, Phosphored остаётся полностью функциональным.
+Если plugin отключён, Phosphora остаётся полностью функциональным.
 
 Plugin отвечает за:
 
@@ -793,7 +793,7 @@ Core предоставляет только общие import/export APIs и At
 
 Никакой сломанной кнопки.
 
-Phosphored остаётся PWA.
+Phosphora остаётся PWA.
 
 Не переходить на Electron/Tauri только ради Vault.
 
@@ -817,14 +817,14 @@ Phosphored остаётся PWA.
 Например:
 
 Projects/
-Phosphored/
+Phosphora/
 Physics.md
 Plugins.md
 
 становится:
 
 Projects
-→ Phosphored
+→ Phosphora
 ↙ Physics
 ↘ Plugins
 
@@ -842,7 +842,7 @@ Folder Atom может иметь plugin-defined type/property.
 
 Obsidian Plugin должен максимально сохранять:
 
-* stable Phosphored ID;
+* stable Phosphora ID;
 * title;
 * content;
 * aliases;
@@ -860,7 +860,7 @@ Obsidian Plugin должен максимально сохранять:
 
 Spatial metadata не должна существовать только в отдельном `layout.json`.
 
-Markdown Atom должен содержать достаточно Phosphored metadata, чтобы после повторного import восстановиться максимально близко к исходному состоянию.
+Markdown Atom должен содержать достаточно Phosphora metadata, чтобы после повторного import восстановиться максимально близко к исходному состоянию.
 
 Технические properties можно скрывать в обычном UI.
 
@@ -1235,7 +1235,7 @@ activate(app) {
 
 Plugin package:
 
-`.phosphored`
+`.phosphora`
 
 с:
 
@@ -1327,7 +1327,7 @@ Movement updates:
 
 # 37. Offline-first
 
-Phosphored прежде всего local-first application.
+Phosphora прежде всего local-first application.
 
 После первого успешного запуска без интернета должны работать:
 
@@ -1599,6 +1599,6 @@ Camera interaction всегда должно иметь priority над backgrou
 
 Финальное ощущение:
 
-**Phosphored не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
+**Phosphora не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
 
 Graph должен выглядеть так, будто вырос сам, вести себя так, будто живой, и подчиняться пользователю так естественно, словно это физический объект.
