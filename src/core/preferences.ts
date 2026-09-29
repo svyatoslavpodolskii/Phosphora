@@ -1,0 +1,5 @@
+import {PRESETS,safePhysics,type PhysicsSettings} from '../graph/physics';
+import {validateTheme,type Theme} from './themes';
+export interface Preferences {graphModel?:string;pinning:boolean;preset:string;physics:PhysicsSettings;linkMode:'suggest'|'automatic'|'off';theme:string;customThemes:Theme[]}
+export const DEFAULT_PREFERENCES:Preferences={pinning:true,preset:'calm',physics:{...PRESETS.calm},linkMode:'suggest',theme:'phosphor',customThemes:[]};
+export function preferences(value?:Partial<Preferences>):Preferences{return{graphModel:typeof value?.graphModel==='string'?value.graphModel:undefined,pinning:value?.pinning!==false,preset:value?.preset&&value.preset in PRESETS?value.preset:'calm',physics:safePhysics(value?.physics||PRESETS.calm),linkMode:value?.linkMode==='automatic'?'automatic':value?.linkMode==='off'?'off':'suggest',theme:typeof value?.theme==='string'?value.theme:'phosphor',customThemes:Array.isArray(value?.customThemes)?value.customThemes.slice(0,30).map(validateTheme):[]};}

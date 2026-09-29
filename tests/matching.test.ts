@@ -1,0 +1,6 @@
+import {it,expect} from 'vitest';
+import {makeAtom} from '../src/core/model';
+import {candidates,normalize} from '../src/core/matching';
+it('exact titles/aliases normalize punctuation and Unicode, inflections are suggestions',()=>{const a=makeAtom({title:'Юрий',aliases:['Yury']}),b=makeAtom({title:'Elite Dance Club',aliases:['EDC']});expect(candidates('Позвонить Юрий!', [a])[0].confidence).toBe(1);expect(candidates('Спросить Юрия про сценарий',[a])[0].reason).toBe('form');expect(candidates('Подготовить EDC.',[b])[0].confidence).toBe(1);expect(normalize('  ЁЖ—тест ')).toBe('еж тест');});
+it('80 percent fuzzy suggests without becoming exact confidence',()=>{const a=makeAtom({title:'Graphology'});const match=candidates('Read Grapholigy documentation',[a])[0];expect(match.confidence).toBeGreaterThanOrEqual(.8);expect(match.confidence).toBeLessThan(1);});
+it('minor text changes preserve rejection, new context can lift it',()=>{const a=makeAtom({title:'Юрий'});const text='Обсудить Юрий сценарий подкаста сегодня';expect(candidates(text+'!', [a],new Set(),{text,targets:[a.id]})).toHaveLength(0);expect(candidates('Юрий новый долгосрочный проект',[a],new Set(),{text,targets:[a.id]})).toHaveLength(1);});

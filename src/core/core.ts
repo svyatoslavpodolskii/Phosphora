@@ -1,0 +1,56 @@
+import {branchingLayout} from '../graph/structure';
+import {NoteSearch} from './search';
+import {makeAtom,makeLink,type Atom,type AtomState,type Snapshot,type StorageAdapter,type Mutation,type PositionUpdate} from './model';
+import {normalize,candidates,sameTextContext,type Rejection} from './matching';
+import {preferences,type Preferences} from './preferences';
+import {DraftPolicies} from './drafts';
+export {normalize} from './matching';
+export class Core {
+ readonly drafts=new DraftPolicies();
+ placementProvider?: (input:{data:Snapshot;parent?:string})=>Promise<{x:number;y:number}>|{x:number;y:number};
+ data:Snapshot={atoms:[],links:[]};prefs=preferences();
+ private searchIndex=new NoteSearch();
+ private listeners=new Set<()=>void>();private events=new Map<string,Set<(payload:any)=>unknown>>();private queue:Promise<unknown>=Promise.resolve();
+ constructor(public storage:StorageAdapter){}
+ async init(){await this.storage.open();this.prefs=preferences(await this.storage.getSetting<Preferences>('preferences'));await this.refresh();if(!await this.storage.getSetting('structural-layout-v2')){const layout=branchingLayout(this.data,this.prefs.preset,this.prefs.physics.distance);await this.storage.transaction([{kind:'positions',positions:this.data.atoms.filter(a=>!a.pinned&&!a.spatial.resistance).map(a=>({id:a.id,...layout.points.get(a.id)!})),manual:false},{kind:'setting',key:'structural-layout-v2',value:true}]);await this.refresh();}}
+ subscribe(fn:()=>void){this.listeners.add(fn);return()=>{this.listeners.delete(fn);};}
+ on(name:string,fn:(payload:any)=>unknown){const set=this.events.get(name)||new Set();set.add(fn);this.events.set(name,set);return()=>{set.delete(fn);};}
+ emit(name:string,payload:unknown){for(const fn of this.events.get(name)||[])try{Promise.resolve(fn(structuredClone(payload))).catch(e=>console.error('Plugin event',e));}catch(e){console.error('Plugin event',e);}}
+ private changed(){for(const fn of this.listeners)fn();}
+ async refresh(){this.data=await this.storage.snapshot();this.searchIndex.sync(this.data.atoms);this.changed();}
+ private serial<T>(fn:()=>Promise<T>):Promise<T>{const next=this.queue.then(fn);this.queue=next.catch(()=>{});return next;}
+ async commit(ops:Mutation[]){await this.storage.transaction(ops);await this.refresh();}
+ async setPreferences(value:Preferences){const next=preferences(value);await this.storage.transaction([{kind:'setting',key:'preferences',value:next}]);this.prefs=next;this.emit('preferences:update',next);this.changed();}
+  /** Fallback used when no layout provider is registered. A loose atom joins the
+   *  content that is already there instead of the far corner of the coordinate space. */
+  private place(parent?:string){const root=this.data.atoms.find(a=>a.id===parent);const atoms=this.data.atoms;
+   if(!root&&!atoms.length)return{x:0,y:0};
+   const xs=atoms.map(a=>a.x),ys=atoms.map(a=>a.y);
+   // Anchor beside the existing content, not at the origin of an empty plane.
+   const x=root?root.x:(Math.min(...xs)+Math.max(...xs))/2+Math.max(...xs)-Math.min(...xs)+190;
+   const y=root?root.y:(Math.min(...ys)+Math.max(...ys))/2;
+   for(let i=0;i<2000;i++){const angle=i*2.39996;const radius=root?165+Math.floor(i/8)*95:170*Math.sqrt(i);const p={x:x+Math.cos(angle)*radius,y:y+Math.sin(angle)*radius};if(!atoms.some(a=>Math.hypot(a.x-p.x,a.y-p.y)<110))return p;}return{x:x+1000,y:y+1000};}
+ saveDraft(input:Partial<Atom>&{title:string},add:{to:string;relation:string;source?:string}[]=[],remove:string[]=[],parent?:string,preservePosition=true){return this.serial(async()=>{
+ const plain=JSON.parse(JSON.stringify(input));const before=input.id?this.data.atoms.find(a=>a.id===input.id):undefined;if(input.id&&!before)throw Error('Атом не найден.');if(!before){delete plain.id;if(plain.x===undefined||plain.y===undefined)Object.assign(plain,this.placementProvider?await this.placementProvider({data:structuredClone(this.data),parent}):this.place(parent));}
+ const atom:Atom=before?{...before,...plain,id:before.id,x:preservePosition?before.x:plain.x??before.x,y:preservePosition?before.y:plain.y??before.y,spatial:preservePosition?before.spatial:plain.spatial??before.spatial,created_at:before.created_at,updated_at:new Date().toISOString(),revision:before.revision+1}:makeAtom(plain);
+ if(before&&atom.pinned!==before.pinned)atom.spatial={resistance:0};
+ const ops:Mutation[]=[{kind:'atom',atom,expectedRevision:before?input.revision??before.revision:undefined}];const text=atom.title+' '+atom.content;const oldRejection=await this.storage.getSetting<Rejection>('rejected:'+atom.id);const rejection:Rejection={text:normalize(text),targets:oldRejection&&sameTextContext(text,oldRejection.text)?[...oldRejection.targets]:[]};
+ for(const id of remove){const l=this.data.links.find(l=>l.id===id);if(l){const to=l.from===atom.id?l.to:l.from;rejection.targets.push(to);const other=this.data.atoms.find(a=>a.id===to);if(other){const old=await this.storage.getSetting<Rejection>('rejected:'+to);const otherText=normalize(other.title+' '+other.content);ops.push({kind:'setting',key:'rejected:'+to,value:{text:otherText,targets:[...(old&&sameTextContext(otherText,old.text)?old.targets:[]),atom.id]}});}}ops.push({kind:'unlink',id});}
+ if(remove.length)ops.push({kind:'setting',key:'rejected:'+atom.id,value:rejection});
+ if(parent&&!before)ops.push({kind:'link',link:makeLink(parent,atom.id,'related','context')});
+ const additions=[...add];if(this.prefs.linkMode==='automatic'){const excluded=new Set([atom.id,...this.data.links.filter(l=>l.from===atom.id||l.to===atom.id).flatMap(l=>[l.from,l.to]),...add.map(l=>l.to),...(parent?[parent]:[])]);const matches=candidates(text,this.data.atoms,excluded,rejection,false);for(const c of matches.filter(c=>c.confidence===1&&this.data.atoms.filter(a=>[a.title,...a.aliases].some(t=>normalize(t)===c.matched)).length===1))additions.push({to:c.atom.id,relation:'related',source:'automatic'});}
+ const effects=await this.drafts.prepare({atom,before,data:this.data,parent,add:additions,remove,rejected:rejection.targets});
+ atom.properties=effects.properties;additions.push(...effects.add);for(const id of effects.remove)ops.push({kind:'unlink',id});
+ for(const l of additions)ops.push({kind:'link',link:makeLink(atom.id,l.to,l.relation,l.source||'manual')});await this.commit(ops);this.emit(before?'atom:update':'atom:create',atom);for(const op of ops){if(op.kind==='link')this.emit('link:create',op.link);if(op.kind==='unlink')this.emit('link:delete',{id:op.id});}return atom;
+ });}
+ create(input:Partial<Atom>&{title:string},parent?:string){return this.saveDraft(input,[],[],parent);}
+ update(id:string,patch:Partial<Atom>,expectedRevision?:number){const a=this.data.atoms.find(a=>a.id===id);if(!a)return Promise.reject(Error('Атом не найден.'));return this.saveDraft({...a,...patch,id,revision:expectedRevision??a.revision},[],[],undefined,false);}
+ setState(id:string,state:AtomState){return this.update(id,{state});}
+ setPinned(id:string,pinned:boolean){return this.update(id,{pinned});}
+ positions(positions:PositionUpdate[],manual=false){return this.serial(async()=>{const input=JSON.parse(JSON.stringify(positions)) as PositionUpdate[];await this.storage.transaction([{kind:'positions',positions:input,manual}]);const map=new Map(input.map(p=>[p.id,p]));this.data={...this.data,atoms:this.data.atoms.map(a=>{const p=map.get(a.id);return p&&(manual||!a.pinned)?{...a,x:p.x,y:p.y,spatial:p.resistance===undefined?a.spatial:{resistance:p.resistance}}:a;})};this.changed();this.emit('graph:positions',{positions:input,manual});});}
+ link(from:string,to:string,relation='related'){return this.serial(async()=>{const link=makeLink(from,to,relation);await this.commit([{kind:'link',link}]);this.emit('link:create',link);return link;});}
+ unlink(id:string){return this.serial(async()=>{const l=this.data.links.find(l=>l.id===id);const ops:Mutation[]=[{kind:'unlink',id}];if(l)for(const [from,to] of [[l.from,l.to],[l.to,l.from]]){const a=this.data.atoms.find(a=>a.id===from);if(a){const old=await this.storage.getSetting<Rejection>('rejected:'+from);const text=normalize(a.title+' '+a.content);ops.push({kind:'setting',key:'rejected:'+from,value:{text,targets:[...(old&&sameTextContext(text,old.text)?old.targets:[]),to]}});}}await this.commit(ops);this.emit('link:delete',{id});});}
+ delete(id:string){return this.serial(async()=>{const backups=await this.storage.getSetting<{at:string;data:Snapshot}[]>('backups')||[];await this.commit([{kind:'setting',key:'backups',value:[{at:new Date().toISOString(),data:this.data},...backups].slice(0,3)},{kind:'delete',id}]);this.emit('atom:delete',{id});});}
+ group(ids:string[],action:AtomState|'pin'|'unpin'|'delete'){return this.serial(async()=>{const members=this.data.atoms.filter(a=>ids.includes(a.id));const ops:Mutation[]=[];if(action==='delete'){const backups=await this.storage.getSetting<{at:string;data:Snapshot}[]>('backups')||[];ops.push({kind:'setting',key:'backups',value:[{at:new Date().toISOString(),data:this.data},...backups].slice(0,3)});for(const a of members)ops.push({kind:'delete',id:a.id});}else for(const a of members)ops.push({kind:'atom',expectedRevision:a.revision,atom:{...a,...(action==='pin'||action==='unpin'?{pinned:action==='pin',spatial:{resistance:0}}:{state:action}),revision:a.revision+1,updated_at:new Date().toISOString()}});await this.commit(ops);for(const op of ops){if(op.kind==='atom')this.emit('atom:update',op.atom);if(op.kind==='delete')this.emit('atom:delete',{id:op.id});}});}
+ search(query:string):Atom[]{return this.searchIndex.search(query,this.data.atoms);}
+}

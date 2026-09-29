@@ -1,0 +1,6 @@
+export function installStyles(pluginId:string,css:string):()=>void {
+ if(css.length>100_000)throw Error('Таблица стилей слишком большая.');
+ const sheet=new CSSStyleSheet();sheet.replaceSync(css);const allowed=/^(color|background-color|font(-size|-weight|-style|-family)?|line-height|letter-spacing|text-align|text-decoration|border(-color|-width|-style|-radius)?|padding(-top|-right|-bottom|-left)?|margin(-top|-right|-bottom|-left)?|gap|display|grid-template-columns|align-items|justify-content|max-width|width|height|max-height|overflow|white-space|word-break)$/;
+ let result='';for(const rule of sheet.cssRules){if(!(rule instanceof CSSStyleRule))throw Error('Пакетные стили поддерживают только локальные CSS-правила.');let declarations='';for(const name of rule.style){const value=rule.style.getPropertyValue(name);if(!allowed.test(name)||/url\s*\(|expression|var\s*\(/i.test(value))throw Error('Недопустимое свойство пакетного стиля: '+name);declarations+=name+':'+value+';';}const selectors=rule.selectorText.split(',').map(selector=>`[data-plugin-surface="${pluginId}"] ${selector.trim()}`);result+=selectors.join(',')+'{'+declarations+'}';}
+ const style=document.createElement('style');style.textContent=result;document.head.append(style);return()=>style.remove();
+}

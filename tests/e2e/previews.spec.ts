@@ -1,0 +1,22 @@
+import {test,expect} from '@playwright/test';
+import {makeAtom} from '../../src/core/model';
+import {importMap,focus,readMap} from './helpers';
+test('close zoom reveals safe multiline Markdown without moving atoms',async({page})=>{
+ await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+ const atom=makeAtom({title:'Markdown on the map',state:'now',pinned:true,content:'**Strong** and *emphasis* with `code` and [link](https://example.com)\n\n- [ ] Task item\n- List item\n\n<script>window.previewUnsafe=true</script>'});
+ await importMap(page,{atoms:[atom],links:[]});await focus(page,atom.title,false);const toast=page.locator('.toast');if(await toast.count())await toast.click();
+ for(let i=0;i<5;i++)await page.getByRole('button',{name:'Приблизить',exact:true}).click();
+ const preview=page.locator('.content-preview');await expect(preview).toHaveCount(1);
+ await expect(preview.locator('strong')).toHaveText('Strong');await expect(preview.locator('em')).toHaveText('emphasis');await expect(preview.locator('code')).toHaveText('code');await expect(preview.locator('li')).toHaveCount(2);await expect(preview.locator('input[type=checkbox]')).toBeDisabled();
+ expect(await page.evaluate(()=>Boolean((window as any).previewUnsafe))).toBe(false);
+ const rect=await preview.boundingBox();expect(rect!.height).toBeGreaterThan(36);expect(rect!.width).toBeLessThanOrEqual(260);
+ await page.screenshot({path:'artifacts/markdown-close-zoom.png'});
+ await page.locator('canvas').focus();await page.locator('canvas').press('ArrowRight');
+ await expect.poll(async()=>Math.round((await preview.boundingBox())!.x-rect!.x)).toBe(-60);
+ expect(Math.abs((await preview.boundingBox())!.y-rect!.y)).toBeLessThan(1);
+ await page.locator('canvas').press('ArrowLeft');
+ await expect.poll(async()=>Math.round((await preview.boundingBox())!.x-rect!.x)).toBe(0);
+ await page.setViewportSize({width:390,height:844});await expect(preview).toHaveCount(1);await page.screenshot({path:'artifacts/markdown-close-mobile.png'});
+ for(let i=0;i<6;i++)await page.getByRole('button',{name:'Отдалить',exact:true}).click();await expect(preview).toHaveCount(0);
+ expect((await readMap(page)).atoms.map(a=>[a.x,a.y])).toEqual([[atom.x,atom.y]]);
+});

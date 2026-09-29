@@ -1,0 +1,20 @@
+﻿import {test,expect} from '@playwright/test';
+import {focus,readMap} from './helpers';
+test('compact appearance flow, linked creation and offline persistence',async({page,context})=>{
+ await page.goto('/');
+ await page.getByRole('button',{name:'+ Первый атом',exact:true}).click();
+ await page.getByRole('textbox',{name:'Название',exact:true}).fill('Atom A');
+ await page.getByRole('button',{name:'Сохранить',exact:true}).click();
+ await expect(page.getByRole('dialog')).toBeHidden();
+ const canvas=page.locator('canvas');
+ const menu=async()=>{await focus(page,'Atom A',false);await canvas.click({position:{x:640,y:360},button:'right'});};
+ await menu();await page.getByRole('button',{name:'Закрепить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await menu();await page.getByRole('group',{name:'Важность',exact:true}).getByRole('button',{name:'Ключевой',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await menu();await page.getByRole('button',{name:'Оформление',exact:true}).click();await page.getByLabel('Цвет',{exact:true}).fill('#e09fe8');await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await menu();await page.getByRole('button',{name:'Связанный атом',exact:true}).click();await page.getByRole('textbox',{name:'Название',exact:true}).fill('Atom B');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await expect(canvas).toHaveAttribute('data-nodes','2');await expect(page.locator('footer')).toContainText('1 связей');
+ await focus(page,'Atom B');await page.getByRole('combobox',{name:'Состояние',exact:true}).selectOption('now');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await context.setOffline(true);await page.reload();
+ const data=await readMap(page);expect(data.atoms.find(a=>a.title==='Atom A')).toMatchObject({pinned:true,importance:2,appearance:{color:'#e09fe8'}});expect(data.atoms.find(a=>a.title==='Atom B')?.state).toBe('now');expect(data.links).toHaveLength(1);
+ await menu();await page.getByRole('button',{name:'Оформление',exact:true}).click();await expect(page.getByLabel('Цвет',{exact:true})).toHaveValue('#e09fe8');await page.screenshot({path:'artifacts/vertical-slice.png'});
+});

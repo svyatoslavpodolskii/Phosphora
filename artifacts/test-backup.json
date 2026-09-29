@@ -1,0 +1,66 @@
+{
+  "format": "phosphored",
+  "version": 1,
+  "exported_at": "2026-09-29T17:01:50.102Z",
+  "data": {
+    "atoms": [
+      {
+        "id": "99f955b8-3906-4c61-8639-c290d1b83ccd",
+        "type": "note",
+        "title": "Юрий",
+        "content": "",
+        "state": "archived",
+        "importance": 0,
+        "created_at": "2026-09-29T17:01:46.821Z",
+        "updated_at": "2026-09-29T17:01:48.947Z",
+        "properties": {},
+        "appearance": {
+          "color": "#b4ecc1"
+        },
+        "x": 0,
+        "y": 0,
+        "revision": 2,
+        "pinned": false,
+        "spatial": {
+          "resistance": 0
+        },
+        "aliases": [
+          "Юра",
+          "Yury"
+        ]
+      },
+      {
+        "id": "426e4dca-5547-4623-bdfd-9f106e7f4b3e",
+        "type": "note",
+        "title": "Вопросы для Юра",
+        "content": "## Интервью\n- [ ] Позвонить\n<script>window.hacked=true</script>",
+        "state": "normal",
+        "importance": 0,
+        "created_at": "2026-09-29T17:01:47.743Z",
+        "updated_at": "2026-09-29T17:01:47.743Z",
+        "properties": {},
+        "appearance": {
+          "color": "#b4ecc1"
+        },
+        "x": 190,
+        "y": 0,
+        "revision": 1,
+        "pinned": false,
+        "spatial": {
+          "resistance": 0
+        },
+        "aliases": []
+      }
+    ],
+    "links": [
+      {
+        "id": "a91133b2-37bf-44cd-aa82-d7f900b05ba6",
+        "from": "426e4dca-5547-4623-bdfd-9f106e7f4b3e",
+        "to": "99f955b8-3906-4c61-8639-c290d1b83ccd",
+        "relation": "related",
+        "source": "manual",
+        "created_at": "2026-09-29T17:01:47.746Z"
+      }
+    ]
+  }
+}

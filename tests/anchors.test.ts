@@ -1,0 +1,5 @@
+import {it,expect} from 'vitest';
+import {makeAtom,makeLink} from '../src/core/model';
+import {anchorLayout} from '../src/graph/anchors';
+it('fits a new branch around its pin instead of leaving the pin behind',()=>{const a=makeAtom({id:'a',title:'Anchor',x:5000,y:2000,pinned:true}),b=makeAtom({id:'b',title:'Child'}),data={atoms:[a,b],links:[makeLink('a','b')]};const result=anchorLayout(data,new Map([['a',{x:0,y:0}],['b',{x:300,y:0}]]),new Set(['a']));expect(result.get('a')).toEqual({x:5000,y:2000});expect(result.get('b')).toEqual({x:5300,y:2000});});
+it('keeps multiple manual anchors exact and separates free nodes from their painted bounds',()=>{const atoms=[makeAtom({id:'a',title:'A',x:1000,y:1000}),makeAtom({id:'b',title:'B',x:1400,y:1000}),makeAtom({id:'c',title:'C'})],data={atoms,links:[makeLink('a','c'),makeLink('b','c')]};const result=anchorLayout(data,new Map([['a',{x:0,y:0}],['b',{x:400,y:0}],['c',{x:0,y:0}]]),new Set(['a','b']));expect(result.get('a')).toEqual({x:1000,y:1000});expect(result.get('b')).toEqual({x:1400,y:1000});expect(Math.hypot(result.get('c')!.x-1000,result.get('c')!.y-1000)).toBeGreaterThan(50);});

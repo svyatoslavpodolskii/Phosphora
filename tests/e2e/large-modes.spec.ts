@@ -1,0 +1,9 @@
+import {selectModel} from './helpers';
+import {test,expect} from '@playwright/test';
+import {writeFileSync} from 'node:fs';
+import {largeFixture} from '../large-fixture';
+import {importMap,openSettings,closeSettings,readMap,focus} from './helpers';
+for(const [mode,label] of [['branch','Ветви'],['molecule','Молекула'],['compact','Созвездия']])test(`120 notes: ${mode} overview, readable branch and bounded drag`,async({page})=>{
+ test.setTimeout(60000);await page.setViewportSize({width:1440,height:1000});await page.goto('/');await expect(page.locator('canvas')).toBeVisible();await openSettings(page);await selectModel(page,label);await closeSettings(page);await importMap(page,largeFixture());const toast=page.getByRole('button',{name:'Скрыть уведомление',exact:true});if(await toast.isVisible())await toast.click();await expect(page.locator('canvas')).toHaveAttribute('data-layout','idle');await page.waitForTimeout(600);await page.getByRole('button',{name:'К центру карты',exact:true}).click();await page.screenshot({animations:'disabled',path:`artifacts/120-${mode}-overview.png`});const data=await readMap(page);writeFileSync(`artifacts/120-${mode}.json`,JSON.stringify(data,null,2));expect(data.atoms).toHaveLength(120);expect(Math.max(...data.atoms.map(a=>Math.hypot(a.x,a.y)))).toBeLessThan(7000);
+ await focus(page,'Творчество',false);await page.getByRole('button',{name:'Отдалить',exact:true}).click();await page.screenshot({animations:'disabled',path:`artifacts/120-${mode}-detail.png`});await page.mouse.move(720,500);await page.mouse.down();await page.mouse.move(780,535,{steps:20});await page.mouse.up();await page.waitForTimeout(500);const dragged=await readMap(page);const a=dragged.atoms.find(a=>a.id==='g0-0')!;expect(a.spatial.resistance).toBeGreaterThan(0);expect(Math.hypot(a.x-data.atoms.find(original=>original.id===a.id)!.x,a.y-data.atoms.find(original=>original.id===a.id)!.y)).toBeLessThan(160);
+});

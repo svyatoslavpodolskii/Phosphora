@@ -1,0 +1,10 @@
+<script lang="ts">
+ import {onMount} from 'svelte';
+ import type {AtomState} from '../core/model';
+ let {ids,pinned,onaction,onclose}:{ids:string[];pinned:boolean;onaction:(action:AtomState|'pin'|'unpin'|'delete')=>Promise<void>;onclose:()=>void}=$props();let confirm=$state(false),busy=$state(false),error=$state('');
+ let root:HTMLDivElement;onMount(()=>root.focus());
+ function keys(e:KeyboardEvent){if(e.key!=='Tab')return;const buttons=[...root.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];if(e.shiftKey&&(document.activeElement===buttons[0]||document.activeElement===root)){e.preventDefault();buttons.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0]?.focus();}}
+ async function act(action:AtomState|'pin'|'unpin'|'delete'){busy=true;try{await onaction(action);onclose();}catch(e){error=(e as Error).message;}finally{busy=false;}}
+</script>
+<svelte:window onkeydown={e=>{if(e.key==='Escape')onclose();}}/>
+<div class="context-scrim" role="presentation" onclick={e=>{if(e.target===e.currentTarget)onclose();}}><div class="atom-menu" bind:this={root} tabindex="-1" onkeydown={keys} role="dialog" aria-label="Действия с ветвью" aria-modal="true"><div class="context-heading"><strong>Ветвь · {ids.length} атомов</strong><button aria-label="Закрыть" onclick={onclose}>×</button></div>{#if confirm}<p>Удалить {ids.length} атомов ветви и их связи?</p><button class="danger-button" disabled={busy} onclick={()=>act('delete')}>Удалить ветвь</button><button onclick={()=>confirm=false}>Отмена</button>{:else}<div class="state-shortcuts">{#each [['normal','Обычный'],['now','Сейчас'],['paused','Пауза'],['archived','Архив']] as [state,label]}<button disabled={busy} onclick={()=>act(state as AtomState)}>{label}</button>{/each}<button disabled={busy} onclick={()=>act(pinned?'unpin':'pin')}>{pinned?'Открепить':'Закрепить'}</button><button class="danger" disabled={busy} onclick={()=>confirm=true}>Удалить…</button></div>{/if}{#if error}<p role="alert">{error}</p>{/if}</div></div>

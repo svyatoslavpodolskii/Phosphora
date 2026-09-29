@@ -1,0 +1,4 @@
+---
+aliases: [One]
+---
+[[Second]]

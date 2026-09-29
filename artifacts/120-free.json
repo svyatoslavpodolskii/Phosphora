@@ -1,0 +1,3558 @@
+{
+  "atoms": [
+    {
+      "id": "g0-0",
+      "type": "project",
+      "title": "Творчество",
+      "content": "",
+      "state": "normal",
+      "importance": 2,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 147.56011778476193,
+      "y": -68.9137250878606,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-1",
+      "type": "area",
+      "title": "Идеи · Творчество",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -136.824931875144,
+      "y": 151.82400057300788,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-2",
+      "type": "area",
+      "title": "Планы · Творчество",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -12.662111274030053,
+      "y": -315.345941560123,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-3",
+      "type": "area",
+      "title": "Люди · Творчество",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 379.7595384990367,
+      "y": -249.14532337172204,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-4",
+      "type": "area",
+      "title": "Находки · Творчество",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 346.54332879711194,
+      "y": 147.43248295659419,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-5",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -376.82084839015783,
+      "y": 153.2240206151845,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-6",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 198.99218845043538,
+      "y": -497.79781884249525,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-7",
+      "type": "person",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.569Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 514.7231819440359,
+      "y": -101.16348887090248,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-8",
+      "type": "note",
+      "title": "Разговор с Макаром",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 187.67497689837148,
+      "y": 298.4893084383707,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-9",
+      "type": "note",
+      "title": "Проверить гипотезу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -282.3409618897764,
+      "y": -39.029568973858545,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-10",
+      "type": "task",
+      "title": "Книга на выходные",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -205.26181696977528,
+      "y": -172.1490373829995,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-11",
+      "type": "note",
+      "title": "Встреча в пятницу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 220.98698170135071,
+      "y": -364.5978188424952,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-12",
+      "type": "note",
+      "title": "Наблюдения за светом",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 512.6391776364347,
+      "y": 32.03651112909745,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-13",
+      "type": "note",
+      "title": "Следующий маленький шаг",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 11.015015960871551,
+      "y": 340.13636297755284,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-14",
+      "type": "person",
+      "title": "Что хочется попробовать",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -248.89173309976275,
+      "y": -357.72005833052054,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-15",
+      "type": "task",
+      "title": "Сохранить воспоминание",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 402.268929045002,
+      "y": -488.0874237585087,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-16",
+      "type": "note",
+      "title": "Неожиданная связь",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 586.530436658141,
+      "y": 165.09238305293843,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-17",
+      "type": "note",
+      "title": "Доработать набросок",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -169.04744543854724,
+      "y": 390.06847209754574,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-18",
+      "type": "note",
+      "title": "Вопросы для обсуждения",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -143.48301348915265,
+      "y": -516.5570037401665,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-19",
+      "type": "note",
+      "title": "Тихое место",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 569.3495716056408,
+      "y": -396.3038071456343,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-20",
+      "type": "task",
+      "title": "Полезные материалы",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 509.01244025071617,
+      "y": 324.07842212157016,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-21",
+      "type": "person",
+      "title": "Опыт прошлой недели",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -334.65602840219776,
+      "y": 323.24347475711943,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-22",
+      "type": "note",
+      "title": "Список для проекта",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 41.83540134106045,
+      "y": -548.4487253820978,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-23",
+      "type": "note",
+      "title": "Посмотреть иначе",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 616.8167649051717,
+      "y": -234.21936079474347,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-24",
+      "type": "note",
+      "title": "Вернуться к этому",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 335.41517267279016,
+      "y": 386.7898345607439,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-25",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -616.8167649051717,
+      "y": 154.6240406573612,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-26",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -427.8569919044087,
+      "y": -229.88313852072508,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g0-27",
+      "type": "note",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 160.75500135705056,
+      "y": 528.4487253820978,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-0",
+      "type": "project",
+      "title": "Исследования",
+      "content": "",
+      "state": "normal",
+      "importance": 2,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 971.8286347642597,
+      "y": -1052.1438161227209,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-1",
+      "type": "area",
+      "title": "Идеи · Исследования",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 687.4435851043538,
+      "y": -831.4060904618524,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-2",
+      "type": "area",
+      "title": "Планы · Исследования",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 811.6064057054678,
+      "y": -1298.5760325949832,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-3",
+      "type": "area",
+      "title": "Люди · Исследования",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1204.0280554785345,
+      "y": -1232.3754144065824,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-4",
+      "type": "area",
+      "title": "Находки · Исследования",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1166.9342086728336,
+      "y": -835.7976080782661,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-5",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 447.44766858933997,
+      "y": -830.0060704196758,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-6",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1023.2607054299332,
+      "y": -1481.0279098773556,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-7",
+      "type": "person",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1338.9916989235337,
+      "y": -1084.3935799057626,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-8",
+      "type": "note",
+      "title": "Разговор с Макаром",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1011.9434938778693,
+      "y": -684.7407825964896,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-9",
+      "type": "note",
+      "title": "Проверить гипотезу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 541.9275550897214,
+      "y": -1022.2596600087188,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-10",
+      "type": "task",
+      "title": "Книга на выходные",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 619.0067000097225,
+      "y": -1155.3791284178596,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-11",
+      "type": "note",
+      "title": "Встреча в пятницу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1045.2554986808486,
+      "y": -1347.8279098773555,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-12",
+      "type": "note",
+      "title": "Наблюдения за светом",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1340.7853317197087,
+      "y": -951.1935799057628,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-13",
+      "type": "note",
+      "title": "Следующий маленький шаг",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 835.2835329403694,
+      "y": -643.0937280573074,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-14",
+      "type": "person",
+      "title": "Что хочется попробовать",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 575.3767838797351,
+      "y": -1340.9501493653809,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-15",
+      "type": "task",
+      "title": "Сохранить воспоминание",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1226.5374460244998,
+      "y": -1471.317514793369,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-16",
+      "type": "note",
+      "title": "Неожиданная связь",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1410.7989536376388,
+      "y": -818.1377079819218,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-17",
+      "type": "note",
+      "title": "Доработать набросок",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 655.2210715409506,
+      "y": -593.1616189373145,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-18",
+      "type": "note",
+      "title": "Вопросы для обсуждения",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 680.7855034903451,
+      "y": -1499.7870947750266,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-19",
+      "type": "note",
+      "title": "Тихое место",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1393.6180885851386,
+      "y": -1379.5338981804946,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-20",
+      "type": "task",
+      "title": "Полезные материалы",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1333.280957230214,
+      "y": -659.1516689132901,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-21",
+      "type": "person",
+      "title": "Опыт прошлой недели",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 489.61248857730004,
+      "y": -659.9866162777408,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-22",
+      "type": "note",
+      "title": "Список для проекта",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 866.1039183205583,
+      "y": -1531.678816416958,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-23",
+      "type": "note",
+      "title": "Посмотреть иначе",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1441.0852818846695,
+      "y": -1217.4494518296037,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-24",
+      "type": "note",
+      "title": "Вернуться к этому",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1159.683689652288,
+      "y": -596.4402564741164,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-25",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 207.45175207432612,
+      "y": -828.6060503774991,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-26",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 396.4115250750891,
+      "y": -1213.1132295555853,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g1-27",
+      "type": "note",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 985.0235183365484,
+      "y": -454.7813656527625,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-0",
+      "type": "project",
+      "title": "Путешествия",
+      "content": "",
+      "state": "normal",
+      "importance": 2,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1355.061666439129,
+      "y": 432.7196171027333,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-1",
+      "type": "area",
+      "title": "Идеи · Путешествия",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1070.676616779223,
+      "y": 653.4573427636018,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-2",
+      "type": "area",
+      "title": "Планы · Путешествия",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1194.8394373803371,
+      "y": 186.28740063047093,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-3",
+      "type": "area",
+      "title": "Люди · Путешествия",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1587.2610871534039,
+      "y": 252.48801881887186,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-4",
+      "type": "area",
+      "title": "Находки · Путешествия",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1552.1715128086403,
+      "y": 649.0658251471881,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-5",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 830.6807002642092,
+      "y": 654.8573628057784,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-6",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1406.4937371048024,
+      "y": 3.8355233480986612,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-7",
+      "type": "person",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1722.2247305984029,
+      "y": 400.4698533196914,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-8",
+      "type": "note",
+      "title": "Разговор с Макаром",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1395.1765255527384,
+      "y": 800.1226506289646,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-9",
+      "type": "note",
+      "title": "Проверить гипотезу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 925.1605867645907,
+      "y": 462.60377321673536,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-10",
+      "type": "task",
+      "title": "Книга на выходные",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1002.2397316845918,
+      "y": 329.4843048075944,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-11",
+      "type": "note",
+      "title": "Встреча в пятницу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1428.4885303557178,
+      "y": 137.0355233480987,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-12",
+      "type": "note",
+      "title": "Наблюдения за светом",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1722.0140909336405,
+      "y": 533.6698533196914,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-13",
+      "type": "note",
+      "title": "Следующий маленький шаг",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1218.5165646152386,
+      "y": 841.7697051681467,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-14",
+      "type": "person",
+      "title": "Что хочется попробовать",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 958.6098155546043,
+      "y": 143.91328386007336,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-15",
+      "type": "task",
+      "title": "Сохранить воспоминание",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1609.7704776993692,
+      "y": 13.545918432085216,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-16",
+      "type": "note",
+      "title": "Неожиданная связь",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1794.031985312508,
+      "y": 666.7257252435323,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-17",
+      "type": "note",
+      "title": "Доработать набросок",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1038.45410321582,
+      "y": 891.7018142881396,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-18",
+      "type": "note",
+      "title": "Вопросы для обсуждения",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1064.0185351652144,
+      "y": -14.923661549572557,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-19",
+      "type": "note",
+      "title": "Тихое место",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1776.851120260008,
+      "y": 105.32953504495958,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-20",
+      "type": "task",
+      "title": "Полезные материалы",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 1716.5139889050834,
+      "y": 825.7117643121641,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-21",
+      "type": "person",
+      "title": "Опыт прошлой недели",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 872.8455202521693,
+      "y": 824.8768169477133,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-22",
+      "type": "note",
+      "title": "Список для проекта",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1249.3369499954274,
+      "y": -46.815383191503884,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-23",
+      "type": "note",
+      "title": "Посмотреть иначе",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1824.3183135595386,
+      "y": 267.41398139585044,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-24",
+      "type": "note",
+      "title": "Вернуться к этому",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1542.9167213271571,
+      "y": 888.4231767513378,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-25",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": 590.6847837491954,
+      "y": 656.2573828479551,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-26",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 779.6445567499584,
+      "y": 271.7502036698688,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g2-27",
+      "type": "note",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.570Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 1368.2565500114176,
+      "y": 1030.0820675726918,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-0",
+      "type": "project",
+      "title": "Дом и сад",
+      "content": "",
+      "state": "normal",
+      "importance": 2,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -403.03140732173915,
+      "y": -1252.4545872810072,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-1",
+      "type": "area",
+      "title": "Идеи · Дом и сад",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -687.4164569816451,
+      "y": -1031.7168616201388,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-2",
+      "type": "area",
+      "title": "Планы · Дом и сад",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -563.2536363805311,
+      "y": -1498.8868037532698,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-3",
+      "type": "area",
+      "title": "Люди · Дом и сад",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -170.8319866074644,
+      "y": -1432.6861855648688,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-4",
+      "type": "area",
+      "title": "Находки · Дом и сад",
+      "content": "",
+      "state": "normal",
+      "importance": 1,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -204.04819630938914,
+      "y": -1036.1083792365525,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-5",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -927.4123734966589,
+      "y": -1030.3168415779624,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-6",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -351.5993366560657,
+      "y": -1681.338681035642,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-7",
+      "type": "person",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -35.86834316246518,
+      "y": -1284.7043510640492,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-8",
+      "type": "note",
+      "title": "Разговор с Макаром",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -362.9165482081296,
+      "y": -885.051553754776,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-9",
+      "type": "note",
+      "title": "Проверить гипотезу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -832.9324869962775,
+      "y": -1222.5704311670052,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-10",
+      "type": "task",
+      "title": "Книга на выходные",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -755.8533420762764,
+      "y": -1355.6898995761462,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-11",
+      "type": "note",
+      "title": "Встреча в пятницу",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -329.60454340515037,
+      "y": -1548.1386810356419,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-12",
+      "type": "note",
+      "title": "Наблюдения за светом",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -37.95234747006634,
+      "y": -1151.5043510640494,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-13",
+      "type": "note",
+      "title": "Следующий маленький шаг",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -539.5765091456295,
+      "y": -843.4044992155939,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-14",
+      "type": "person",
+      "title": "Что хочется попробовать",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -799.4832582062638,
+      "y": -1541.2609205236672,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-15",
+      "type": "task",
+      "title": "Сохранить воспоминание",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -148.3225960614991,
+      "y": -1671.6282859516555,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-16",
+      "type": "note",
+      "title": "Неожиданная связь",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 35.938911551639876,
+      "y": -1018.4484791402083,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-17",
+      "type": "note",
+      "title": "Доработать набросок",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -719.6389705450483,
+      "y": -793.472390095601,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-18",
+      "type": "note",
+      "title": "Вопросы для обсуждения",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -694.0745385956537,
+      "y": -1700.0978659333132,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-19",
+      "type": "note",
+      "title": "Тихое место",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 18.75804649913971,
+      "y": -1579.844669338781,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-20",
+      "type": "task",
+      "title": "Полезные материалы",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -41.57908485578491,
+      "y": -859.4624400715766,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-21",
+      "type": "person",
+      "title": "Опыт прошлой недели",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -885.2475535086988,
+      "y": -860.2973874360273,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-22",
+      "type": "note",
+      "title": "Список для проекта",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -508.75612376544063,
+      "y": -1731.9895875752445,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-23",
+      "type": "note",
+      "title": "Посмотреть иначе",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": 66.2252397986706,
+      "y": -1417.7602229878903,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-24",
+      "type": "note",
+      "title": "Вернуться к этому",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -215.17635243371092,
+      "y": -796.7510276324028,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-25",
+      "type": "task",
+      "title": "Утренние заметки",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "square"
+      },
+      "x": -1167.4082900116728,
+      "y": -1028.9168215357854,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-26",
+      "type": "note",
+      "title": "Собрать вдохновение",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -978.4485170109098,
+      "y": -1413.424000713872,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "g3-27",
+      "type": "note",
+      "title": "Новый маршрут",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {
+        "shape": "circle"
+      },
+      "x": -389.8365237494505,
+      "y": -655.0921368110489,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-0",
+      "type": "note",
+      "title": "Поймать мысль",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": 0,
+      "y": -10,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-1",
+      "type": "note",
+      "title": "Открытый вопрос",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": 321.39375505395515,
+      "y": -35.96255404073882,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-2",
+      "type": "note",
+      "title": "Новая идея",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": -568.6922632331499,
+      "y": -16.71637839595816,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-3",
+      "type": "note",
+      "title": "Не забыть",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": -57.40746255927762,
+      "y": 565.9447744727833,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-4",
+      "type": "note",
+      "title": "Случайная находка",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": -488.16562817969304,
+      "y": -431.3861880317456,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-5",
+      "type": "note",
+      "title": "Цитата дня",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": -390.40421405808917,
+      "y": 581.6895720271616,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-6",
+      "type": "note",
+      "title": "На потом",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": -595.3039585016448,
+      "y": 430.8323910425274,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    },
+    {
+      "id": "island-7",
+      "type": "note",
+      "title": "Свободная заметка",
+      "content": "",
+      "state": "normal",
+      "importance": 0,
+      "created_at": "2026-09-12T00:00:00Z",
+      "updated_at": "2026-09-12T08:52:58.571Z",
+      "properties": {},
+      "appearance": {},
+      "x": 391.1530901991169,
+      "y": 628.1780786173099,
+      "revision": 1,
+      "pinned": false,
+      "spatial": {
+        "resistance": 0
+      },
+      "aliases": []
+    }
+  ],
+  "links": [
+    {
+      "id": "g0-edge-1",
+      "from": "g0-0",
+      "to": "g0-1",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-2",
+      "from": "g0-0",
+      "to": "g0-2",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-3",
+      "from": "g0-0",
+      "to": "g0-3",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-4",
+      "from": "g0-0",
+      "to": "g0-4",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-5",
+      "from": "g0-1",
+      "to": "g0-5",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-6",
+      "from": "g0-2",
+      "to": "g0-6",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-7",
+      "from": "g0-3",
+      "to": "g0-7",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-8",
+      "from": "g0-4",
+      "to": "g0-8",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-9",
+      "from": "g0-1",
+      "to": "g0-9",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-10",
+      "from": "g0-2",
+      "to": "g0-10",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-11",
+      "from": "g0-3",
+      "to": "g0-11",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-12",
+      "from": "g0-4",
+      "to": "g0-12",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-13",
+      "from": "g0-1",
+      "to": "g0-13",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-14",
+      "from": "g0-2",
+      "to": "g0-14",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-15",
+      "from": "g0-3",
+      "to": "g0-15",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-16",
+      "from": "g0-4",
+      "to": "g0-16",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-17",
+      "from": "g0-1",
+      "to": "g0-17",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-18",
+      "from": "g0-2",
+      "to": "g0-18",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-19",
+      "from": "g0-3",
+      "to": "g0-19",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-20",
+      "from": "g0-4",
+      "to": "g0-20",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-21",
+      "from": "g0-1",
+      "to": "g0-21",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-22",
+      "from": "g0-2",
+      "to": "g0-22",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-23",
+      "from": "g0-3",
+      "to": "g0-23",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-24",
+      "from": "g0-4",
+      "to": "g0-24",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-25",
+      "from": "g0-5",
+      "to": "g0-25",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-26",
+      "from": "g0-9",
+      "to": "g0-26",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-edge-27",
+      "from": "g0-13",
+      "to": "g0-27",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-cross-5",
+      "from": "g0-5",
+      "to": "g0-6",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g0-cross-11",
+      "from": "g0-11",
+      "to": "g0-12",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-1",
+      "from": "g1-0",
+      "to": "g1-1",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-2",
+      "from": "g1-0",
+      "to": "g1-2",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-3",
+      "from": "g1-0",
+      "to": "g1-3",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-4",
+      "from": "g1-0",
+      "to": "g1-4",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-5",
+      "from": "g1-1",
+      "to": "g1-5",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-6",
+      "from": "g1-2",
+      "to": "g1-6",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-7",
+      "from": "g1-3",
+      "to": "g1-7",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-8",
+      "from": "g1-4",
+      "to": "g1-8",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-9",
+      "from": "g1-1",
+      "to": "g1-9",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-10",
+      "from": "g1-2",
+      "to": "g1-10",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-11",
+      "from": "g1-3",
+      "to": "g1-11",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-12",
+      "from": "g1-4",
+      "to": "g1-12",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-13",
+      "from": "g1-1",
+      "to": "g1-13",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-14",
+      "from": "g1-2",
+      "to": "g1-14",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-15",
+      "from": "g1-3",
+      "to": "g1-15",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-16",
+      "from": "g1-4",
+      "to": "g1-16",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-17",
+      "from": "g1-1",
+      "to": "g1-17",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-18",
+      "from": "g1-2",
+      "to": "g1-18",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-19",
+      "from": "g1-3",
+      "to": "g1-19",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-20",
+      "from": "g1-4",
+      "to": "g1-20",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-21",
+      "from": "g1-1",
+      "to": "g1-21",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-22",
+      "from": "g1-2",
+      "to": "g1-22",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-23",
+      "from": "g1-3",
+      "to": "g1-23",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-24",
+      "from": "g1-4",
+      "to": "g1-24",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-25",
+      "from": "g1-5",
+      "to": "g1-25",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-26",
+      "from": "g1-9",
+      "to": "g1-26",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-edge-27",
+      "from": "g1-13",
+      "to": "g1-27",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-cross-5",
+      "from": "g1-5",
+      "to": "g1-6",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g1-cross-11",
+      "from": "g1-11",
+      "to": "g1-12",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-1",
+      "from": "g2-0",
+      "to": "g2-1",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-2",
+      "from": "g2-0",
+      "to": "g2-2",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-3",
+      "from": "g2-0",
+      "to": "g2-3",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-4",
+      "from": "g2-0",
+      "to": "g2-4",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-5",
+      "from": "g2-1",
+      "to": "g2-5",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-6",
+      "from": "g2-2",
+      "to": "g2-6",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-7",
+      "from": "g2-3",
+      "to": "g2-7",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-8",
+      "from": "g2-4",
+      "to": "g2-8",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-9",
+      "from": "g2-1",
+      "to": "g2-9",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-10",
+      "from": "g2-2",
+      "to": "g2-10",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-11",
+      "from": "g2-3",
+      "to": "g2-11",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-12",
+      "from": "g2-4",
+      "to": "g2-12",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-13",
+      "from": "g2-1",
+      "to": "g2-13",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-14",
+      "from": "g2-2",
+      "to": "g2-14",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-15",
+      "from": "g2-3",
+      "to": "g2-15",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-16",
+      "from": "g2-4",
+      "to": "g2-16",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-17",
+      "from": "g2-1",
+      "to": "g2-17",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-18",
+      "from": "g2-2",
+      "to": "g2-18",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-19",
+      "from": "g2-3",
+      "to": "g2-19",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-20",
+      "from": "g2-4",
+      "to": "g2-20",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-21",
+      "from": "g2-1",
+      "to": "g2-21",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-22",
+      "from": "g2-2",
+      "to": "g2-22",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-23",
+      "from": "g2-3",
+      "to": "g2-23",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.570Z"
+    },
+    {
+      "id": "g2-edge-24",
+      "from": "g2-4",
+      "to": "g2-24",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g2-edge-25",
+      "from": "g2-5",
+      "to": "g2-25",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g2-edge-26",
+      "from": "g2-9",
+      "to": "g2-26",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g2-edge-27",
+      "from": "g2-13",
+      "to": "g2-27",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g2-cross-5",
+      "from": "g2-5",
+      "to": "g2-6",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g2-cross-11",
+      "from": "g2-11",
+      "to": "g2-12",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-1",
+      "from": "g3-0",
+      "to": "g3-1",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-2",
+      "from": "g3-0",
+      "to": "g3-2",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-3",
+      "from": "g3-0",
+      "to": "g3-3",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-4",
+      "from": "g3-0",
+      "to": "g3-4",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-5",
+      "from": "g3-1",
+      "to": "g3-5",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-6",
+      "from": "g3-2",
+      "to": "g3-6",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-7",
+      "from": "g3-3",
+      "to": "g3-7",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-8",
+      "from": "g3-4",
+      "to": "g3-8",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-9",
+      "from": "g3-1",
+      "to": "g3-9",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-10",
+      "from": "g3-2",
+      "to": "g3-10",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-11",
+      "from": "g3-3",
+      "to": "g3-11",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-12",
+      "from": "g3-4",
+      "to": "g3-12",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-13",
+      "from": "g3-1",
+      "to": "g3-13",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-14",
+      "from": "g3-2",
+      "to": "g3-14",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-15",
+      "from": "g3-3",
+      "to": "g3-15",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-16",
+      "from": "g3-4",
+      "to": "g3-16",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-17",
+      "from": "g3-1",
+      "to": "g3-17",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-18",
+      "from": "g3-2",
+      "to": "g3-18",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-19",
+      "from": "g3-3",
+      "to": "g3-19",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-20",
+      "from": "g3-4",
+      "to": "g3-20",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-21",
+      "from": "g3-1",
+      "to": "g3-21",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-22",
+      "from": "g3-2",
+      "to": "g3-22",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-23",
+      "from": "g3-3",
+      "to": "g3-23",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-24",
+      "from": "g3-4",
+      "to": "g3-24",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-25",
+      "from": "g3-5",
+      "to": "g3-25",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-26",
+      "from": "g3-9",
+      "to": "g3-26",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-edge-27",
+      "from": "g3-13",
+      "to": "g3-27",
+      "relation": "related",
+      "source": "context",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-cross-5",
+      "from": "g3-5",
+      "to": "g3-6",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    },
+    {
+      "id": "g3-cross-11",
+      "from": "g3-11",
+      "to": "g3-12",
+      "relation": "related",
+      "source": "manual",
+      "created_at": "2026-09-12T08:52:58.571Z"
+    }
+  ]
+}

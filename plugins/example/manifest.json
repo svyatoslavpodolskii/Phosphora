@@ -1,0 +1,1 @@
+{"id":"example.quick-idea","name":"Быстрая идея","version":"1.0.0","apiVersion":1,"permissions":["atoms.write","ui","graph"],"description":"Добавляет команду создания идеи через публичный API."}

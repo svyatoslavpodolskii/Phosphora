@@ -1,0 +1,8 @@
+import {unzipSync,strFromU8} from 'fflate';
+import {validateManifest,type Manifest} from './api';
+export interface PluginPackage {manifest:Manifest;source:string;style?:string;assets?:Record<string,number[]>}
+export function readPackage(bytes:Uint8Array):PluginPackage {
+ if(bytes.byteLength>5_000_000)throw Error('Пакет превышает 5 МБ.');let total=0;const names=new Set<string>();
+ const files=unzipSync(bytes,{filter:file=>{if(names.has(file.name)||file.name.includes('\\')||file.name.split('/').some(x=>x==='..'||x==='.')||file.name.startsWith('/')||file.name.includes('\0'))throw Error('Некорректный путь в пакете.');names.add(file.name);if(names.size>100||file.originalSize>2_000_000||(total+=file.originalSize)>8_000_000)throw Error('Пакет превышает ограничения распаковки.');if(file.name.endsWith('/'))return false;if(!['manifest.json','main.js','style.css'].includes(file.name)&&!file.name.startsWith('assets/'))throw Error('Неизвестный файл в пакете: '+file.name);return true;}});
+ if(!files['manifest.json']||!files['main.js'])throw Error('В пакете нужны manifest.json и main.js.');const manifest=JSON.parse(strFromU8(files['manifest.json']));validateManifest(manifest);if(manifest.id.startsWith('builtin.'))throw Error('Префикс builtin зарезервирован.');const source=new TextDecoder('utf-8',{fatal:true}).decode(files['main.js']);if(source.length>1_000_000)throw Error('Код плагина превышает 1 МБ.');return{manifest,source,style:files['style.css']?strFromU8(files['style.css']):undefined,assets:Object.fromEntries(Object.entries(files).filter(([name])=>name.startsWith('assets/')).map(([name,bytes])=>[name,[...bytes]]))};
+}

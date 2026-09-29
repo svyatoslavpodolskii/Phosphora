@@ -1,0 +1,68 @@
+# Plugin API v1
+
+Рабочий пример находится в `plugins/example/`. Соберите его командой `node scripts/package-plugin.mjs`: получится `artifacts/quick-idea.phosphored`. В настройках выберите один файл `.phosphored`, проверьте разрешения и подтвердите установку. Пакет — ZIP с `manifest.json`, `main.js`, необязательными `style.css` и `assets/`. Отдельные файлы доступны только в режиме разработчика. Код, ресурсы и настройки сохраняются в SQLite и доступны offline.
+
+```js
+export async function activate(app) {
+  await app.commands.add({
+    id: 'hello', name: 'Создать мысль',
+    async run() {
+      const atom = await app.atoms.create({title: 'Моя мысль'});
+      await app.graph.focus(atom.id);
+    }
+  });
+}
+```
+
+Manifest: `id`, `name`, `version`, `apiVersion: 1`, `permissions`. Префикс `builtin.` зарезервирован. TypeScript/npm не требуются. Код main.js — ES-модуль с экспортом `activate`. Внешние импорты и сетевые загрузки не разрешены.
+
+Полная типизация: `src/plugins/api.ts`.
+
+Контракты пяти providers: `src/graph/providers.ts`. Последний включённый provider соответствующего вида становится активным; выключение возвращает предыдущий, включая встроенный. Physics получает тела, связи, настройки, dt и reducedMotion, возвращает тела и energy. Координаты и радиусы — world space; pinned, dragged и boundary контроллер дополнительно защищает от перемещения. Layout возвращает позицию нового атома. Clustering возвращает визуальную проекцию; link reduction — подмножество существующих Links; node weight — радиусы по ID. Встроенный `builtin.graph` использует эти же контракты и выполняет вычисления в graph Worker.
+
+### Структурная модель и связанная физика
+
+`app.graph.registerStructuralProvider({id, name, description, physicsId, defaults, arrange})` требует `graph`. `physicsId` — локальный ID зарегистрированного PhysicsProvider этого пакета (либо полный `plugin.id:providerId`). Модель появляется в настройках карты. Выбор связывает её раскладку с указанной физикой; отдельно зарегистрированный непарный PhysicsProvider по-прежнему может заменить физику. Если все модели выключены, сохранённая карта остаётся доступной без симуляции.
+
+`arrange({data, settings, intent, locked})` возвращает `{positions: [{id,x,y}], skeleton: [linkId]}`. Нужна ровно одна конечная позиция для каждого входного Atom; skeleton содержит только существующие Links. `intent` — `resume` при открытии сохранённой карты либо `reflow` при перестройке. При resume координаты не перезаписываются. `locked` перечисляет закреплённые и устойчивые ручные позиции: их координаты должны совпадать со входными. Результат, нарушающий контракт, отклоняется до изменения мира. Камера и перетаскивание не запускают arrange; одиночное добавление использует инкрементальное размещение. Поздний ответ после ручного переноса не применяется.
+
+Bundled `builtin.branch`, `builtin.molecule`, `builtin.compact` используют тот же API. Вычисления раскладки, адаптация к опорам и физика выполняются в Worker. Декларативные поля `manifest.settings` (`boolean`/`text`) доступны на отдельной странице плагина при разрешении `settings`; значения хранятся в пространстве имён плагина.
+
+| Раздел | Методы | Разрешение |
+|---|---|---|
+| atoms | list, get, search | atoms.read |
+| atoms | create, update, setState, delete | atoms.write |
+| atoms | registerDraftPolicy | atoms.read + atoms.write + links.read + links.write |
+| links | list | links.read |
+| links | create, delete | links.write |
+| events | on | atoms.read / links.read / graph / settings по событию |
+| commands | add | ui |
+| types | register | ui |
+| graph | focus, registerStructuralProvider, registerLayout, registerPhysicsProvider, registerLayoutProvider, registerClusteringProvider, registerLinkReductionProvider, registerNodeWeightProvider | graph |
+| ui | notify, registerContextAction | ui |
+| views | register | ui |
+| storage | get, set | storage |
+| settings | get, set | settings |
+| assets | list, read | ресурсы собственного пакета |
+
+Регистрации возвращают disposer. Для community-плагинов все вызовы проходят асинхронный RPC: используйте `await`, в том числе для регистрации и получения disposer. Функции команд, событий, раскладки и render исполняются в изолированном Worker. Команде передаётся ID выбранного атома, если он есть. Render возвращает HTML, который санитизируется; скрипты, стили, изображения и активные внешние ресурсы запрещены.
+
+`atoms.create(input, parentId?)` создаёт атом и контекстную связь одной транзакцией. `setState` поддерживает normal, now, paused, archived. `events.on` получает события atom:create, atom:update, atom:delete, link:create, link:delete после успешного сохранения.
+
+### Подготовка сохранения
+
+### Интерактивные представления
+
+`app.views.register({id, name, render, onAction?})` регистрирует HTML-представление. HTML проходит общий sanitizer; скрипты, inline-обработчики и сетевые ресурсы не исполняются. Кнопка `<button data-action="save">` передаёт `onAction('save', values)`, где `values` содержит строки из input/select/textarea с `data-field="key"`. Не используйте `name` как ключ: sanitizer может удалить его для защиты от DOM clobbering. После успешного callback host заново вызывает render. Пока операция выполняется, элементы формы заблокированы; ошибки показываются внутри панели. Регистрация и callback проверяют разрешение `ui`, операции данных используют свои обычные разрешения. Выключение плагина запрещает дальнейшие callbacks. Встроенные ежедневные задачи используют этот же контракт, без доступа к Core или SQL.
+
+### Подготовка сохранения атома
+
+`await app.atoms.registerDraftPolicy({id, name, prepare})` добавляет правило, которое выполняется внутри очереди сохранения перед записью Atom. Встроенная обработка Markdown-ссылок использует этот же API. `prepare` получает независимую копию `{atom, before, data, parent, add, remove, rejected}`: новый и прежний Atom, текущую карту, ID родителя, явные добавления/удаления связей и отклонённые цели автосвязей.
+
+Верните `{properties?, add?, remove?}`. Properties объединяются с текущими; `add` содержит `{to, relation, source?}`, `remove` — ID связей редактируемого атома. Пустой объект не меняет данные. Изменение входной копии само по себе ничего не сохраняет. Нельзя изменять ID, координаты или чужие атомы через этот результат. Все эффекты и черновик сохраняются одной транзакцией после успешного завершения всей цепочки. Ошибка правила или выключение плагина во время ожидания оставляет данные без изменений; пользователь может повторить сохранение.
+
+Во время `prepare` можно читать свои настройки, но нельзя вызывать `atoms.create/update/delete/setState`, `links.create/delete`, `storage.set` или `settings.set`: вложенная запись нарушила бы атомарность либо заблокировала очередь. Верните эффекты вместо неё. Правила удаляются при disable/uninstall, сохранённые свойства и связи остаются. На данном этапе это API подготовки обычного сохранения; массовый import и position batches не проходят через него.
+
+Хранилище ограничено пространством имён plugin ID, без доступа к SQL. Выключение удаляет регистрации и обработчики. Сохранённые атомы и данные плагина остаются. Отдельные разрешения network/filesystem/sync пока не поддерживаются: manifest с ними отклоняется.
+
+Изоляция: iframe с opaque origin и sandbox allow-scripts содержит только фиксированный bridge. Community-код запускается в отдельном Worker; CSP запрещает сетевые подключения и внешние ресурсы. Callback ограничен ожиданием 5 секунд, API — 100 вызовов в секунду. Это не замена отдельному security audit. Не выдавайте atoms.write коду, которому не доверяете: это разрешение допускает удаление записей.

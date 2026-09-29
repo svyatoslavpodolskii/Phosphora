@@ -1,0 +1,200 @@
+[
+  {
+    "mobile": false,
+    "kind": "sigma",
+    "count": 1000,
+    "reductionMs": 3.400000035762787,
+    "initialMs": 277.19999998807907,
+    "frameMedianMs": 44.60000002384186,
+    "frameP95Ms": 60.80000001192093,
+    "clusterMs": 85.19999998807907,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": false,
+    "kind": "sigma",
+    "count": 5000,
+    "reductionMs": 8.5,
+    "initialMs": 417.30000001192093,
+    "frameMedianMs": 145.39999997615814,
+    "frameP95Ms": 159,
+    "clusterMs": 272.4000000357628,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": false,
+    "kind": "sigma",
+    "count": 10000,
+    "reductionMs": 16.899999976158142,
+    "initialMs": 691.0999999642372,
+    "frameMedianMs": 280.10000002384186,
+    "frameP95Ms": 296.10000002384186,
+    "clusterMs": 540.3000000119209,
+    "visibleEdges": 9999
+  },
+  {
+    "mobile": false,
+    "kind": "cytoscape",
+    "count": 1000,
+    "reductionMs": 2.699999988079071,
+    "initialMs": 506.7999999523163,
+    "frameMedianMs": 16.69999998807907,
+    "frameP95Ms": 29.80000001192093,
+    "clusterMs": 66.90000003576279,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": false,
+    "kind": "cytoscape",
+    "count": 5000,
+    "reductionMs": 10.099999964237213,
+    "initialMs": 788.6999999880791,
+    "frameMedianMs": 28.69999998807907,
+    "frameP95Ms": 66.10000002384186,
+    "clusterMs": 244.19999998807907,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": false,
+    "kind": "cytoscape",
+    "count": 10000,
+    "reductionMs": 19.200000047683716,
+    "initialMs": 1496.300000011921,
+    "frameMedianMs": 34,
+    "frameP95Ms": 65.80000001192093,
+    "clusterMs": 439.10000002384186,
+    "visibleEdges": 9999
+  },
+  {
+    "mobile": false,
+    "kind": "canvas",
+    "count": 1000,
+    "reductionMs": 2.5,
+    "initialMs": 745.1000000238419,
+    "frameMedianMs": 16.600000023841858,
+    "frameP95Ms": 17.69999998807907,
+    "clusterMs": 50.59999996423721,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": false,
+    "kind": "canvas",
+    "count": 5000,
+    "reductionMs": 12.200000047683716,
+    "initialMs": 30.80000001192093,
+    "frameMedianMs": 16.599999964237213,
+    "frameP95Ms": 17.599999964237213,
+    "clusterMs": 49.80000001192093,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": false,
+    "kind": "canvas",
+    "count": 10000,
+    "reductionMs": 11.5,
+    "initialMs": 21,
+    "frameMedianMs": 16.600000023841858,
+    "frameP95Ms": 17.399999976158142,
+    "clusterMs": 33.69999998807907,
+    "visibleEdges": 9999
+  },
+  {
+    "mobile": true,
+    "kind": "sigma",
+    "count": 1000,
+    "reductionMs": 19.899999976158142,
+    "initialMs": 581.8000000119209,
+    "frameMedianMs": 111.5,
+    "frameP95Ms": 198.5,
+    "clusterMs": 155.19999998807907,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": true,
+    "kind": "sigma",
+    "count": 5000,
+    "reductionMs": 45.60000002384186,
+    "initialMs": 753.3000000119209,
+    "frameMedianMs": 243.30000001192093,
+    "frameP95Ms": 308.5,
+    "clusterMs": 348.9000000357628,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": true,
+    "kind": "sigma",
+    "count": 10000,
+    "reductionMs": 76.19999998807907,
+    "initialMs": 1131.1000000238419,
+    "frameMedianMs": 397,
+    "frameP95Ms": 454.80000001192093,
+    "clusterMs": 662.0999999642372,
+    "visibleEdges": 9999
+  },
+  {
+    "mobile": true,
+    "kind": "cytoscape",
+    "count": 1000,
+    "reductionMs": 12.099999964237213,
+    "initialMs": 2028.5999999642372,
+    "frameMedianMs": 62.60000002384186,
+    "frameP95Ms": 143.4000000357628,
+    "clusterMs": 285.69999998807907,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": true,
+    "kind": "cytoscape",
+    "count": 5000,
+    "reductionMs": 44.80000001192093,
+    "initialMs": 3665.300000011921,
+    "frameMedianMs": 234.30000001192093,
+    "frameP95Ms": 369.60000002384186,
+    "clusterMs": 1167.8999999761581,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": true,
+    "kind": "cytoscape",
+    "count": 10000,
+    "reductionMs": 93.90000003576279,
+    "initialMs": 6044.600000023842,
+    "frameMedianMs": 252.9000000357628,
+    "frameP95Ms": 365.89999997615814,
+    "clusterMs": 1957,
+    "visibleEdges": 9999
+  },
+  {
+    "mobile": true,
+    "kind": "canvas",
+    "count": 1000,
+    "reductionMs": 9.199999988079071,
+    "initialMs": 144.89999997615814,
+    "frameMedianMs": 20.5,
+    "frameP95Ms": 37.19999998807907,
+    "clusterMs": 48.89999997615814,
+    "visibleEdges": 999
+  },
+  {
+    "mobile": true,
+    "kind": "canvas",
+    "count": 5000,
+    "reductionMs": 43.30000001192093,
+    "initialMs": 124.19999998807907,
+    "frameMedianMs": 43.09999996423721,
+    "frameP95Ms": 57.5,
+    "clusterMs": 102.69999998807907,
+    "visibleEdges": 4999
+  },
+  {
+    "mobile": true,
+    "kind": "canvas",
+    "count": 10000,
+    "reductionMs": 58.19999998807907,
+    "initialMs": 143.5,
+    "frameMedianMs": 48.700000047683716,
+    "frameP95Ms": 60.40000003576279,
+    "clusterMs": 174.19999998807907,
+    "visibleEdges": 9999
+  }
+]
