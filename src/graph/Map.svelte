@@ -109,22 +109,25 @@
   if(!start){aim(p,e.pointerType==='touch');schedule();return;}
   if(Math.hypot(p.x-start.x,p.y-start.y)>DRAG_THRESHOLD){clearTimeout(longTimer);
    if(start.node){if(!dragging){controller?.beginDrag(start.node.id);dragState=start.node.state as AtomState;}dragging=true;candidate='';hover='';const w=world(p);moving={...start.node,x:start.node.x+w.x-(start.worldX??w.x),y:start.node.y+w.y-(start.worldY??w.y)};controller?.drag(moving.id,moving.x,moving.y);}
-   else{const now=performance.now(),dt=Math.max(1,now-panSample.time);panVelocity={x:Math.max(-3,Math.min(3,(p.x-panSample.x)/dt)),y:Math.max(-3,Math.min(3,(p.y-panSample.y)/dt))};panSample={...p,time:now};rig.retarget({x:start.panX+(p.x-start.x),y:start.panY+(p.y-start.y),zoom:camera.zoom});}}
+   else{const now=performance.now(),dt=Math.max(1,now-panSample.time);panVelocity={x:Math.max(-3,Math.min(3,(p.x-panSample.x)/dt)),y:Math.max(-3,Math.min(3,(p.y-panSample.y)/dt))};panSample={...p,time:now};rig.trackTo({x:start.panX+(p.x-start.x),y:start.panY+(p.y-start.y),zoom:camera.zoom});}}
   else aim(p,e.pointerType==='touch');
   schedule();}
  function up(e:PointerEvent){clearTimeout(longTimer);const wasPinching=pointers.size>=2;pointers.delete(e.pointerId);
-  if(wasPinching){rig.endPinch();pinchStart=null;pinch=0;
-   // The surviving finger must keep panning, otherwise pinch strands the gesture.
-   if(pointers.size===1){const [remaining]=[...pointers.values()];start={...remaining,panX:camera.x,panY:camera.y};panSample={...remaining,time:performance.now()};panVelocity={x:0,y:0};}
-   else start=null;
-   schedule();return;}
+  // A drag or a pinch ends: hand the camera back to the rig at its rest, then let
+  // the spring carry whatever momentum is left over into a short settle.
+  const gesture=rig.gesturing;
+   if(gesture){pinchStart=null;pinch=0;rig.endPinch();
+    // The surviving finger must keep panning, otherwise pinch strands the gesture.
+    if(pointers.size===1){const [remaining]=[...pointers.values()];start={...remaining,panX:camera.x,panY:camera.y};panSample={...remaining,time:performance.now()};panVelocity={x:0,y:0};}
+    else start=null;
+    schedule();return;}
   if(start){const p=position(e),travel=Math.hypot(p.x-start.x,p.y-start.y);
    if(moving){const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-state]')?.getAttribute('data-state') as AtomState|undefined;const id=moving.id;const members=moving.members;controller?.endDrag(Boolean(drop)).then(()=>{if(drop)for(const key of members||[id])onstate(key,drop);}).catch(onerror);schedule();}
    else if(travel<=DRAG_THRESHOLD&&!fromPinch){
     if(start.node?.members){const root=resolveSelection(start.node.id,painted)||start.node.members[0];onselect(root);reveal({x:start.node.x,y:start.node.y},1);}
     else if(start.node){onselect(start.node.id);onopen(start.node.id);}
     else{candidate='';hover='';onselect('');if(Date.now()-lastTap<300)oncreate(world(p).x,world(p).y);lastTap=Date.now();}}
-    else if(!start.node&&!reduced&&performance.now()-panSample.time<90)rig.release(panVelocity);}
+    else if(!start.node&&!reduced&&performance.now()-panSample.time<90){rig.endPinch();rig.release(panVelocity);}}
   start=null;moving=null;dragging=false;candidate='';hover='';fromPinch=false;focal=undefined;controller?.setInteracting(false);schedule();}
  function cancel(){rig.halt();clearTimeout(longTimer);pointers.clear();controller?.setInteracting(false);start=null;moving=null;dragging=false;pinch=0;controller?.cancelDrag();schedule();}
  function leave(){candidate='';hover='';schedule();}

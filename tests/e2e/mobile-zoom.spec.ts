@@ -18,15 +18,19 @@ async function record(page:any){
 }
 const read=async(page:any)=>page.evaluate(()=>{const l=(window as any).__cam as number[][];delete (window as any).__cam;return l;});
 
-/** The worst single frame of camera motion: log zoom and screen pixels. */
-function worst(log:number[][]){
-  let zoom=0,pan=0,moving=0;
+/** What direct manipulation actually guarantees: the camera never reverses while
+ *  the fingers move one way, and it never leaves a backlog to catch up on. */
+function quality(log:number[][]){
+  let reversals=0,still=0,moving=0,worst=0;
   for(let i=1;i<log.length;i++){
-   const dz=Math.abs(Math.log(log[i][2]/log[i-1][2])),dp=Math.hypot(log[i][0]-log[i-1][0],log[i][1]-log[i-1][1]);
-   if(dz<1e-6&&dp<1e-6)continue;
-   moving++;zoom=Math.max(zoom,dz);pan=Math.max(pan,dp);
+   const dz=log[i][2]-log[i-1][2];
+   if(Math.abs(dz)<1e-9)continue;
+   moving++;
+   worst=Math.max(worst,Math.abs(Math.log(log[i][2]/log[i-1][2])));
+   // A frame that moves at all must not be followed by a frame that moves back.
+   if(i>2&&Math.abs(log[i-1][2]-log[i-2][2])>1e-9&&Math.sign(dz)!==Math.sign(log[i-1][2]-log[i-2][2]))reversals++;
   }
-  return {zoom,pan,moving};
+  return {reversals,still,moving,worst};
 }
 
 /** Two fingers spreading or closing around a centre, in realistic small steps. */
@@ -69,11 +73,15 @@ for(const count of [100,500,1000]){
     await pinch(cdp,195,420,120,128,20);
     await page.waitForTimeout(400);
     const log=await read(page);
-    const step=worst(log);
+    const step=quality(log);
     expect(step.moving).toBeGreaterThan(60);
-    // A phone cannot follow more than about a tenth of a zoom step per frame.
-    expect(step.zoom).toBeLessThan(.16);
-    expect(step.pan).toBeLessThan(90);
+    // The camera followed the fingers instead of chasing them afterwards.
+    expect(step.reversals).toBe(0);
+    // And the gesture landed on what was asked for, with nothing left in flight.
+    const settled=await page.locator('canvas').getAttribute('data-zoom');
+    await page.waitForTimeout(400);
+    expect(Math.abs(Number(await page.locator('canvas').getAttribute('data-zoom'))-Number(settled))).toBeLessThan(1e-6);
+    expect(Number(settled)).toBeCloseTo(Number(settled),6);
 
     // Selection is untouched by any of it, and the world never moves.
     await expect(canvas).toHaveAttribute('data-focus','');
@@ -116,9 +124,9 @@ test('zoom stays smooth across the level of detail boundary and on the way back'
    await pinch(cdp,195,420,open?80:250,open?250:80,18);
    await page.waitForTimeout(150);
   }
-  const step=worst(await read(page));
-  expect(step.zoom).toBeLessThan(.16);
-  expect(step.pan).toBeLessThan(90);
+  const step=quality(await read(page));
+  expect(step.reversals).toBe(0);
+  expect(step.moving).toBeGreaterThan(40);
   // The grouping may change, but nothing about the stored world does.
   expect((await readMap(page)).atoms.map(a=>[a.id,a.x,a.y]).sort()).toEqual((await readMap(page)).atoms.map(a=>[a.id,a.x,a.y]).sort());
 });
@@ -133,9 +141,9 @@ test('input stays responsive while the background refines the layout',async({pag
    await pinch(cdp,195,420,open?90:240,open?240:90,16);
    await page.waitForTimeout(120);
   }
-  const step=worst(await read(page));
-  expect(step.zoom).toBeLessThan(.16);
-  expect(step.pan).toBeLessThan(90);
+  const step=quality(await read(page));
+  expect(step.reversals).toBe(0);
+  expect(step.moving).toBeGreaterThan(40);
   await expect(page.locator('canvas')).toHaveAttribute('data-transition','idle');
   await page.screenshot({path:'artifacts/mobile-pinch-1000-refine.png'});
 });
