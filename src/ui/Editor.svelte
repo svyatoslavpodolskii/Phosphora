@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {surface} from './surfaces';
  import {onMount,tick} from 'svelte';
  import {formatText,type Format} from './text-edit';
  import MarkdownView from './MarkdownView.svelte';
@@ -32,7 +33,7 @@
  function keyboard(e:KeyboardEvent){if((e.ctrlKey||e.metaKey)&&['b','i','k'].includes(e.key.toLowerCase())){e.preventDefault();e.stopPropagation();if(e.key.toLowerCase()==='k')showLinks();else format(e.key.toLowerCase()==='b'?'bold':'italic');return;}if(e.key==='Escape'){e.preventDefault();close();}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();save();}if(e.key==='Tab'){const els=[...form.querySelectorAll<HTMLElement>('button:not([disabled]),input,textarea,select,[tabindex="0"]')].filter(el=>el.getClientRects().length);if(e.shiftKey&&document.activeElement===els[0]){e.preventDefault();els.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0]?.focus();}}}
  onMount(()=>{matcher=new GraphWorkerClient();if(seed.id)form.focus();else titleInput.focus();if(draft.id)storage.getSetting<Rejection>('rejected:'+draft.id).then(value=>rejection=value).catch(e=>error=e.message);const unload=(e:BeforeUnloadEvent)=>{if(dirty()){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',unload);return()=>{matchVersion++;matcher?.close();window.removeEventListener('beforeunload',unload);};});
 </script>
-<div class="scrim">
+<div class="scrim" use:surface={{close:()=>{if(quickLinks)quickLinks=false;else if(confirmClose)confirmClose=false;else if(confirmDelete)confirmDelete=false;else close();},blocked:()=>saving}}>
  <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role (The form is a focus-trapped editor dialog.) -->
  <form class="editor note-editor" class:expanded tabindex="-1" bind:this={form} role="dialog" aria-modal="true" aria-label="Редактор атома" onsubmit={e=>{e.preventDefault();save();}} onkeydown={keyboard}>
  <div class="row note-heading"><span class="note-identity"><span class="note-dot" style:--atom-color={draft.appearance?.color||'#b4ecc1'}>{draft.appearance?.icon||'·'}</span>{draft.id?'Ваша мысль':parent?'Связанная мысль':'Новая мысль'}</span><div class="button-wrap"><button type="button" class="icon-button" aria-label={expanded?'Свернуть редактор':'Развернуть редактор'} aria-pressed={expanded} onclick={()=>expanded=!expanded}>{expanded?'↙':'↗'}</button><button type="button" class="icon-button" aria-label="Закрыть редактор" disabled={saving} onclick={close}>×</button></div></div>

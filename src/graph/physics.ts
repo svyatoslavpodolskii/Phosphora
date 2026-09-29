@@ -2,7 +2,7 @@ export interface PhysicsSettings {elasticity:number;repulsion:number;distance:nu
 export const PRESETS:Record<string,PhysicsSettings>={calm:{elasticity:.014,repulsion:550,distance:175,damping:.72,inertia:1.8,friction:.8},living:{elasticity:.024,repulsion:900,distance:165,damping:.8,inertia:1.3,friction:.65},elastic:{elasticity:.045,repulsion:700,distance:145,damping:.85,inertia:1,friction:.8},free:{elasticity:.009,repulsion:1400,distance:210,damping:.76,inertia:1.5,friction:.5}};
 export const PHYSICS_RANGES:Record<keyof PhysicsSettings,[number,number]>={elasticity:[.005,.065],repulsion:[100,2200],distance:[110,280],damping:[.55,.88],inertia:[.8,3],friction:[.25,2]};
 export function safePhysics(value:Partial<PhysicsSettings>):PhysicsSettings{const result={...PRESETS.calm};for(const key of Object.keys(result) as (keyof PhysicsSettings)[]){const n=value[key];if(n!==undefined){const [min,max]=PHYSICS_RANGES[key];if(!Number.isFinite(n))throw Error('Некорректная настройка физики.');result[key]=Math.max(min,Math.min(max,n));}}return result;}
-export interface Body {id:string;x:number;y:number;vx:number;vy:number;radius:number;mass:number;pinned:boolean;resistance:number;dragged?:boolean;boundary?:boolean;halfWidth?:number;top?:number;bottom?:number;target?:{x:number;y:number}}
+export interface Body {id:string;x:number;y:number;vx:number;vy:number;radius:number;mass:number;pinned:boolean;resistance:number;dragged?:boolean;boundary?:boolean;halfWidth?:number;top?:number;bottom?:number;target?:{x:number;y:number};component?:string;branch?:string}
 export interface PhysicsInput {nodes:Body[];links:{from:string;to:string;strength?:number;distance?:number}[];settings:PhysicsSettings;mode?:string;bondBehavior?:'tension'|'elastic'|'local';dt:number;reducedMotion:boolean}
 export interface PhysicsOutput {nodes:Body[];energy:number}
 export function forces(input:PhysicsInput,contacts=new Set<string>()):Map<string,{x:number;y:number}>{
@@ -17,6 +17,13 @@ export function forces(input:PhysicsInput,contacts=new Set<string>()):Map<string
 
  const approach=Math.max(0,((a.vx-b.vx)*dx+(a.vy-b.vy)*dy)/d);const transfer=input.mode==='elastic'?.65:input.mode==='free'?.35:0;const f=3*Math.tanh(overlap*overlap/180)*Math.sqrt(s.repulsion/550)+(overlap>0?Math.min(1,overlap/8)*approach*transfer:0);
  const fa=result.get(a.id)!,fb=result.get(b.id)!;fa.x-=dx/d*f;fa.y-=dy/d*f;fb.x+=dx/d*f;fb.y+=dy/d*f;}}
+ // Component and branch envelopes are a separate, weak composition field. It
+ // closes oversized holes and lets sibling branches make room for each other.
+ const groups=new Map<string,{nodes:Body[];x:number;y:number;area:number}>();
+ for(const n of input.nodes)for(const key of [n.component&&'c:'+n.component,n.branch&&'b:'+n.branch]){if(!key)continue;const g=groups.get(key)||{nodes:[],x:0,y:0,area:0};g.nodes.push(n);g.x+=n.x;g.y+=n.y;g.area+=(n.halfWidth||n.radius)*2*((n.top||n.radius)+(n.bottom||n.radius));groups.set(key,g);}
+ for(const [key,g] of groups){g.x/=g.nodes.length;g.y/=g.nodes.length;if(key.startsWith('c:'))for(const n of g.nodes){const dx=g.x-n.x,dy=g.y-n.y,d=Math.hypot(dx,dy),reach=Math.max(s.distance*1.5,Math.sqrt(g.area)*.85);if(d>reach){const pull=.65*Math.tanh((d-reach)/reach),f=result.get(n.id)!;f.x+=dx/d*pull;f.y+=dy/d*pull;}}}
+ const branches=[...groups].filter(([key])=>key.startsWith('b:')).map(([,g])=>g);
+ for(let i=0;i<branches.length;i++)for(let j=i+1;j<branches.length;j++){const a=branches[i],b=branches[j];if(a.nodes[0].component!==b.nodes[0].component)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),reach=(Math.sqrt(a.area)+Math.sqrt(b.area))*.38;if(d>=reach)continue;const push=.7*(1-d/reach);for(const [g,sign] of [[a,-1],[b,1]] as const)for(const n of g.nodes){const f=result.get(n.id)!;f.x+=dx/d*push*sign;f.y+=dy/d*push*sign;}}
  for(const n of input.nodes)if(n.target&&!n.resistance){const f=result.get(n.id)!,dx=n.target.x-n.x,dy=n.target.y-n.y,d=Math.hypot(dx,dy);if(d>1){const force=2*Math.tanh(d/100);f.x+=dx/d*force;f.y+=dy/d*force;}}
  for(const force of result.values()){const length=Math.hypot(force.x,force.y);if(length>12){force.x*=12/length;force.y*=12/length;}}
  return result;
@@ -31,7 +38,7 @@ export function physicsStep(input:PhysicsInput):PhysicsOutput {
 }
 function integrate(input:PhysicsInput):PhysicsOutput {
  const s=safePhysics(input.settings),contacts=new Set<string>(),f=forces(input,contacts);const dt=input.dt;let energy=0;
- const nodes=input.nodes.map(old=>{const n={...old};if(n.pinned||n.dragged||n.boundary){n.vx=0;n.vy=0;return n;}const force=f.get(n.id)!;const forceSize=Math.hypot(force.x,force.y),speed=Math.hypot(n.vx,n.vy);const contact=contacts.has(n.id);const threshold=Math.max(contact?.01:s.friction,n.resistance);
+ const nodes=input.nodes.map(old=>{const n={...old};if(n.pinned||n.dragged||n.boundary){n.vx=0;n.vy=0;return n;}const force=f.get(n.id)!;const forceSize=Math.hypot(force.x,force.y),speed=Math.hypot(n.vx,n.vy);const contact=contacts.has(n.id);const threshold=contact?.01:Math.max(s.friction,n.resistance);
  // Coulomb static friction is force based, persisted after drag; never a timer.
  if(speed<.08&&forceSize<=threshold){n.vx=0;n.vy=0;return n;}
  if(n.resistance>0&&forceSize>threshold)n.resistance=0;

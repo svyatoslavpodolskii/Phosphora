@@ -44,7 +44,7 @@ it('a branch keeps growing outward instead of doubling back on itself',()=>{
   const data={atoms:[root,child],links:[makeLink('root','child')]};
   const grandchild=placeAtom({data,parent:'child'});
   // The way back to the root is the least attractive direction.
-  expect(Math.abs(Math.atan2(grandchild.y-child.y,grandchild.x-child.x))).toBeGreaterThan(.4);
+  expect(grandchild.x).toBeGreaterThan(child.x);
 });
 it('a loose atom lands beside the existing islands, not at the far edge',()=>{
   const atoms=Array.from({length:14},(_,i)=>A({id:'a'+i,title:'Note '+i,x:2000+i%4*220,y:2000+Math.floor(i/4)*220}));

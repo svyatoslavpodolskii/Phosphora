@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {surface} from './surfaces';
  import type {Core} from '../core/core';
  import type {PluginRuntime} from '../plugins/runtime';
  import {templates} from '../plugins/builtins';
@@ -30,7 +31,7 @@
  async function fileText(e:Event){const input=e.target as HTMLInputElement;const file=input.files?.[0];input.value='';if(!file)throw Error('Файл не выбран.');if(file.size>50_000_000)throw Error('Файл слишком большой.');return file.text();}
  function keys(e:KeyboardEvent){if(e.key==='Escape'&&!busy)onclose();if(e.key==='Tab'){const els=[...root.querySelectorAll<HTMLElement>('button:not([disabled]),input,select,summary')].filter(el=>el.getClientRects().length);if(e.shiftKey&&(document.activeElement===els[0]||document.activeElement===root)){e.preventDefault();els.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0]?.focus();}}}
 </script>
-<div class="scrim"><div class="editor settings" bind:this={root} tabindex="-1" role="dialog" aria-modal="true" aria-label="Настройки" onkeydown={keys}>
+<div class="scrim" use:surface={{close:onclose,blocked:()=>busy}}><div class="editor settings" bind:this={root} tabindex="-1" role="dialog" aria-modal="true" aria-label="Настройки" onkeydown={keys}>
  <div class="row"><h2>Ваше пространство</h2><button aria-label="Закрыть настройки" disabled={busy} onclick={onclose}>×</button></div>
  {#if error}<p role="alert" class="inline-error">{error}</p>{/if}
  {#if page==='general'}<button onclick={()=>page='plugins'}>Плагины →</button>

@@ -1,4 +1,5 @@
 ﻿<script lang="ts">
+ import {surface} from './surfaces';
  import {onMount} from 'svelte';
  import type {Atom,AtomState,Appearance} from '../core/model';
  import AppearancePicker from './AppearancePicker.svelte';
@@ -11,7 +12,7 @@
  function keys(e:KeyboardEvent){if(e.key==='Escape'){e.preventDefault();back();}if(e.key==='Tab'){const els=[...root.querySelectorAll<HTMLElement>('button:not([disabled]),input,select,summary')].filter(el=>el.getClientRects().length);if(e.shiftKey&&(document.activeElement===els[0]||document.activeElement===root)){e.preventDefault();els.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0]?.focus();}}}
  onMount(()=>root.focus());
 </script>
-<div class="context-scrim"><div class="atom-menu" bind:this={root} role="dialog" aria-modal="true" aria-label="Действия с атомом" tabindex="-1" onkeydown={keys}>
+<div class="context-scrim" use:surface={{close:back,blocked:()=>busy}}><div class="atom-menu" bind:this={root} role="dialog" aria-modal="true" aria-label="Действия с атомом" tabindex="-1" onkeydown={keys}>
  <div class="context-heading">{#if panel!=='actions'}<button class="icon-button" aria-label="Назад" disabled={busy} onclick={back}>←</button>{/if}<div><small>{panel==='appearance'?'ОФОРМЛЕНИЕ':panel==='delete'?'УДАЛЕНИЕ':'АТОМ'}</small><strong>{atom.title}</strong></div><button class="icon-button" aria-label="Закрыть меню атома" disabled={busy} onclick={onclose}>×</button></div>
  {#if error}<p role="alert" class="inline-error">{error}</p>{/if}
  {#if panel==='appearance'}

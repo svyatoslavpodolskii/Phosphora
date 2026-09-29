@@ -39,7 +39,7 @@ function grow(data:Snapshot,byId:Map<string,Snapshot['atoms'][number]>,anchor:At
    blocked.push({from:angle-half,to:angle+half,weight:otherFoot.halfWidth/Math.max(60,distance)});
   }
   // The edge back to the ancestor stays clear so a branch keeps growing outward.
-  if(back!==undefined)blocked.push({from:back-.55,to:back+.55,weight:2});
+  if(back!==undefined)blocked.push({from:back+Math.PI-.55,to:back+Math.PI+.55,weight:2});
 
   const links=data.links.map(l=>({a:byId.get(l.from),b:byId.get(l.to)})).filter((l):l is{a:Snapshot['atoms'][number];b:Snapshot['atoms'][number]}=>Boolean(l.a&&l.b&&l.a.id!==anchor.id));
   let best={x:anchor.x+200,y:anchor.y},bestScore=Infinity;
@@ -48,7 +48,7 @@ function grow(data:Snapshot,byId:Map<string,Snapshot['atoms'][number]>,anchor:At
    const radius=RADIUS[ring];
    const point={x:anchor.x+Math.cos(angle)*radius,y:anchor.y+Math.sin(angle)*radius};
    let crowding=0;
-   for(const b of blocked)crowding+=angle>b.from&&angle<b.to?b.weight*ring:0;
+   for(const b of blocked)crowding+=angle>b.from&&angle<b.to?b.weight*(ring+1):0;
    // Angular separation from the nearest painted neighbour.
    let separation=Math.PI;
    for(const other of data.atoms){
@@ -69,7 +69,7 @@ function grow(data:Snapshot,byId:Map<string,Snapshot['atoms'][number]>,anchor:At
     const oy=Math.min(other.y+otherFoot.bottom,point.y+foot.bottom)-Math.max(other.y-otherFoot.top,point.y-foot.top)+MIN_GAP;
     if(ox>0&&oy>0)collision+=ox*oy;
    }
-   const score=crowding*90+separation*260+crossings*900+collision/240+ring*70+Math.max(0,angle-(back??-Math.PI/2)-1.6)*40;
+   const forward=back===undefined?0:1-Math.cos(angle-back);const score=forward*180+crowding*90-separation*260+crossings*900+collision/240+ring*70+Math.max(0,angle-(back??-Math.PI/2)-1.6)*40;
    if(score<bestScore){bestScore=score;best=point;}
   }
   return best;

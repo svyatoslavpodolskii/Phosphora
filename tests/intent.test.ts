@@ -123,9 +123,9 @@ it('grouping depends on topology and zoom only, never on who is selected',()=>{
   const data={atoms,links};
   const a=graphModel(data,'all',.3,''),b=graphModel(data,'all',.3,'');
   expect(a.nodes.map(n=>n.id)).toEqual(b.nodes.map(n=>n.id));
-  // Focusing a child keeps that branch unfolded, and changes nothing else.
+  // Selection never changes grouping; visual attention is applied in screen space.
   const focused=graphModel(data,'all',.3,'c0');
-  expect(focused.nodes.map(n=>n.id)).not.toEqual(a.nodes.map(n=>n.id));
+  expect(focused.nodes.map(n=>n.id)).toEqual(a.nodes.map(n=>n.id));
   expect(focused.nodes.map(n=>n.id)).toEqual(graphModel(data,'all',.3,'c0').nodes.map(n=>n.id));
   expect(JSON.stringify(data)).toBe(JSON.stringify({atoms,links}));
 });

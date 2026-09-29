@@ -20,8 +20,8 @@ export function revealCamera(camera:Camera,point:{x:number;y:number},view:{width
   const zoom=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,Math.max(camera.zoom,desired))),margin=Math.min(150,view.width*.22);
   let x=camera.x,y=camera.y;
   const sx=view.width/2+x+point.x*zoom,sy=view.height/2+y+point.y*zoom;
-  if(sx<margin)x+=(margin-sx)*zoom;else if(sx>view.width-margin)x-=(sx-(view.width-margin))*zoom;
-  if(sy<margin)y+=(margin-sy)*zoom;else if(sy>view.height-margin)y-=(sy-(view.height-margin))*zoom;
+  if(sx<margin)x+=(margin-sx);else if(sx>view.width-margin)x-=(sx-(view.width-margin));
+  if(sy<margin)y+=(margin-sy);else if(sy>view.height-margin)y-=(sy-(view.height-margin));
   const moved=Math.abs(x-camera.x)+Math.abs(y-camera.y)<1&&Math.abs(zoom-camera.zoom)<.001;
   return moved?null:{x,y,zoom};
 }

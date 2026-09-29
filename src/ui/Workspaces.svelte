@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {surface} from './surfaces';
  import {onMount} from 'svelte';
  import type {SQLiteAdapter} from '../storage/adapter';
  import type {WorkspaceCatalog} from '../storage/workspaces';
@@ -8,7 +9,7 @@
  async function select(id:string){await storage.transaction([]);await storage.selectWorkspace(id);const url=new URL(location.href);url.searchParams.delete('workspace');location.replace(url.href);}
  function keys(e:KeyboardEvent){if(e.key==='Escape'&&!busy){e.preventDefault();onclose();}if(e.key==='Tab'){const els=[...root.querySelectorAll<HTMLElement>('button:not([disabled]),input')].filter(el=>el.getClientRects().length);if(e.shiftKey&&(document.activeElement===els[0]||document.activeElement===root)){e.preventDefault();els.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0]?.focus();}}}
 </script>
-<div class="context-scrim"><div class="atom-menu workspace-menu" role="dialog" aria-modal="true" aria-label="Хранилища" tabindex="-1" bind:this={root} onkeydown={keys}>
+<div class="context-scrim" use:surface={{close:onclose,blocked:()=>busy}}><div class="atom-menu workspace-menu" role="dialog" aria-modal="true" aria-label="Хранилища" tabindex="-1" bind:this={root} onkeydown={keys}>
  <div class="context-heading"><div><small>ВАШИ ПРОСТРАНСТВА</small><strong>Хранилища</strong></div><button class="icon-button" aria-label="Закрыть хранилища" disabled={busy} onclick={onclose}>×</button></div>
  {#if error}<p role="alert">{error}</p>{/if}
  {#if mode==='list'}<div class="workspace-list">{#each catalog.items as item}<button aria-pressed={item.id===catalog.current} disabled={busy} onclick={()=>item.id===catalog.current?onclose():run(()=>select(item.id))}><span>◈</span><strong>{item.name}</strong>{#if item.id===catalog.current}<small>Открыто</small>{/if}</button>{/each}</div><button class="primary" disabled={busy} onclick={()=>{mode='create';name='';}}>Новое хранилище</button><button class="quiet-button" disabled={busy} onclick={()=>{mode='rename';name=catalog.items.find(w=>w.id===catalog.current)?.name||'';}}>Переименовать текущее</button>

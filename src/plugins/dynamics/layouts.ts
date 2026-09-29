@@ -18,8 +18,8 @@ function separate(points:Map<string,Point>,boxes:Map<string,ReturnType<typeof fo
 export function arrangeDynamics(kind:DynamicsKind,{data,settings,intent,locked}:StructuralInput):StructuralOutput{
  if(intent==='resume')return{positions:data.atoms.map(a=>({id:a.id,x:a.x,y:a.y})),skeleton:[...structure(data).edges]};
  const seeded=branchingLayout(data,'calm',settings.distance),points=seeded.points,tree=seeded.tree;
- const finish=()=>{const anchored=anchorLayout(data,points,new Set(locked||data.atoms.filter(a=>a.pinned||a.spatial.resistance).map(a=>a.id)));return{positions:[...anchored].map(([id,p])=>({id,...p})),skeleton:[...tree.edges]};};
- if(kind==='branch')return finish();
+ const finish=()=>{for(const a of data.atoms){if(!a.spatial.resistance||a.pinned)continue;const p=points.get(a.id)!;p.x=a.x*.88+p.x*.12;p.y=a.y*.88+p.y*.12;}const anchored=anchorLayout(data,points,new Set(locked||data.atoms.filter(a=>a.pinned).map(a=>a.id)));return{positions:[...anchored].map(([id,p])=>({id,...p})),skeleton:[...tree.edges]};};
+ if(kind==='branch'){const boxes=graphFootprints(data);for(const root of tree.roots){const ids=tree.descendants(root),local=new Map(ids.map(id=>[id,points.get(id)!]));const bonds=data.links.filter(l=>local.has(l.from)&&local.has(l.to));for(let pass=0;pass<48;pass++){for(const l of bonds){const a=local.get(l.from)!,b=local.get(l.to)!,dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy));const rest=Math.max(settings.distance,boxes.get(l.from)!.halfWidth+boxes.get(l.to)!.halfWidth+42),t=Math.max(0,d-rest)/d*(tree.edges.has(l.id)?.012:.003);a.x+=dx*t;a.y+=dy*t;b.x-=dx*t;b.y-=dy*t;}separate(local,boxes,1);}const order=ids.sort((a,b)=>tree.size.get(b)!-tree.size.get(a)!);clearFootprints(local,boxes,order);for(const [id,p] of local)points.set(id,p);}clearFootprints(points,boxes,[...points.keys()]);return finish();}
  const boxes=graphFootprints(data);
  for(const p of points.values()){p.x*=kind==='compact'?.48:.7;p.y*=kind==='compact'?.48:.7;}
  const allPoints=points;for(const root of tree.roots){const localIds=tree.descendants(root),points=new Map(localIds.map(id=>[id,allPoints.get(id)!]));

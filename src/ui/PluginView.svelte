@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {surface as transientSurface} from './surfaces';
  import {onMount,tick} from 'svelte';
  import type {PluginView} from '../plugins/api';
  import {sanitizeHTML} from './markdown';
@@ -16,7 +17,7 @@
  function keyboard(e:KeyboardEvent){if(e.key==='Escape'){e.stopPropagation();onclose();}if(e.key==='Tab'){const els=[...dialog.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),summary')].filter(el=>el.getClientRects().length);if(e.shiftKey&&(document.activeElement===els[0]||document.activeElement===dialog)){e.preventDefault();els.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===els.at(-1)){e.preventDefault();els[0]?.focus();}}if(e.key==='Enter'&&e.target instanceof HTMLInputElement){const add=surface.querySelector<HTMLButtonElement>('button[data-action="add"]');if(add){e.preventDefault();add.click();}}}
  onMount(()=>{const previous=document.activeElement as HTMLElement;dialog.focus();refresh().catch(e=>error=e.message);let day=new Date().toLocaleDateString('sv-SE');const timer=setInterval(()=>{const next=new Date().toLocaleDateString('sv-SE');if(next!==day&&!busy){day=next;refresh().catch(e=>error=e.message);}},30000);return()=>{alive=false;clearInterval(timer);previous?.focus();};});
 </script>
-<div class="scrim"><div bind:this={dialog} class="editor plugin-view" role="dialog" aria-modal="true" aria-label={view.name} tabindex="-1" onkeydown={keyboard}>
+<div class="scrim" use:transientSurface={{close:onclose}}><div bind:this={dialog} class="editor plugin-view" role="dialog" aria-modal="true" aria-label={view.name} tabindex="-1" onkeydown={keyboard}>
  <div class="plugin-heading"><h2>{view.name}</h2><button onclick={onclose}>Закрыть</button></div>
  {#if error}<p role="alert">{error}</p>{/if}
  <!-- svelte-ignore a11y_no_static_element_interactions -->

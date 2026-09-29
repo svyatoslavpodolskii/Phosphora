@@ -1,4 +1,4 @@
-﻿import {MIN_ZOOM,MAX_ZOOM,type Camera} from './model';
+import {MIN_ZOOM,MAX_ZOOM,type Camera} from './model';
 
 export interface Point{x:number;y:number}
 export interface Viewport{width:number;height:number}
@@ -61,6 +61,8 @@ export class CameraRig{
   private interval=Infinity;
   private lastEvent=0;
   private anchor:Anchor|null=null;
+  /** True while two fingers are down: the focal point they hold must survive. */
+  private pinching=false;
   private view:Viewport={width:1,height:1};
   private reduced=false;
   moving=false;
@@ -73,14 +75,32 @@ export class CameraRig{
   setReduced(reduced:boolean){this.reduced=reduced;}
 
   /** Immediate placement, used for restore, resize and reduced motion only. */
-  set(camera:Camera){this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
+  set(camera:Camera){this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
 
   get value(){return this.camera;}
   get anchored(){return this.anchor!==null;}
+  get intended(){return this.target;}
+
+  /** A two finger gesture asks for an absolute zoom, held to the point between the
+   *  fingers. Like every other input it is only a request: the renderer consumes it
+   *  at a stable rate, so raw touch jitter never reaches the world. The focal
+   *  point is re-anchored on each move, which also carries the two finger pan. */
+  pinchTo(screen:Point,zoom:number){
+   if(this.anchor)this.anchor={...this.anchor,screen};
+   else this.anchor={world:screenToWorld(screen,this.camera,this.view),screen};
+   const next=clampZoom(zoom);
+   this.event();this.pinching=true;
+   this.pending.z+=Math.log(next)-Math.log(this.target.zoom);
+   this.target=fromAnchor(this.anchor,next,this.view);
+   this.wake();
+  }
+  /** The fingers left. Whatever they were holding is released. */
+  endPinch(){this.pinching=false;this.anchor=null;}
 
   /** Establishes or reuses the anchor, then records the requested zoom. The world
    *  point under the pointer stays under the pointer for the whole gesture. */
   zoomAt(screen:Point,factor:number){
+   this.pinching=false;
    if(this.anchor)this.anchor={...this.anchor,screen};
    else this.anchor={world:screenToWorld(screen,this.camera,this.view),screen};
    const zoom=clampZoom(this.target.zoom*factor);
@@ -90,10 +110,9 @@ export class CameraRig{
   }
   zoomStep(factor:number){
    const zoom=clampZoom(this.target.zoom*factor);
-   this.event();this.pending.z+=Math.log(zoom)-Math.log(this.target.zoom);
    this.retarget({...this.target,zoom});
   }
-  panBy(dx:number,dy:number){this.anchor=null;this.event();this.pending.x+=dx;this.pending.y+=dy;this.target={...this.target,x:this.target.x+dx,y:this.target.y+dy};this.wake();}
+  panBy(dx:number,dy:number){this.anchor=null;this.pinching=false;this.event();this.pending.x+=dx;this.pending.y+=dy;this.target={...this.target,x:this.target.x+dx,y:this.target.y+dy};this.wake();}
   /** Keeps an active zoom anchor while the gesture's midpoint travels. */
   moveAnchor(dx:number,dy:number){
    if(!this.anchor)return;
@@ -104,7 +123,7 @@ export class CameraRig{
   }
   /** Sets an absolute destination. Used for focus corrections and fit views. */
   retarget(camera:Camera){
-   this.anchor=null;this.event();
+   this.anchor=null;this.pinching=false;this.event();
    this.pending.x+=camera.x-this.target.x;this.pending.y+=camera.y-this.target.y;this.pending.z+=Math.log(camera.zoom)-Math.log(this.target.zoom);
    this.target={...camera};this.wake();
   }
@@ -119,7 +138,7 @@ export class CameraRig{
    this.wake();
   }
   /** Stops all motion where it stands. Used when the user grabs the canvas. */
-  halt(){this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.settled=true;this.moving=false;}
+  halt(){this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.settled=true;this.moving=false;}
 
   /** Records that the hand produced another event, and how long since the last one. */
   private event(){
@@ -151,7 +170,7 @@ export class CameraRig{
     this.pending.z-=take;
     this.camera=fromAnchor(this.anchor,Math.exp(Math.log(this.camera.zoom)+take),this.view);
     if(Math.abs(gap)<ZOOM_EPS&&Math.abs(this.pending.z)<ZOOM_EPS){
-     this.camera=fromAnchor(this.anchor,this.target.zoom,this.view);this.pending.z=0;this.settled=true;this.moving=false;this.anchor=null;
+     this.camera=fromAnchor(this.anchor,this.target.zoom,this.view);this.pending.z=0;this.settled=true;this.moving=false;if(!this.pinching)this.anchor=null;
     }
     return this.camera;
    }

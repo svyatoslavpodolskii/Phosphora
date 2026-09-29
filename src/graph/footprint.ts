@@ -28,7 +28,7 @@ export function labelGeometry(label:string,radius:number,zoom:number,viewportWid
  const size=labelSize(zoom,viewportWidth),lines=labelLines(label),top=radius+12;
  const lineHeight=size+4,caption=stateLabels[state]??'',captionSize=Math.min(13,Math.max(10,10*zoom))/zoom;
  const captionTop=top+lines.length*lineHeight+6/zoom;
- const halfWidth=Math.max(0,...lines.map(line=>measureText(line,size)/2),caption?measureText(caption,captionSize)/2:0);
+ const halfWidth=Math.max(0,...lines.map(line=>measureText(line,13)*size/26),caption?measureText(caption,13)*captionSize/26:0);
  const bottom=caption?captionTop+captionSize:top+lines.length*lineHeight;
  return {size,lines,top,lineHeight,caption,captionSize,captionTop,halfWidth,bottom};
 }

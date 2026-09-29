@@ -11,6 +11,16 @@ export class SemanticScene{
  private nodes=new Map<string,PaintedNode>();
  private links=new Map<string,PaintedLink>();
   advance(model:GraphModel,dt:number,reduced=false,dragging='',collapse=1){
+   if(model.expanded){
+    // Both representations are computed as one background transaction. Gesture frames
+    // only interpolate a retained pair; zoom can never launch a new grouping job.
+    const parents=new Map<string,GraphNode>();for(const n of model.nodes)for(const id of n.members||[])parents.set(id,n);
+    const nodes:PaintedNode[]=model.nodes.filter(n=>n.members).map(n=>({...n,opacity:collapse}));
+    for(const n of model.expanded.nodes){const p=parents.get(n.id);const reveal=p?1-collapse:1;nodes.push({...n,x:p?p.x+(n.x-p.x)*(1-collapse*.22):n.x,y:p?p.y+(n.y-p.y)*(1-collapse*.22):n.y,opacity:reveal});}
+    const byId=new Map(nodes.map(n=>[n.id,n]));const links:PaintedLink[]=[];
+    for(const [kind,source] of [['cluster',model],['detail',model.expanded]] as const)for(const l of source.links){const a=byId.get(l.from),b=byId.get(l.to);if(!a||!b)continue;const opacity=kind==='cluster'?collapse:1-collapse;if(opacity>.001)links.push({...l,id:kind+':'+l.id,opacity,start:a,end:b});}
+    return {nodes:nodes.filter(n=>n.opacity>.001),links,active:false};
+   }
    const initial=!this.nodes.size,blend=reduced?1:1-Math.exp(-Math.max(0,Math.min(64,dt))/65),targets=new Map(model.nodes.map(n=>[n.id,n]));
    const parents=new Map<string,GraphNode>();for(const n of model.nodes)for(const id of n.members||[])parents.set(id,n);
    const previousParents=new Map<string,PaintedNode>();for(const n of this.nodes.values())for(const id of n.members||[])previousParents.set(id,n);
