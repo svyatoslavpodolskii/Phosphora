@@ -75,3 +75,7 @@ Bundled `builtin.branch`, `builtin.molecule`, `builtin.compact` использу
 Хранилище ограничено пространством имён plugin ID, без доступа к SQL. Выключение удаляет регистрации и обработчики. Сохранённые атомы и данные плагина остаются. Отдельные разрешения network/filesystem/sync пока не поддерживаются: manifest с ними отклоняется.
 
 Изоляция: iframe с opaque origin и sandbox allow-scripts содержит только фиксированный bridge. Community-код запускается в отдельном Worker; CSP запрещает сетевые подключения и внешние ресурсы. Callback ограничен ожиданием 5 секунд, API — 100 вызовов в секунду. Это не замена отдельному security audit. Не выдавайте atoms.write коду, которому не доверяете: это разрешение допускает удаление записей.
+
+## Pause compatibility
+
+`atoms.setState(id, 'paused')` remains idempotent in API v1. Core records the previous meaningful state in the reserved atom property `phosphora.pauseState` (`normal`, `now` or `archived`). Plugins that replace properties should preserve reserved `phosphora.*` keys. Editing an already paused atom preserves its return state. Explicitly selecting a non-paused state clears the metadata. Imported legacy paused atoms without metadata resume to `normal`; no previous state is invented. UI resume and bulk resume restore each atom independently in one transaction. The canonical separate pause modifier is a remaining model migration.

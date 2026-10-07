@@ -21,3 +21,15 @@ export function validateAtom(a: Atom) {
 export function validateLink(l:Link) { if (!l || ['id','from','to','relation','source','created_at'].some(k=>typeof l[k as keyof Link]!=='string'||!l[k as keyof Link]||l[k as keyof Link].length>500) || l.from===l.to || !Number.isFinite(Date.parse(l.created_at))) throw Error('Некорректная связь.'); }
 export function makeAtom(input:Partial<Atom> & {title:string}):Atom { const now=new Date().toISOString(); const a={id:crypto.randomUUID(),type:'note',content:'',state:'normal' as AtomState,importance:0,created_at:now,updated_at:now,properties:{},appearance:{},aliases:[],x:0,y:0,revision:1,pinned:false,spatial:{resistance:0},...input}; validateAtom(a); return a; }
 export function makeLink(from:string,to:string,relation='related',source='manual'):Link {const l={id:crypto.randomUUID(),from,to,relation,source,created_at:new Date().toISOString()}; validateLink(l);return l;}
+
+/** Legacy state-compatible pause metadata. Persisted with the atom, including backups. */
+export function resumeState(atom:Pick<Atom,'properties'>):Exclude<AtomState,'paused'>{
+ const value=atom.properties['phosphora.pauseState'];
+ return value==='now'||value==='archived'?value:'normal';
+}
+export function transitionState(before:Atom|undefined,atom:Atom):Atom{
+ const properties={...atom.properties};
+ if(atom.state==='paused')properties['phosphora.pauseState']=before?.state==='paused'?resumeState(before):before?.state??resumeState(atom);
+ else delete properties['phosphora.pauseState'];
+ return {...atom,properties};
+}

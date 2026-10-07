@@ -105,3 +105,21 @@ it('cannot remove links unrelated to the edited atom or introduce invalid target
   await expect(h.core.create({title:'C'})).rejects.toThrow('target');off();expect(h.core.data.atoms).toHaveLength(2);expect(h.core.data.links).toHaveLength(1);
  }finally{h.close();}
 });
+
+it('pause preserves each source state across edits, refresh and bulk resume',async()=>{
+ const h=await setup();try{
+  const now=await h.core.create({title:'Active',state:'now'}),archived=await h.core.create({title:'Past',state:'archived'});
+  await h.core.group([now.id,archived.id],'paused');
+  await h.core.setState(now.id,'paused'); // Idempotent plugin API call.
+  await h.core.update(now.id,{content:'Edited while paused'});await h.core.refresh();
+  expect(h.core.data.atoms.find(a=>a.id===now.id)?.properties['phosphora.pauseState']).toBe('now');
+  await h.core.group([now.id,archived.id],'resume');
+  expect(h.core.data.atoms.find(a=>a.id===now.id)?.state).toBe('now');
+  expect(h.core.data.atoms.find(a=>a.id===archived.id)?.state).toBe('archived');
+  expect(h.core.data.atoms.every(a=>!('phosphora.pauseState' in a.properties))).toBe(true);
+  await h.core.setState(now.id,'paused');await h.core.setState(now.id,'archived');await h.core.group([now.id],'resume');
+  expect(h.core.data.atoms.find(a=>a.id===now.id)?.state).toBe('archived');
+  const legacy=await h.core.create({title:'Legacy paused',state:'paused'});await h.core.group([legacy.id],'resume');
+  expect(h.core.data.atoms.find(a=>a.id===legacy.id)?.state).toBe('normal');
+ }finally{h.close();}
+});
