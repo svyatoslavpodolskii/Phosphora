@@ -10,7 +10,7 @@ export interface PluginView {id:string;name:string;render:()=>string|Promise<str
 export interface AtomType {id:string;name:string;icon?:string;appearance?:Appearance;content?:string}
 export interface Layout {id:string;name:string;run:(data:Snapshot)=>Array<{id:string;x:number;y:number}>|Promise<Array<{id:string;x:number;y:number}>>}
 export interface PluginAPI {
- atoms:{registerDraftPolicy:(policy:DraftPolicy)=>()=>void;list:()=>Promise<Atom[]>;get:(id:string)=>Promise<Atom|undefined>;create:(input:Partial<Atom>&{title:string},parent?:string)=>Promise<Atom>;update:(id:string,patch:Partial<Atom>)=>Promise<Atom>;setState:(id:string,state:AtomState)=>Promise<Atom>;delete:(id:string)=>Promise<void>;search:(query:string)=>Promise<Atom[]>};
+ atoms:{registerDraftPolicy:(policy:DraftPolicy)=>()=>void;list:()=>Promise<Atom[]>;get:(id:string)=>Promise<Atom|undefined>;create:(input:Partial<Atom>&{title:string},parent?:string)=>Promise<Atom>;update:(id:string,patch:Partial<Atom>)=>Promise<Atom>;setState:(id:string,state:AtomState)=>Promise<Atom>;setPaused:(id:string,paused:boolean)=>Promise<Atom>;delete:(id:string)=>Promise<void>;search:(query:string)=>Promise<Atom[]>};
  links:{list:()=>Promise<Link[]>;create:(from:string,to:string,relation?:string)=>Promise<Link>;delete:(id:string)=>Promise<void>};
  events:{on:(event:string,handler:(payload:any)=>void)=>()=>void};
  commands:{add:(command:Command)=>()=>void};

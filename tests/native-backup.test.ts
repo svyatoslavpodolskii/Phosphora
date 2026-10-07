@@ -23,7 +23,7 @@ it('rejects broken settings before touching the current database',()=>{
 });
 it('migrates a version one copy in staging before activation',()=>{
  const current=db(),source=db();transact(source.adapter,[{kind:'atom',atom:makeAtom({title:'Legacy',aliases:['Old name']})}]);
- source.raw.exec('DROP INDEX atoms_position;ALTER TABLE atoms DROP COLUMN pinned;ALTER TABLE atoms DROP COLUMN spatial;DELETE FROM schema_metadata WHERE version>=2;PRAGMA user_version=1');
+ source.raw.exec('DROP INDEX atoms_position;ALTER TABLE atoms DROP COLUMN pinned;ALTER TABLE atoms DROP COLUMN spatial;ALTER TABLE atoms DROP COLUMN paused;DELETE FROM schema_metadata WHERE version>=2;PRAGMA user_version=1');
  restoreDatabase(current.adapter,source.adapter);
  expect(snapshot(current.adapter).atoms[0]).toMatchObject({title:'Legacy',pinned:false,aliases:['Old name'],spatial:{resistance:0}});
  current.raw.close();source.raw.close();

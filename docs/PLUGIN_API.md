@@ -76,6 +76,8 @@ Bundled `builtin.branch`, `builtin.molecule`, `builtin.compact` использу
 
 Изоляция: iframe с opaque origin и sandbox allow-scripts содержит только фиксированный bridge. Community-код запускается в отдельном Worker; CSP запрещает сетевые подключения и внешние ресурсы. Callback ограничен ожиданием 5 секунд, API — 100 вызовов в секунду. Это не замена отдельному security audit. Не выдавайте atoms.write коду, которому не доверяете: это разрешение допускает удаление записей.
 
-## Pause compatibility
+## Pause modifier
 
-`atoms.setState(id, 'paused')` remains idempotent in API v1. Core records the previous meaningful state in the reserved atom property `phosphora.pauseState` (`normal`, `now` or `archived`). Plugins that replace properties should preserve reserved `phosphora.*` keys. Editing an already paused atom preserves its return state. Explicitly selecting a non-paused state clears the metadata. Imported legacy paused atoms without metadata resume to `normal`; no previous state is invented. UI resume and bulk resume restore each atom independently in one transaction. The canonical separate pause modifier is a remaining model migration.
+Atoms expose `paused: boolean` independently of `state` (`normal`, `now`, `archived`). Use `await app.atoms.setPaused(id, true)` to pause and `false` to resume. This method requires `atoms.write`, including in the sandbox. Changing state does not clear pause. Repeated pause is idempotent.
+
+API v1 still accepts legacy `setState(id, 'paused')`, `create` and `update` inputs. Core converts them to the independent modifier. Legacy imports and schema-v3 databases use `phosphora.pauseState` when available; otherwise the original state is unknowable and defaults to `normal`. Migrated atoms expose canonical state plus the boolean. SQLite schema v4, full backups, JSON exports and Markdown frontmatter preserve the modifier; Markdown uses `phosphored_paused` alongside the established compatibility keys.

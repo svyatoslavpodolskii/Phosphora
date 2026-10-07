@@ -42,3 +42,10 @@ test('plugin writes without consent are denied and disabled callbacks disappear'
  await page.goto('/');await install(page,'test.denied','Permission probe',['ui'],`export const activate=async app=>{await app.commands.add({id:'denied',name:'Denied write',run:async()=>{try{await app.atoms.create({title:'Forbidden'});app.ui.notify('Permission failed');}catch(e){app.ui.notify('Permission enforced');}}});};`);
  await command(page,'Denied write');await expect(page.getByText('Permission enforced',{exact:true})).toBeVisible();expect((await readMap(page)).atoms).toHaveLength(0);
 });
+
+test('sandbox pause modifier preserves state through independent changes',async({page})=>{
+ await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
+ await install(page,'test.pause','Pause API',['atoms.read','atoms.write','ui'],`export async function activate(app){await app.commands.add({id:'pause-test',name:'Run pause API',async run(){const a=await app.atoms.create({title:'Pause API atom',state:'now'});await app.atoms.setPaused(a.id,true);await app.atoms.setState(a.id,'archived');}});}`);
+ await command(page,'Run pause API');
+ expect((await readMap(page)).atoms.find(a=>a.title==='Pause API atom')).toMatchObject({state:'archived',paused:true});
+});

@@ -22,7 +22,20 @@ describe('durable data invariants',()=>{
  });
  it('rolls back a failed create-and-link as one transaction',()=>{const {adapter}=db();migrate(adapter);const a=makeAtom({title:'A'});expect(()=>transact(adapter,[{kind:'atom',atom:a},{kind:'link',link:makeLink(a.id,'missing')}])).toThrow();expect(snapshot(adapter).atoms).toHaveLength(0);});
  it('archive preserves links and appearance, stale edits fail',()=>{const {adapter}=db();migrate(adapter);const a=makeAtom({title:'A',appearance:{color:'#aabbcc'},aliases:['Alias']}),b=makeAtom({title:'B'});transact(adapter,[{kind:'atom',atom:a},{kind:'atom',atom:b},{kind:'link',link:makeLink(a.id,b.id)}]);transact(adapter,[{kind:'atom',atom:{...a,state:'archived',revision:2},expectedRevision:1}]);expect(snapshot(adapter).links).toHaveLength(1);expect(snapshot(adapter).atoms[0].appearance.color).toBe('#aabbcc');expect(()=>transact(adapter,[{kind:'atom',atom:a,expectedRevision:1}])).toThrow();});
- it('migrates version one without losing atoms, aliases or links',()=>{const {raw,adapter}=db();migrate(adapter);const a=makeAtom({title:'До обновления',aliases:['старое']}),b=makeAtom({title:'B'});transact(adapter,[{kind:'atom',atom:a},{kind:'atom',atom:b},{kind:'link',link:makeLink(a.id,b.id)}]);raw.exec('DROP INDEX links_from;DROP INDEX links_to;DROP INDEX atoms_state;DROP INDEX aliases_text;DROP INDEX atoms_updated;DROP INDEX atoms_position;ALTER TABLE atoms DROP COLUMN pinned;ALTER TABLE atoms DROP COLUMN spatial;DELETE FROM schema_metadata WHERE version>=2;PRAGMA user_version=1');migrate(adapter);migrate(adapter);expect(snapshot(adapter).atoms[0].aliases).toEqual(['старое']);expect(snapshot(adapter).links).toHaveLength(1);expect(adapter.selectValue('PRAGMA user_version')).toBe(3);});
+ it('migrates version one without losing atoms, aliases or links',()=>{const {raw,adapter}=db();migrate(adapter);const a=makeAtom({title:'До обновления',aliases:['старое']}),b=makeAtom({title:'B'});transact(adapter,[{kind:'atom',atom:a},{kind:'atom',atom:b},{kind:'link',link:makeLink(a.id,b.id)}]);raw.exec('DROP INDEX links_from;DROP INDEX links_to;DROP INDEX atoms_state;DROP INDEX aliases_text;DROP INDEX atoms_updated;DROP INDEX atoms_position;ALTER TABLE atoms DROP COLUMN pinned;ALTER TABLE atoms DROP COLUMN spatial;ALTER TABLE atoms DROP COLUMN paused;DELETE FROM schema_metadata WHERE version>=2;PRAGMA user_version=1');migrate(adapter);migrate(adapter);expect(snapshot(adapter).atoms[0].aliases).toEqual(['старое']);expect(snapshot(adapter).links).toHaveLength(1);expect(adapter.selectValue('PRAGMA user_version')).toBe(4);});
  it('refuses newer schema without touching its records',()=>{const {raw,adapter}=db();migrate(adapter);transact(adapter,[{kind:'atom',atom:makeAtom({title:'Future'})}]);raw.exec('PRAGMA user_version=99');expect(()=>migrate(adapter)).toThrow();expect(snapshot(adapter).atoms).toHaveLength(1);});
  it('does not interpolate content into SQL',()=>{const {adapter}=db();migrate(adapter);transact(adapter,[{kind:'atom',atom:makeAtom({title:"'); DROP TABLE atoms;--"})}]);expect(snapshot(adapter).atoms).toHaveLength(1);});
+});
+
+it('migrates v3 pause metadata atomically and keeps graph references',()=>{
+ const {raw,adapter}=db();migrate(adapter);
+ const a=makeAtom({title:'Paused now',aliases:['Alias']}),b=makeAtom({title:'Legacy paused'});
+ transact(adapter,[{kind:'atom',atom:a},{kind:'atom',atom:b},{kind:'link',link:makeLink(a.id,b.id)}]);
+ raw.prepare("UPDATE atoms SET state='paused',properties=? WHERE id=?").run(JSON.stringify({'phosphora.pauseState':'now',custom:42}),a.id);
+ raw.prepare("UPDATE atoms SET state='paused' WHERE id=?").run(b.id);
+ raw.exec('ALTER TABLE atoms DROP COLUMN paused;DELETE FROM schema_metadata WHERE version=4;PRAGMA user_version=3');
+ migrate(adapter);migrate(adapter);
+ const data=snapshot(adapter);expect(data.atoms[0]).toMatchObject({state:'now',paused:true,properties:{custom:42},aliases:['Alias']});
+ expect(data.atoms[0].properties).not.toHaveProperty('phosphora.pauseState');expect(data.atoms[1]).toMatchObject({state:'normal',paused:true});expect(data.links).toHaveLength(1);
+ raw.close();
 });

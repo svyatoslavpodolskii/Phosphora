@@ -6,7 +6,7 @@ import {snapshot,transact} from '../src/storage/operations';
 import {PluginRuntime} from '../src/plugins/runtime';
 import {obsidian} from '../src/plugins/obsidian';
 import {DIRECT_VAULTS_KEY,migrateObsidianBindings} from '../src/plugins/obsidian-storage';
-import type {Plugin} from '../src/plugins/api';
+import type {Plugin,PluginAPI} from '../src/plugins/api';
 
 async function setup(){
  const raw=new DatabaseSync(':memory:');const db:Database={exec(q){if(typeof q==='string')raw.exec(q);else raw.prepare(q.sql).run(...q.bind||[]);},selectValue(q,b=[]){const row=raw.prepare(q).get(...b);return row?Object.values(row)[0]:undefined;},selectObjects(q,b=[]){return raw.prepare(q).all(...b);}};migrate(db);
@@ -112,14 +112,26 @@ it('pause preserves each source state across edits, refresh and bulk resume',asy
   await h.core.group([now.id,archived.id],'paused');
   await h.core.setState(now.id,'paused'); // Idempotent plugin API call.
   await h.core.update(now.id,{content:'Edited while paused'});await h.core.refresh();
-  expect(h.core.data.atoms.find(a=>a.id===now.id)?.properties['phosphora.pauseState']).toBe('now');
+  expect(h.core.data.atoms.find(a=>a.id===now.id)).toMatchObject({state:'now',paused:true});
   await h.core.group([now.id,archived.id],'resume');
   expect(h.core.data.atoms.find(a=>a.id===now.id)?.state).toBe('now');
   expect(h.core.data.atoms.find(a=>a.id===archived.id)?.state).toBe('archived');
   expect(h.core.data.atoms.every(a=>!('phosphora.pauseState' in a.properties))).toBe(true);
-  await h.core.setState(now.id,'paused');await h.core.setState(now.id,'archived');await h.core.group([now.id],'resume');
+  await h.core.setPaused(now.id,true);await h.core.setState(now.id,'archived');expect(h.core.data.atoms.find(a=>a.id===now.id)).toMatchObject({state:'archived',paused:true});await h.core.group([now.id],'resume');
   expect(h.core.data.atoms.find(a=>a.id===now.id)?.state).toBe('archived');
   const legacy=await h.core.create({title:'Legacy paused',state:'paused'});await h.core.group([legacy.id],'resume');
   expect(h.core.data.atoms.find(a=>a.id===legacy.id)?.state).toBe('normal');
+ }finally{h.close();}
+});
+
+it('exposes a permission-checked pause modifier through Plugin API',async()=>{
+ const h=await setup();try{
+  const atom=await h.core.create({title:'Plugin target',state:'now'});
+  let api:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.pause'},activate(app){api=app;}});
+  await api!.atoms.setPaused(atom.id,true);
+  expect(h.core.data.atoms.find(a=>a.id===atom.id)).toMatchObject({state:'now',paused:true});
+  let denied:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.pause-readonly',permissions:['atoms.read']},activate(app){denied=app;}});
+  await expect(denied!.atoms.setPaused(atom.id,false)).rejects.toThrow();
+  await api!.atoms.setPaused(atom.id,false);expect(h.core.data.atoms.find(a=>a.id===atom.id)).toMatchObject({state:'now',paused:false});
  }finally{h.close();}
 });

@@ -1,5 +1,5 @@
 export interface Database { exec(sql:string|{sql:string;bind?:any[];rowMode?:string;returnValue?:string}):any; selectValue(sql:string,bind?:any[]):any; selectObjects(sql:string,bind?:any[]):any[] }
-export const SCHEMA_VERSION=3;
+export const SCHEMA_VERSION=4;
 export function migrate(db:Database) {
  const version=Number(db.selectValue('PRAGMA user_version'));
  if(version>SCHEMA_VERSION) throw Error('База создана более новой версией приложения. Обновите приложение.');
@@ -15,8 +15,11 @@ export function migrate(db:Database) {
  INSERT INTO schema_metadata VALUES(1,datetime('now'));`);
  if(version<2) db.exec(`CREATE INDEX IF NOT EXISTS links_from ON links("from"); CREATE INDEX IF NOT EXISTS links_to ON links("to"); CREATE INDEX IF NOT EXISTS atoms_state ON atoms(state); CREATE INDEX IF NOT EXISTS aliases_text ON aliases(alias); CREATE INDEX IF NOT EXISTS atoms_updated ON atoms(updated_at); INSERT INTO schema_metadata VALUES(2,datetime('now'));`);
  if(version<3) db.exec(`ALTER TABLE atoms ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0 CHECK(pinned IN (0,1)); ALTER TABLE atoms ADD COLUMN spatial TEXT NOT NULL DEFAULT '{"resistance":0}'; CREATE INDEX atoms_position ON atoms(x,y); INSERT INTO schema_metadata VALUES(3,datetime('now'));`);
+ if(version<4) db.exec(`ALTER TABLE atoms ADD COLUMN paused INTEGER NOT NULL DEFAULT 0 CHECK(paused IN (0,1));
+ UPDATE atoms SET paused=1,state=CASE WHEN json_extract(properties,'$."phosphora.pauseState"') IN ('now','archived') THEN json_extract(properties,'$."phosphora.pauseState"') ELSE 'normal' END,properties=json_remove(properties,'$."phosphora.pauseState"') WHERE state='paused';
+ INSERT INTO schema_metadata VALUES(4,datetime('now'));`);
  if(db.selectObjects('PRAGMA foreign_key_check').length) throw Error('Нарушена целостность связей.');
- db.exec('PRAGMA user_version=3'); db.exec('COMMIT');
+ db.exec('PRAGMA user_version=4'); db.exec('COMMIT');
  } catch(e) { db.exec('ROLLBACK'); throw e; }
  if(db.selectValue('PRAGMA quick_check')!=='ok') throw Error('Проверка целостности базы не пройдена. Запись остановлена.');
 }

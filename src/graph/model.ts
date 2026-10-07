@@ -15,11 +15,11 @@ export function reduceLinks(atoms:Atom[],links:Link[],selected=''):Link[]{
 export function graphModel(data:Snapshot,lens:string,zoom:number,selected:string,alreadyReduced=false):GraphModel{
  const attention=neighborhood(data,selected,zoom);
  const byId=new Map(data.atoms.map(a=>[a.id,a]));const context=new Set<string>();
- if(lens==='now')for(const l of data.links){if(byId.get(l.from)?.state==='now')context.add(l.to);if(byId.get(l.to)?.state==='now')context.add(l.from);}
+ if(lens==='now')for(const l of data.links){if(byId.get(l.from)?.state==='now'&&!byId.get(l.from)?.paused)context.add(l.to);if(byId.get(l.to)?.state==='now'&&!byId.get(l.to)?.paused)context.add(l.from);}
  const archiveContext=new Set<string>();if(lens==='archived')for(const l of data.links){if(byId.get(l.from)?.state==='archived')archiveContext.add(l.to);if(byId.get(l.to)?.state==='archived')archiveContext.add(l.from);}
- const atoms=data.atoms.filter(a=>lens==='ambient'?true:lens==='archived'?a.state==='archived'||archiveContext.has(a.id):lens==='now'?(a.state==='now'||context.has(a.id))&&a.state!=='archived':a.state!=='archived');
+ const atoms=data.atoms.filter(a=>lens==='ambient'?true:lens==='archived'?a.state==='archived'||archiveContext.has(a.id):lens==='now'?((a.state==='now'&&!a.paused)||context.has(a.id))&&a.state!=='archived':a.state!=='archived');
  const ids=new Set(atoms.map(a=>a.id));const links=data.links.filter(l=>ids.has(l.from)&&ids.has(l.to));const degree=new Map<string,number>();for(const l of links){degree.set(l.from,(degree.get(l.from)||0)+1);degree.set(l.to,(degree.get(l.to)||0)+1);}
- let nodes:GraphNode[]=atoms.map(a=>({id:a.id,x:a.x,y:a.y,attention:1,landmark:a.importance>0||['project','area'].includes(a.type)||(degree.get(a.id)||0)>2,radius:nodeWeight(a,degree.get(a.id)||0),label:a.title,color:a.appearance.color||'#b4ecc1',icon:a.appearance.icon||({task:'✓',person:'♙',project:'◈',idea:'✦'}[a.type]||'·'),shape:a.appearance.shape||(a.type==='task'?'square':'circle'),style:a.appearance.style||'solid',state:a.state,content:a.content,pinned:a.pinned}));
+ let nodes:GraphNode[]=atoms.map(a=>({id:a.id,x:a.x,y:a.y,attention:1,landmark:a.importance>0||['project','area'].includes(a.type)||(degree.get(a.id)||0)>2,radius:nodeWeight(a,degree.get(a.id)||0),label:a.title,color:a.appearance.color||'#b4ecc1',icon:a.appearance.icon||({task:'✓',person:'♙',project:'◈',idea:'✦'}[a.type]||'·'),shape:a.appearance.shape||(a.type==='task'?'square':'circle'),style:a.appearance.style||'solid',state:a.paused?'paused':a.state,content:a.content,pinned:a.pinned}));
  if(zoom<.48){
  const tree=structure({atoms,links});const nodeById=new Map(nodes.map(n=>[n.id,n]));const groups:GraphNode[]=[];
   const group=(id:string)=>{const branches=tree.children.get(id)!.filter(k=>tree.children.get(k)!.length>0);const members=[id,...tree.children.get(id)!.filter(k=>!branches.includes(k))];const node=nodeById.get(id)!;const holds=false;

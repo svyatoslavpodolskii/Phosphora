@@ -4,12 +4,12 @@ import {packStorage} from '../../src/storage/native-backup';
 import {importMap,openSettings,closeSettings,readMap} from './helpers';
 test('full storage backup restores through staged OPFS and rejects damaged input',async({page})=>{
  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
- const original=makeAtom({title:'Portable thought',x:250,y:-90,pinned:true,properties:{custom:'kept'}});
+ const original=makeAtom({title:'Portable thought',state:'now',paused:true,x:250,y:-90,pinned:true,properties:{custom:'kept'}});
  await importMap(page,{atoms:[original],links:[]});await openSettings(page);
  await expect(page.getByRole('button',{name:'Экспорт карты',exact:true})).toBeHidden();
  await page.getByLabel('Режим автосвязей',{exact:true}).selectOption('off');
  const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Создать резервную копию',exact:true}).click();const file=await downloading;
- expect(file.suggestedFilename()).toMatch(/^Основное_.*\.phosphored$/);
+ expect(file.suggestedFilename()).toMatch(/^Основное_.*\.phosphora$/);
  const stream=await file.createReadStream();const chunks:Buffer[]=[];for await(const chunk of stream!)chunks.push(chunk as Buffer);const bytes=Buffer.concat(chunks);
  await closeSettings(page);await importMap(page,{atoms:[original,makeAtom({title:'Later thought'})],links:[]});await openSettings(page);
  await page.getByLabel('Режим автосвязей',{exact:true}).selectOption('automatic');
