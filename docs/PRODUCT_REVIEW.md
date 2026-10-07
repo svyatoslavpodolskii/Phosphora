@@ -20,3 +20,7 @@ The long-term product goal remains active. A published renderer milestone does n
 5. **Remaining product audit:** verify Field/Kanban source grouping, recurrence identity/history, space backup safety, search framing, motion consistency and living graph composition individually against current source and runtime before claiming the full objective achieved.
 
 Next priority: direct link manipulation and the Field/Kanban view audit. Keep the established camera and gestures unless new evidence identifies a regression.
+
+## Task board checkpoint
+
+Implemented Field/Kanban switching, source-atom groups, state changes by selector or pointer drag, independent paused section, daily/weekly recurrence, and completion history. Verified desktop/mobile checkbox and recurrence edits, column changes, reload persistence and return to map in Playwright; verified recurring identity/history through rollover and SQLite reload in unit tests. Remaining broader product and physical-device performance review is still required.

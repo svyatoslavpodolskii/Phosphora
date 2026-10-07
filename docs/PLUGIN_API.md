@@ -81,3 +81,7 @@ Bundled `builtin.branch`, `builtin.molecule`, `builtin.compact` использу
 Atoms expose `paused: boolean` independently of `state` (`normal`, `now`, `archived`). Use `await app.atoms.setPaused(id, true)` to pause and `false` to resume. This method requires `atoms.write`, including in the sandbox. Changing state does not clear pause. Repeated pause is idempotent.
 
 API v1 still accepts legacy `setState(id, 'paused')`, `create` and `update` inputs. Core converts them to the independent modifier. Legacy imports and schema-v3 databases use `phosphora.pauseState` when available; otherwise the original state is unknowable and defaults to `normal`. Migrated atoms expose canonical state plus the boolean. SQLite schema v4, full backups, JSON exports and Markdown frontmatter preserve the modifier; Markdown uses `phosphored_paused` alongside the established compatibility keys.
+
+## Task operations
+
+`atoms.setTask(atomId, taskId, { checked?, recurrence? })` requires `atoms.write`. Recurrence accepts `daily`, `weekly`, or `null` to stop repeating. Task IDs and completion history are stored in the source atom properties under `phosphora.tasks`; Markdown checkboxes remain editable. Stale revisions reject rather than overwriting concurrent edits.

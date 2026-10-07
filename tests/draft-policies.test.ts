@@ -151,3 +151,15 @@ it('direct relationships reconnect atomically, reject conflicts and can be undon
   await expect(h.core.changeLink(null,{...initial,id:'duplicate'})).rejects.toThrow();expect(h.core.data.links).toHaveLength(1);
  }finally{h.close();}
 });
+
+it('keeps recurring task identity and history through rollover and SQLite reload',async()=>{
+ const h=await setup();try{
+  const atom=await h.core.create({title:'Routine',content:'- [ ] Walk'});
+  const {readTasks,dayKey}=await import('../src/core/tasks');const id=readTasks(atom)[0].id;
+  await h.core.setTask(atom.id,id,{recurrence:'daily',checked:true});
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  await h.core.rollTasks(tomorrow);await h.core.init();
+  const saved=h.core.data.atoms.find(a=>a.id===atom.id)!;const task=readTasks(saved)[0];
+  expect(task.id).toBe(id);expect(task.checked).toBe(false);expect(task.history[dayKey()]).toBe(true);expect(h.core.data.atoms).toHaveLength(1);
+ }finally{h.close();}
+});

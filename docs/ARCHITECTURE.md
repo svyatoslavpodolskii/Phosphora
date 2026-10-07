@@ -42,3 +42,7 @@ The existing Canvas surface handles input and gesture feedback above the GPU lay
 `RelationshipLayer.svelte` overlays touch-sized handles and a transient curve above either renderer. Canvas retains pan/pinch and only selects a link on an unmodified tap; `relationships.ts` uses screen-space curve hit testing. Grouped projections do not expose aggregate links as editable stored records. The graph controller includes endpoint IDs in projection/topology signatures so reconnection preserves the relationship ID while updating both retained projections and rest lengths.
 
 `Core.changeLink(before, after)` snapshots scalar inputs before queueing, checks the prior record, rejects duplicate relationships and atomically replaces/removes/inserts the record with rejection metadata. The transient one-step undo uses the same conflict-checked operation. UI state is not persisted as graph data.
+
+## Task board and recurrence
+
+Field and Kanban share the same atoms and states; switching views preserves the mounted map and camera. The board groups Markdown tasks by source atom, with paused sources outside the active columns. Core synchronizes Markdown checkboxes with stable task IDs and local-calendar daily/weekly completion buckets. Rollover runs at startup and each minute through the serialized SQLite transaction queue, updates existing atoms, and retains history. The selected view is a workspace setting.

@@ -3,6 +3,7 @@ import {NoteSearch} from './search';
 import {transitionState,makeAtom,makeLink,type Atom,type AtomState,type Snapshot,type StorageAdapter,type Mutation,type PositionUpdate} from './model';
 import {normalize,candidates,sameTextContext,type Rejection} from './matching';
 import {preferences,type Preferences} from './preferences';
+import {syncTasks,taskPatch,type Recurrence} from './tasks';
 import {DraftPolicies} from './drafts';
 export {normalize} from './matching';
 export class Core {
@@ -33,7 +34,7 @@ export class Core {
  saveDraft(input:Partial<Atom>&{title:string},add:{to:string;relation:string;source?:string}[]=[],remove:string[]=[],parent?:string,preservePosition=true){return this.serial(async()=>{
  const plain=JSON.parse(JSON.stringify(input));const before=input.id?this.data.atoms.find(a=>a.id===input.id):undefined;if(input.id&&!before)throw Error('Атом не найден.');if(!before){delete plain.id;if(plain.x===undefined||plain.y===undefined)Object.assign(plain,this.placementProvider?await this.placementProvider({data:structuredClone(this.data),parent}):this.place(parent));}
  let atom:Atom=before?{...before,...plain,id:before.id,x:preservePosition?before.x:plain.x??before.x,y:preservePosition?before.y:plain.y??before.y,spatial:preservePosition?before.spatial:plain.spatial??before.spatial,created_at:before.created_at,updated_at:new Date().toISOString(),revision:before.revision+1}:makeAtom(plain);
- atom=transitionState(before,atom);
+ atom=syncTasks(transitionState(before,atom),before);
  if(before&&atom.pinned!==before.pinned)atom.spatial={resistance:0};
  const ops:Mutation[]=[{kind:'atom',atom,expectedRevision:before?input.revision??before.revision:undefined}];const text=atom.title+' '+atom.content;const oldRejection=await this.storage.getSetting<Rejection>('rejected:'+atom.id);const rejection:Rejection={text:normalize(text),targets:oldRejection&&sameTextContext(text,oldRejection.text)?[...oldRejection.targets]:[]};
  for(const id of remove){const l=this.data.links.find(l=>l.id===id);if(l){const to=l.from===atom.id?l.to:l.from;rejection.targets.push(to);const other=this.data.atoms.find(a=>a.id===to);if(other){const old=await this.storage.getSetting<Rejection>('rejected:'+to);const otherText=normalize(other.title+' '+other.content);ops.push({kind:'setting',key:'rejected:'+to,value:{text:otherText,targets:[...(old&&sameTextContext(otherText,old.text)?old.targets:[]),atom.id]}});}}ops.push({kind:'unlink',id});}
@@ -86,5 +87,7 @@ export class Core {
   await this.commit([...removed.map(l=>({kind:'unlink' as const,id:l.id})),...added.map(link=>({kind:'link' as const,link}))]);
   for(const l of removed)this.emit('link:delete',{id:l.id});for(const l of added)this.emit('link:create',l);
  });}
+ setTask(id:string,taskId:string,patch:{checked?:boolean;recurrence?:Recurrence|null}){const atom=this.data.atoms.find(a=>a.id===id);if(!atom)return Promise.reject(Error('Atom no longer exists.'));return this.update(id,taskPatch(atom,taskId,patch));}
+ rollTasks(now=new Date()){return this.serial(async()=>{const ops:Mutation[]=[];for(const atom of this.data.atoms){const next=syncTasks(atom,undefined,now,true);if(next.content!==atom.content)ops.push({kind:'atom',expectedRevision:atom.revision,atom:{...next,revision:atom.revision+1,updated_at:new Date().toISOString()}});}if(ops.length){await this.commit(ops);for(const op of ops)if(op.kind==='atom')this.emit('atom:update',op.atom);}});}
  search(query:string):Atom[]{return this.searchIndex.search(query,this.data.atoms);}
 }
