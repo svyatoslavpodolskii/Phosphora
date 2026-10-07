@@ -3,7 +3,7 @@ import {makeAtom} from '../../src/core/model';
 import {packStorage} from '../../src/storage/native-backup';
 import {importMap,openSettings,closeSettings,readMap} from './helpers';
 test('full storage backup restores through staged OPFS and rejects damaged input',async({page})=>{
- await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+ await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
  const original=makeAtom({title:'Portable thought',x:250,y:-90,pinned:true,properties:{custom:'kept'}});
  await importMap(page,{atoms:[original],links:[]});await openSettings(page);
  await expect(page.getByRole('button',{name:'Экспорт карты',exact:true})).toBeHidden();
@@ -22,7 +22,7 @@ test('full storage backup restores through staged OPFS and rejects damaged input
  await expect(page.getByRole('alert')).toBeVisible();await closeSettings(page);expect((await readMap(page)).atoms).toHaveLength(2);
  await openSettings(page);await page.getByLabel('Полная резервная копия',{exact:true}).setInputFiles({name:'backup.phosphora',mimeType:'application/octet-stream',buffer:bytes});
  await page.getByRole('button',{name:'Восстановить хранилище',exact:true}).click();await expect(page.getByRole('dialog',{name:'Настройки',exact:true})).toHaveCount(0);
- await expect(page.locator('canvas')).toBeVisible();const restored=await readMap(page);expect(restored.atoms).toEqual([original]);
+ await expect(page.locator('canvas.map')).toBeVisible();const restored=await readMap(page);expect(restored.atoms).toEqual([original]);
  await openSettings(page);await expect(page.getByLabel('Режим автосвязей',{exact:true})).toHaveValue('off');
  await closeSettings(page);
  await page.getByRole('button',{name:'Выбрать хранилище',exact:true}).click();

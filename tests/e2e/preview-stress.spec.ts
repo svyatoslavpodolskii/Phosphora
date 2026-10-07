@@ -9,7 +9,7 @@ for(const count of [500,1000])test(`Markdown detail remains bounded in a ${count
  fixture.atoms[0].content='## Контекст\n\n**Мысль для проверки**\n\n- [ ] @task Следующий шаг\n- Связанные материалы';
  const layout=arrangeDynamics('branch',{data:fixture,settings:PRESETS.calm,intent:'reflow'});
  const positions=new Map(layout.positions.map(p=>[p.id,p]));for(const atom of fixture.atoms){Object.assign(atom,positions.get(atom.id));atom.pinned=true;}
- await page.goto('/');await expect(page.locator('canvas')).toBeVisible();await importMap(page,fixture);
+ await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();await importMap(page,fixture);
  await focus(page,'Preview anchor',false);for(let i=0;i<5;i++)await page.getByRole('button',{name:'Приблизить',exact:true}).click();
  const preview=page.locator('.content-preview[data-atom="stress-0"]');await expect(preview).toHaveCount(1);
  await expect(preview.locator('strong')).toHaveText('Мысль для проверки');expect(await page.locator('.content-preview').count()).toBeLessThanOrEqual(3);

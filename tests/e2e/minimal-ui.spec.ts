@@ -4,7 +4,7 @@ import {readMap} from './helpers';
 for(const mobile of [false,true])test(`minimal card and visual appearance persist on ${mobile?'mobile':'desktop'}`,async({page})=>{
  const width=mobile?390:1280,height=mobile?844:800;
  await page.setViewportSize({width,height});await page.goto('/');
- await page.locator('canvas').press('n');
+ await page.locator('canvas.map').press('n');
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Музыка для нового дня');
  await page.getByRole('textbox',{name:'Текст',exact:true}).fill('Собрать звуки, к которым хочется возвращаться.\n\nТихое утро, немного джаза и одна неожиданная мелодия.');
  const editor=page.getByRole('dialog',{name:'Редактор атома'});
@@ -13,7 +13,7 @@ for(const mobile of [false,true])test(`minimal card and visual appearance persis
  await expect(editor.getByRole('button',{name:'Закрепить',exact:true})).toHaveCount(0);
  await page.screenshot({animations:'disabled',path:`artifacts/minimal-card-${mobile?'mobile':'desktop'}.png`});
  await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(editor).toBeHidden();
- const openMenu=async()=>{await page.locator('canvas').click({position:{x:width/2,y:height/2},button:'right'});await expect(page.getByRole('dialog',{name:'Действия с атомом'})).toBeVisible();};
+ const openMenu=async()=>{await page.locator('canvas.map').click({position:{x:width/2,y:height/2},button:'right'});await expect(page.getByRole('dialog',{name:'Действия с атомом'})).toBeVisible();};
  await openMenu();const menu=page.getByRole('dialog',{name:'Действия с атомом'});
  expect((await menu.boundingBox())!.height).toBeLessThan(440);
  await page.screenshot({animations:'disabled',path:`artifacts/minimal-menu-${mobile?'mobile':'desktop'}.png`});
@@ -24,12 +24,12 @@ for(const mobile of [false,true])test(`minimal card and visual appearance persis
  await expect(page.locator('.preview-atom')).toHaveClass(/diamond/);
  await page.screenshot({animations:'disabled',path:`artifacts/minimal-appearance-${mobile?'mobile':'desktop'}.png`});
  await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(menu).toBeHidden();
- await page.reload();await expect(page.locator('canvas')).toHaveAttribute('data-nodes','1');
+ await page.reload();await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','1');
  expect((await readMap(page)).atoms[0].appearance).toMatchObject({color:'#d4a2e5',shape:'diamond',icon:'✦'});
  await openMenu();await page.getByRole('button',{name:'Оформление',exact:true}).click();
  await page.getByRole('button',{name:'Роза',exact:true}).click();await page.getByRole('button',{name:'Закрыть меню атома'}).click();
  expect((await readMap(page)).atoms[0].appearance.color).toBe('#d4a2e5');
- await page.locator('canvas').click({position:{x:width/2,y:height/2}});
+ await page.locator('canvas.map').click({position:{x:width/2,y:height/2}});
  await expect(page.locator('.markdown')).toContainText('Тихое утро');
  expect(await page.getByRole('textbox',{name:'Название',exact:true}).evaluate(el=>document.activeElement===el)).toBe(false);
  await page.getByRole('button',{name:'Редактировать',exact:true}).click();

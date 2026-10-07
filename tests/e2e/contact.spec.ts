@@ -8,7 +8,7 @@ test('slow contact on the production canvas stays compact and zoom preserves res
   makeAtom({id:'contact-a',title:'A',x:0,y:0,pinned:true,appearance:{size_override:30}}),
   makeAtom({id:'contact-b',title:'B',x:130,y:0,appearance:{size_override:30}}),
  ],links:[]});
- await expect(page.locator('canvas')).toHaveAttribute('data-nodes','2');
+ await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','2');
  await page.mouse.move(640,360);await page.mouse.down();
  await page.mouse.move(690,360,{steps:30});await page.waitForTimeout(300);await page.mouse.up();
  let data=await readMap(page);

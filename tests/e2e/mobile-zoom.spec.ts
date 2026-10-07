@@ -14,7 +14,7 @@ async function touch(cdp:Cdp,type:'touchStart'|'touchMove'|'touchEnd',points:Tou
 
 /** Records the camera the renderer actually used, once per animation frame. */
 async function record(page:any){
-  await page.evaluate(()=>{const c=document.querySelector('canvas')!,log:number[][]=[];(function l(){log.push([Number(c.getAttribute('data-camera-x')),Number(c.getAttribute('data-camera-y')),Number(c.getAttribute('data-zoom'))]);if(log.length<40000)requestAnimationFrame(l);})();(window as any).__cam=log;});
+  await page.evaluate(()=>{const c=document.querySelector('canvas.map')!,log:number[][]=[];(function l(){log.push([Number(c.getAttribute('data-camera-x')),Number(c.getAttribute('data-camera-y')),Number(c.getAttribute('data-zoom'))]);if(log.length<40000)requestAnimationFrame(l);})();(window as any).__cam=log;});
 }
 const read=async(page:any)=>page.evaluate(()=>{const l=(window as any).__cam as number[][];delete (window as any).__cam;return l;});
 
@@ -43,14 +43,14 @@ async function pinch(cdp:Cdp,cx:number,cy:number,from:number,to:number,steps=14)
 const page_wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 
 async function ready(page:any,count:number){
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   // Pinned, so any movement the test sees is the interaction's doing and not the
   // background refinement, which is allowed to keep working underneath.
   const data=stressFixture(count);for(const a of data.atoms)a.pinned=true;
   await importMap(page,data);
   const toast=page.getByRole('button',{name:'Скрыть уведомление',exact:true});if(await toast.isVisible())await toast.click();
-  await expect(page.locator('canvas')).toHaveAttribute('data-layout','idle',{timeout:30000});
-  await page.getByRole('button',{name:'К центру карты',exact:true}).tap();
+  await expect(page.locator('canvas.map')).toHaveAttribute('data-layout','idle',{timeout:30000});
+  // Pinned fixture starts at the viewport centre; mobile zoom buttons are hidden.
   await page.waitForTimeout(800);
 }
 
@@ -58,7 +58,7 @@ for(const count of [100,500,1000]){
   test(`${count} atoms: pinch on a phone is smooth and never jumps`,async({page,context})=>{
     test.setTimeout(240000);
     await ready(page,count);
-    const canvas=page.locator('canvas');
+    const canvas=page.locator('canvas.map');
     const before=(await readMap(page)).atoms.map(a=>[a.id,a.x,a.y]).sort();
 
     const cdp=await context.newCDPSession(page);
@@ -78,9 +78,9 @@ for(const count of [100,500,1000]){
     // The camera followed the fingers instead of chasing them afterwards.
     expect(step.reversals).toBe(0);
     // And the gesture landed on what was asked for, with nothing left in flight.
-    const settled=await page.locator('canvas').getAttribute('data-zoom');
+    const settled=await page.locator('canvas.map').getAttribute('data-zoom');
     await page.waitForTimeout(400);
-    expect(Math.abs(Number(await page.locator('canvas').getAttribute('data-zoom'))-Number(settled))).toBeLessThan(1e-6);
+    expect(Math.abs(Number(await page.locator('canvas.map').getAttribute('data-zoom'))-Number(settled))).toBeLessThan(1e-6);
     expect(Number(settled)).toBeCloseTo(Number(settled),6);
 
     // Selection is untouched by any of it, and the world never moves.
@@ -94,7 +94,7 @@ for(const count of [100,500,1000]){
 test('the point between the fingers stays under the fingers',async({page,context})=>{
   test.setTimeout(180000);
   await ready(page,100);
-  const view=async()=>page.evaluate(()=>{const c=document.querySelector('canvas')!;const r=c.getBoundingClientRect();return{x:Number(c.getAttribute('data-camera-x')),y:Number(c.getAttribute('data-camera-y')),zoom:Number(c.getAttribute('data-zoom')),w:r.width,h:r.height,left:r.left,top:r.top};});
+  const view=async()=>page.evaluate(()=>{const c=document.querySelector('canvas.map')!;const r=c.getBoundingClientRect();return{x:Number(c.getAttribute('data-camera-x')),y:Number(c.getAttribute('data-camera-y')),zoom:Number(c.getAttribute('data-zoom')),w:r.width,h:r.height,left:r.left,top:r.top};});
   // Pinch around a point that is deliberately not the centre of the screen.
   const centre={x:120,y:560};
   const start=await view();
@@ -112,9 +112,9 @@ test('the point between the fingers stays under the fingers',async({page,context
 test('zoom stays smooth across the level of detail boundary and on the way back',async({page,context})=>{
   test.setTimeout(180000);
   await ready(page,500);
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   // Reach the level where the map is grouped, so the boundary is actually crossed.
-  for(let i=0;i<8&&Number(await canvas.getAttribute('data-nodes'))>=200;i++){await page.getByRole('button',{name:'Отдалить',exact:true}).tap();await page.waitForTimeout(240);}
+  for(let i=0;i<8&&Number(await canvas.getAttribute('data-nodes'))>=200;i++){await canvas.press('-');await page.waitForTimeout(240);}
   expect(Number(await canvas.getAttribute('data-nodes'))).toBeLessThan(200);
   const cdp=await context.newCDPSession(page);
   await record(page);
@@ -144,6 +144,6 @@ test('input stays responsive while the background refines the layout',async({pag
   const step=quality(await read(page));
   expect(step.reversals).toBe(0);
   expect(step.moving).toBeGreaterThan(40);
-  await expect(page.locator('canvas')).toHaveAttribute('data-transition','idle');
+  await expect(page.locator('canvas.map')).toHaveAttribute('data-transition','idle');
   await page.screenshot({path:'artifacts/mobile-pinch-1000-refine.png'});
 });

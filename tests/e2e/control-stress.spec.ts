@@ -21,7 +21,7 @@ function fixtureOfSize(groups:number):Snapshot{
 
 /** Records the camera the renderer actually used, once per animation frame. */
 async function startRecorder(page:Page){
-  await page.evaluate(()=>{const c=document.querySelector('canvas')!,log:number[][]=[];(function loop(){log.push([Number(c.getAttribute('data-camera-x')),Number(c.getAttribute('data-camera-y')),Number(c.getAttribute('data-zoom'))]);if(log.length<20000)requestAnimationFrame(loop);})();(window as any).__cameraLog=log;});
+  await page.evaluate(()=>{const c=document.querySelector('canvas.map')!,log:number[][]=[];(function loop(){log.push([Number(c.getAttribute('data-camera-x')),Number(c.getAttribute('data-camera-y')),Number(c.getAttribute('data-zoom'))]);if(log.length<20000)requestAnimationFrame(loop);})();(window as any).__cameraLog=log;});
 }
 async function readRecorder(page:Page){
   return page.evaluate(()=>{const log=(window as any).__cameraLog as number[][];delete (window as any).__cameraLog;return log;});
@@ -63,7 +63,7 @@ async function driveMap(page:Page,rounds:number){
 
 test('100 atoms: continuous control never produces a camera jump',async({page})=>{
   test.setTimeout(180000);
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const data=fixtureOfSize(3);
   await importMap(page,data);
   await dismissToast(page);
@@ -84,12 +84,12 @@ test('100 atoms: continuous control never produces a camera jump',async({page})=
 
 test('500 atoms: level of detail crossings read as a transition, not a rebuild',async({page})=>{
   test.setTimeout(240000);
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const data=fixtureOfSize(17);
   expect(data.atoms).toHaveLength(476);
   await importMap(page,data);
   await dismissToast(page);
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   await settleMap(page);
   const grouped=Number(await canvas.getAttribute('data-nodes'));
   expect(grouped).toBeLessThan(140);
@@ -111,12 +111,12 @@ test('500 atoms: level of detail crossings read as a transition, not a rebuild',
 
 test('1000 atoms: input stays smooth while the background keeps refining',async({page})=>{
   test.setTimeout(300000);
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const data=fixtureOfSize(35);
   expect(data.atoms).toHaveLength(980);
   await importMap(page,data);
   await dismissToast(page);
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   await settleMap(page);
   await startRecorder(page);
   await driveMap(page,4);

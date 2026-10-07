@@ -8,16 +8,16 @@ async function install(page:Page,id:string,name:string,permissions:string[],sour
 }
 async function command(page:Page,name:string){await page.getByRole('button',{name:'Меню карты',exact:true}).click();await page.getByRole('button',{name,exact:true}).click();}
 test('community draft policy participates in atomic saves and is removed on disable',async({page})=>{
- await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+ await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
  await install(page,'test.drafts','Draft policy acceptance',['atoms.read','atoms.write','links.read','links.write'],`export async function activate(app){await app.atoms.registerDraftPolicy({id:'properties',name:'Draft properties',prepare:async({atom})=>({properties:{draftPlugin:'preserved',draftTitle:atom.title}})});}`);
- async function create(title:string){await page.locator('canvas').press('n');await page.getByRole('textbox',{name:'Название',exact:true}).fill(title);await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog',{name:'Редактор атома'})).toBeHidden();}
+ async function create(title:string){await page.locator('canvas.map').press('n');await page.getByRole('textbox',{name:'Название',exact:true}).fill(title);await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog',{name:'Редактор атома'})).toBeHidden();}
  await create('With policy');let map=await readMap(page);expect(map.atoms[0].properties).toMatchObject({draftPlugin:'preserved',draftTitle:'With policy'});
- await page.reload();await expect(page.locator('canvas')).toBeVisible();await create('After reload');map=await readMap(page);expect(map.atoms.find(a=>a.title==='After reload')?.properties.draftPlugin).toBe('preserved');
+ await page.reload();await expect(page.locator('canvas.map')).toBeVisible();await create('After reload');map=await readMap(page);expect(map.atoms.find(a=>a.title==='After reload')?.properties.draftPlugin).toBe('preserved');
  await openSettings(page);await page.getByRole('button',{name:'Плагины →',exact:true}).click();await page.locator('.plugin-row').filter({hasText:'Draft policy acceptance'}).getByRole('button',{name:'Выключить',exact:true}).click();await closeSettings(page);
  await create('Without policy');map=await readMap(page);expect(map.atoms.find(a=>a.title==='Without policy')?.properties.draftPlugin).toBeUndefined();expect(map.atoms.find(a=>a.title==='With policy')?.properties.draftPlugin).toBe('preserved');
 });
 test('all five public graph providers replace production, resources and lifecycle survive reload',async({page})=>{
- const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
  await install(page,'test.providers','Provider acceptance',['graph','atoms.read','atoms.write','ui','settings'],`export const activate=async app=>{
  await app.graph.registerMapTool({id:'selection',name:'Selection',kind:'lasso'});
  const report=async key=>{if(!await app.settings.get(key))await app.settings.set(key,true);};

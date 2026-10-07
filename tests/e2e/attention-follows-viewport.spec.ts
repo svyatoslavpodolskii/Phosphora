@@ -16,8 +16,8 @@ function branches(){
   }
   return {atoms,links};
 }
-const focus=async(page:any)=>page.locator('canvas').getAttribute('data-visual-focus');
-const selected=async(page:any)=>page.locator('canvas').getAttribute('data-focus');
+const focus=async(page:any)=>page.locator('canvas.map').getAttribute('data-visual-focus');
+const selected=async(page:any)=>page.locator('canvas.map').getAttribute('data-focus');
 
 async function swipe(context:BrowserContext,page:any,from:{x:number;y:number},to:{x:number;y:number}){
   const cdp=await context.newCDPSession(page);
@@ -26,7 +26,7 @@ async function swipe(context:BrowserContext,page:any,from:{x:number;y:number},to
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   await cdp.detach();
 }
-const cameraX=async(page:any)=>Number(await page.locator('canvas').getAttribute('data-camera-x'));
+const cameraX=async(page:any)=>Number(await page.locator('canvas.map').getAttribute('data-camera-x'));
 async function swipeOnScreen(context:BrowserContext,page:any,dx:number,dy:number){
   // Well away from any node: this has to be a camera gesture, not a drag.
   await swipe(context,page,{x:195,y:700},{x:195+dx,y:700+dy});
@@ -34,7 +34,7 @@ async function swipeOnScreen(context:BrowserContext,page:any,dx:number,dy:number
 async function travelTo(context:BrowserContext,page:any,worldX:number){
   // Pan by however many screen pixels that world distance is at the current zoom,
   // so the gesture lands where it is meant to on any viewport.
-  const zoom=Number(await page.locator('canvas').getAttribute('data-zoom'));
+  const zoom=Number(await page.locator('canvas.map').getAttribute('data-zoom'));
   const from=await cameraX(page);
   const need=Math.max(20,Math.round(worldX*zoom));
   for(let moved=0;moved<need;moved+=60)await swipeOnScreen(context,page,Math.min(60,need-moved),0);  await page.waitForTimeout(500);
@@ -42,11 +42,11 @@ async function travelTo(context:BrowserContext,page:any,worldX:number){
 }
 
 test('panning away from a selection moves attention, and the selection survives',async({page,context})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   await importMap(page,branches());
   await page.getByRole('button',{name:'К центру карты',exact:true}).tap();
   await page.waitForTimeout(700);
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
 
   // Choose something in the Alpha region. Search is the deterministic way to make
   // a selection; the camera is then put back under our control.
@@ -71,14 +71,14 @@ test('panning away from a selection moves attention, and the selection survives'
   const after=await focus(page);
   expect(after).toMatch(/^g/);
   // And the chosen atom no longer dominates the frame.
-  const prominence=await page.evaluate((id:string)=>{const c=document.querySelector('canvas')!;return{id,hover:c.getAttribute('data-hover')};},chosen);
+  const prominence=await page.evaluate((id:string)=>{const c=document.querySelector('canvas.map')!;return{id,hover:c.getAttribute('data-hover')};},chosen);
   expect(prominence.id).toBe(chosen);
 });
 
 test('zooming out hands the hierarchy to branches and landmarks, with no new tap',async({page})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   await importMap(page,branches());
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   await page.getByRole('button',{name:'К центру карты',exact:true}).tap();
   await page.waitForTimeout(700);
   await page.getByRole('button',{name:'Открыть поиск',exact:true}).tap();
@@ -103,7 +103,7 @@ test('zooming out hands the hierarchy to branches and landmarks, with no new tap
 });
 
 test('zooming into somewhere else moves attention there without a tap',async({page,context})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   await importMap(page,branches());
   await page.getByRole('button',{name:'К центру карты',exact:true}).tap();
   await page.waitForTimeout(700);

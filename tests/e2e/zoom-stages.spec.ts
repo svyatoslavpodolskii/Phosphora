@@ -3,11 +3,11 @@ import {makeAtom,makeLink} from '../../src/core/model';
 import {importMap,readMap} from './helpers';
 
 /** Reads the live view transform straight off the canvas. */
-const view=async(page:any)=>page.evaluate(()=>{const c=document.querySelector('canvas')!;const r=c.getBoundingClientRect();return{x:Number(c.getAttribute('data-camera-x')),y:Number(c.getAttribute('data-camera-y')),zoom:Number(c.getAttribute('data-zoom')),w:r.width,h:r.height,left:r.left,top:r.top};});
+const view=async(page:any)=>page.evaluate(()=>{const c=document.querySelector('canvas.map')!;const r=c.getBoundingClientRect();return{x:Number(c.getAttribute('data-camera-x')),y:Number(c.getAttribute('data-camera-y')),zoom:Number(c.getAttribute('data-zoom')),w:r.width,h:r.height,left:r.left,top:r.top};});
 const screenOf=(v:any,world:{x:number;y:number})=>({x:v.left+v.w/2+v.x+world.x*v.zoom,y:v.top+v.h/2+v.y+world.y*v.zoom});
 
 test('the world point under the pointer stays under it through a whole zoom',async({page})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const anchor=makeAtom({id:'anchor',title:'Anchor note',x:0,y:0,pinned:true});
   await importMap(page,{atoms:[anchor],links:[]});
   await page.getByRole('button',{name:'К центру карты',exact:true}).click();
@@ -17,7 +17,7 @@ test('the world point under the pointer stays under it through a whole zoom',asy
   // Sample the anchor's screen position on every frame of a continuous zoom.
   const drift:number[]=[];
   for(let i=0;i<10;i++){
-   await page.evaluate(([x,y]:[number,number])=>{const c=document.querySelector('canvas')!;c.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,clientX:x,clientY:y,bubbles:true,cancelable:true}));},[held.x,held.y]);
+   await page.evaluate(([x,y]:[number,number])=>{const c=document.querySelector('canvas.map')!;c.dispatchEvent(new WheelEvent('wheel',{deltaY:-100,clientX:x,clientY:y,bubbles:true,cancelable:true}));},[held.x,held.y]);
    await page.waitForTimeout(35);
    const now=await view(page),seen=screenOf(now,anchor);
    drift.push(Math.hypot(seen.x-held.x,seen.y-held.y));
@@ -34,10 +34,10 @@ test('the world point under the pointer stays under it through a whole zoom',asy
 });
 
 test('zooming never changes what is selected, and hover is not selection',async({page})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const atoms=[makeAtom({id:'a',title:'Near branch',x:0,y:0,pinned:true}),makeAtom({id:'b',title:'Near child',x:200,y:70,pinned:true}),makeAtom({id:'c',title:'Other branch',x:1600,y:0,pinned:true}),makeAtom({id:'d',title:'Other child',x:1800,y:70,pinned:true})];
   await importMap(page,{atoms,links:[makeLink('a','b'),makeLink('c','d')]});
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   await page.getByRole('button',{name:'К центру карты',exact:true}).click();
   await page.waitForTimeout(400);
   await expect(canvas).toHaveAttribute('data-focus','');
@@ -55,10 +55,10 @@ test('zooming never changes what is selected, and hover is not selection',async(
 });
 
 test('empty canvas coasts to a stop and never moves atoms',async({page})=>{
-  await page.goto('/');await expect(page.locator('canvas')).toBeVisible();
+  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
   const atoms=[makeAtom({id:'a',title:'One',x:0,y:0,pinned:true}),makeAtom({id:'b',title:'Two',x:1600,y:0,pinned:true})];
   await importMap(page,{atoms,links:[makeLink('a','b')]});
-  const canvas=page.locator('canvas');
+  const canvas=page.locator('canvas.map');
   await page.getByRole('button',{name:'К центру карты',exact:true}).click();
   await page.waitForTimeout(500);
   await page.mouse.move(350,170);await page.mouse.down();await page.mouse.move(440,190,{steps:5});await page.mouse.up();

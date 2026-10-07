@@ -2,11 +2,11 @@
 import {focus,readMap} from './helpers';
 test('compact appearance flow, linked creation and offline persistence',async({page,context})=>{
  await page.goto('/');
- await page.locator('canvas').press('n');
+ await page.locator('canvas.map').press('n');
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Atom A');
  await page.getByRole('button',{name:'Сохранить',exact:true}).click();
  await expect(page.getByRole('dialog')).toBeHidden();
- const canvas=page.locator('canvas');
+ const canvas=page.locator('canvas.map');
  const menu=async()=>{await focus(page,'Atom A',false);await canvas.click({position:{x:640,y:360},button:'right'});};
  await menu();await page.getByRole('button',{name:'Закрепить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
  await menu();await page.getByRole('group',{name:'Важность',exact:true}).getByRole('button',{name:'Ключевой',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
