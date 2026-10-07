@@ -66,3 +66,23 @@ test('Canvas fallback remains interactive when WebGL is unavailable',async({page
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Fallback');await page.getByRole('button',{name:'Сохранить',exact:true}).click();
  await expect(page.locator('canvas.map')).toHaveAttribute('data-renderer','canvas');await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','1');
 });
+
+
+test('GPU textures stay consistent across zoom and theme cache refresh',async({page})=>{
+ await page.addInitScript(()=>{
+  window.addEventListener('phosphora-theme-change',e=>(window as any).__theme=(e as CustomEvent).detail);
+  for(const prototype of [WebGLRenderingContext.prototype,WebGL2RenderingContext.prototype]){
+   const get=prototype.getParameter;prototype.getParameter=function(parameter:number){return parameter===37446?'GPU test fixture':get.call(this,parameter);};
+  }
+ });
+ await page.goto('/');const map=page.locator('canvas.map');await expect(map).toHaveAttribute('data-renderer','webgl');
+ await importMap(page,{atoms:[makeAtom({id:'texture-a',title:'First',pinned:true,x:0,y:0,appearance:{icon:'X',size_override:18}}),makeAtom({id:'texture-b',title:'Second',pinned:true,x:2,y:1,appearance:{icon:'O',size_override:18}})],links:[]});
+ await expect(map).toHaveAttribute('data-nodes','2');
+ for(const key of ['-','-','-','-','+','+','+','+']){
+  await map.press(key);await page.waitForTimeout(700);
+  const before=await map.screenshot({animations:'disabled'});
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('phosphora-theme-change',{detail:(window as any).__theme})));
+  await page.waitForTimeout(100);
+  expect(await map.screenshot({animations:'disabled'})).toEqual(before);
+ }
+});
