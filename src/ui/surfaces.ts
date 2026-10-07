@@ -16,3 +16,6 @@ export function surface(node:HTMLElement,options:Options){
  if(!stack.length&&!history.state?.[marker])history.pushState({...history.state,[marker]:true},'');stack.push(entry);node.style.zIndex=String(100+stack.length*2);
  return {update(value:Options){entry.options=value;},destroy(){const index=stack.indexOf(entry);if(index>=0)stack.splice(index,1);queueMicrotask(()=>{if(!stack.length&&history.state?.[marker]){pendingBack=true;history.back();}if(entry.focus?.isConnected&&!top())entry.focus.focus({preventScroll:true});});}};
 }
+
+/** App history must not restore a map location while a surface owns the entry. */
+export function surfaceOwnsHistory(){return pendingBack||stack.length>0;}

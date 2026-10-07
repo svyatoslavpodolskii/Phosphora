@@ -35,3 +35,17 @@ it('camera changes never wake resting physics; semantic changes reuse the retain
  vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();const step=vi.fn(input=>({nodes:input.nodes,energy:0})),project=vi.fn(({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected));providers.physics.set('test',{id:'test',name:'Test',step});providers.clustering.set('test',{id:'test',name:'Test',project});providers.reduction.set('test',{id:'test',name:'Test',reduce:({data})=>data.links});providers.weight.set('test',{id:'test',name:'Test',weigh:data=>Object.fromEntries(data.atoms.map(a=>[a.id,30]))});const render=vi.fn(),persist=vi.fn(async()=>{}),error=vi.fn(),controller=new GraphController(providers,render,persist,error);
  try{controller.sync({atoms:[makeAtom({title:'Still',x:200,y:-80})],links:[]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);const count=step.mock.calls.length,projections=project.mock.calls.length;for(const zoom of [.9,.8,.7,.6])controller.view({x:zoom*70,y:zoom*30,zoom},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(step).toHaveBeenCalledTimes(count);expect(project).toHaveBeenCalledTimes(projections);controller.view({x:0,y:0,zoom:.3},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(project).toHaveBeenCalledTimes(projections);expect(step).toHaveBeenCalledTimes(count);expect(error).not.toHaveBeenCalled();}finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
+
+it('reconnection with the same link ID updates both retained projections',async()=>{
+ vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();
+ providers.physics.set('test',{id:'test',name:'Test',step:input=>({nodes:input.nodes,energy:0})});
+ providers.clustering.set('test',{id:'test',name:'Test',project:({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected)});
+ providers.reduction.set('test',{id:'test',name:'Test',reduce:({data})=>data.links});
+ providers.weight.set('test',{id:'test',name:'Test',weigh:data=>Object.fromEntries(data.atoms.map(a=>[a.id,30]))});
+ let latest:any;const error=vi.fn(),controller=new GraphController(providers,m=>latest=m,async()=>{},error);
+ const atoms=['a','b','c'].map((id,i)=>makeAtom({id,title:id,x:i*200,pinned:true})),link=makeLink('a','b');
+ try{controller.sync({atoms,links:[link]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);
+  controller.sync({atoms,links:[{...link,to:'c'}]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);
+  expect(latest.expanded.links[0]).toMatchObject({id:link.id,from:'a',to:'c'});expect(error).not.toHaveBeenCalled();
+ }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
+});

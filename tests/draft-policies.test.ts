@@ -1,6 +1,7 @@
 import {it,expect} from 'vitest';
 import {DatabaseSync} from 'node:sqlite';
 import {Core} from '../src/core/core';
+import {makeLink} from '../src/core/model';
 import {migrate,type Database} from '../src/storage/schema';
 import {snapshot,transact} from '../src/storage/operations';
 import {PluginRuntime} from '../src/plugins/runtime';
@@ -133,5 +134,20 @@ it('exposes a permission-checked pause modifier through Plugin API',async()=>{
   let denied:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.pause-readonly',permissions:['atoms.read']},activate(app){denied=app;}});
   await expect(denied!.atoms.setPaused(atom.id,false)).rejects.toThrow();
   await api!.atoms.setPaused(atom.id,false);expect(h.core.data.atoms.find(a=>a.id===atom.id)).toMatchObject({state:'now',paused:false});
+ }finally{h.close();}
+});
+
+it('direct relationships reconnect atomically, reject conflicts and can be undone',async()=>{
+ const h=await setup();try{
+  const a=await h.core.create({title:'Source'}),b=await h.core.create({title:'Target'}),c=await h.core.create({title:'Other'});
+  const initial=makeLink(a.id,b.id,'depends');await h.core.changeLink(null,initial);
+  const next={...initial,to:c.id};await h.core.changeLink(initial,next);
+  expect(h.core.data.links).toEqual([next]);
+  await expect(h.core.changeLink(initial,null)).rejects.toThrow();expect(h.core.data.links).toEqual([next]);
+  await h.core.changeLink(next,initial);expect(h.core.data.links).toEqual([initial]);
+  await expect(h.core.changeLink(initial,{...initial,to:'missing'})).rejects.toThrow();expect(h.core.data.links).toEqual([initial]);
+  await h.core.changeLink(initial,null);expect(h.core.data.links).toHaveLength(0);
+  await h.core.changeLink(null,initial);expect(h.core.data.links).toEqual([initial]);
+  await expect(h.core.changeLink(null,{...initial,id:'duplicate'})).rejects.toThrow();expect(h.core.data.links).toHaveLength(1);
  }finally{h.close();}
 });
