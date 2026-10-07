@@ -1,6 +1,6 @@
 import type {Atom,AtomState,Link,Snapshot,Appearance} from '../core/model';
 import type {DraftPolicy} from '../core/drafts';
-import type {StructuralProvider,PhysicsProvider,LayoutProvider,ClusteringProvider,LinkReductionProvider,NodeWeightProvider} from '../graph/providers';
+import type {MapTool,StructuralProvider,PhysicsProvider,LayoutProvider,ClusteringProvider,LinkReductionProvider,NodeWeightProvider} from '../graph/providers';
 export type Permission='atoms.read'|'atoms.write'|'links.read'|'links.write'|'graph'|'ui'|'storage'|'settings';
 export const PERMISSIONS:Permission[]=['atoms.read','atoms.write','links.read','links.write','graph','ui','storage','settings'];
 export type SettingField={key:string;label:string}&({type:'boolean';default:boolean}|{type:'text';default:string});
@@ -15,7 +15,7 @@ export interface PluginAPI {
  events:{on:(event:string,handler:(payload:any)=>void)=>()=>void};
  commands:{add:(command:Command)=>()=>void};
  types:{register:(type:AtomType)=>()=>void};
- graph:{registerStructuralProvider:(provider:StructuralProvider)=>()=>void;focus:(id:string)=>void;registerLayout:(layout:Layout)=>()=>void;registerPhysicsProvider:(provider:PhysicsProvider)=>()=>void;registerLayoutProvider:(provider:LayoutProvider)=>()=>void;registerClusteringProvider:(provider:ClusteringProvider)=>()=>void;registerLinkReductionProvider:(provider:LinkReductionProvider)=>()=>void;registerNodeWeightProvider:(provider:NodeWeightProvider)=>()=>void};
+ graph:{registerMapTool:(tool:MapTool)=>()=>void;registerStructuralProvider:(provider:StructuralProvider)=>()=>void;focus:(id:string)=>void;registerLayout:(layout:Layout)=>()=>void;registerPhysicsProvider:(provider:PhysicsProvider)=>()=>void;registerLayoutProvider:(provider:LayoutProvider)=>()=>void;registerClusteringProvider:(provider:ClusteringProvider)=>()=>void;registerLinkReductionProvider:(provider:LinkReductionProvider)=>()=>void;registerNodeWeightProvider:(provider:NodeWeightProvider)=>()=>void};
  ui:{notify:(text:string)=>void;registerContextAction:(command:Command)=>()=>void};
  views:{register:(view:PluginView)=>()=>void};
  storage:{get:<T>(key:string)=>Promise<T|undefined>;set:(key:string,value:unknown)=>Promise<void>};

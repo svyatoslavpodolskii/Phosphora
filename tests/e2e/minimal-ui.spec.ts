@@ -4,7 +4,7 @@ import {readMap} from './helpers';
 for(const mobile of [false,true])test(`minimal card and visual appearance persist on ${mobile?'mobile':'desktop'}`,async({page})=>{
  const width=mobile?390:1280,height=mobile?844:800;
  await page.setViewportSize({width,height});await page.goto('/');
- await page.getByRole('button',{name:'+ Первый атом',exact:true}).click();
+ await page.locator('canvas').press('n');
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Музыка для нового дня');
  await page.getByRole('textbox',{name:'Текст',exact:true}).fill('Собрать звуки, к которым хочется возвращаться.\n\nТихое утро, немного джаза и одна неожиданная мелодия.');
  const editor=page.getByRole('dialog',{name:'Редактор атома'});

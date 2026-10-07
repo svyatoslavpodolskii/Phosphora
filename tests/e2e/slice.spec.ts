@@ -2,7 +2,7 @@
 import {focus,readMap} from './helpers';
 test('compact appearance flow, linked creation and offline persistence',async({page,context})=>{
  await page.goto('/');
- await page.getByRole('button',{name:'+ Первый атом',exact:true}).click();
+ await page.locator('canvas').press('n');
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Atom A');
  await page.getByRole('button',{name:'Сохранить',exact:true}).click();
  await expect(page.getByRole('dialog')).toBeHidden();

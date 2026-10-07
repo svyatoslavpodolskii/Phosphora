@@ -20,6 +20,15 @@ Manifest: `id`, `name`, `version`, `apiVersion: 1`, `permissions`. Префик�
 
 Контракты пяти providers: `src/graph/providers.ts`. Последний включённый provider соответствующего вида становится активным; выключение возвращает предыдущий, включая встроенный. Physics получает тела, связи, настройки, dt и reducedMotion, возвращает тела и energy. Координаты и радиусы — world space; pinned, dragged и boundary контроллер дополнительно защищает от перемещения. Layout возвращает позицию нового атома. Clustering возвращает визуальную проекцию; link reduction — подмножество существующих Links; node weight — радиусы по ID. Встроенный `builtin.graph` использует эти же контракты и выполняет вычисления в graph Worker.
 
+### Инструменты карты
+
+`app.graph.registerMapTool({id, name, kind})` требует разрешение `graph` и возвращает disposer. В community-плагине регистрацию нужно ожидать через `await`. Поддерживаемые `kind`:
+
+- `ambient-lens`: линзы «Сейчас» и «Архив» сохраняют всю карту, приглушая и обесцвечивая остальные атомы. Фильтрация и оформление не изменяют данные или координаты.
+- `lasso`: удержание пустого места 550 мс, затем обведение одним пальцем. Отпускание без движения создаёт атом в этой точке. На компьютере также работает Shift + обведение. Второй палец отменяет лассо и начинает pinch. Выделение поддерживает общие действия, перенос и перемещение в группу.
+
+Несколько регистраций одного вида совместимы: инструмент действует, пока остаётся хотя бы одна регистрация. Выключение плагина автоматически снимает его регистрации. Контракт декларативный: обработчики указателя остаются в приложении и не вызывают RPC во время движения пальца. Встроенные `builtin.ambient` и `builtin.lasso` используют этот публичный API; по умолчанию оба выключены.
+
 ### Структурная модель и связанная физика
 
 `app.graph.registerStructuralProvider({id, name, description, physicsId, defaults, arrange})` требует `graph`. `physicsId` — локальный ID зарегистрированного PhysicsProvider этого пакета (либо полный `plugin.id:providerId`). Модель появляется в настройках карты. Выбор связывает её раскладку с указанной физикой; отдельно зарегистрированный непарный PhysicsProvider по-прежнему может заменить физику. Если все модели выключены, сохранённая карта остаётся доступной без симуляции.
@@ -38,7 +47,7 @@ Bundled `builtin.branch`, `builtin.molecule`, `builtin.compact` использу
 | events | on | atoms.read / links.read / graph / settings по событию |
 | commands | add | ui |
 | types | register | ui |
-| graph | focus, registerStructuralProvider, registerLayout, registerPhysicsProvider, registerLayoutProvider, registerClusteringProvider, registerLinkReductionProvider, registerNodeWeightProvider | graph |
+| graph | focus, registerMapTool, registerStructuralProvider, registerLayout, registerPhysicsProvider, registerLayoutProvider, registerClusteringProvider, registerLinkReductionProvider, registerNodeWeightProvider | graph |
 | ui | notify, registerContextAction | ui |
 | views | register | ui |
 | storage | get, set | storage |

@@ -52,5 +52,24 @@ export class Core {
  unlink(id:string){return this.serial(async()=>{const l=this.data.links.find(l=>l.id===id);const ops:Mutation[]=[{kind:'unlink',id}];if(l)for(const [from,to] of [[l.from,l.to],[l.to,l.from]]){const a=this.data.atoms.find(a=>a.id===from);if(a){const old=await this.storage.getSetting<Rejection>('rejected:'+from);const text=normalize(a.title+' '+a.content);ops.push({kind:'setting',key:'rejected:'+from,value:{text,targets:[...(old&&sameTextContext(text,old.text)?old.targets:[]),to]}});}}await this.commit(ops);this.emit('link:delete',{id});});}
  delete(id:string){return this.serial(async()=>{const backups=await this.storage.getSetting<{at:string;data:Snapshot}[]>('backups')||[];await this.commit([{kind:'setting',key:'backups',value:[{at:new Date().toISOString(),data:this.data},...backups].slice(0,3)},{kind:'delete',id}]);this.emit('atom:delete',{id});});}
  group(ids:string[],action:AtomState|'pin'|'unpin'|'delete'){return this.serial(async()=>{const members=this.data.atoms.filter(a=>ids.includes(a.id));const ops:Mutation[]=[];if(action==='delete'){const backups=await this.storage.getSetting<{at:string;data:Snapshot}[]>('backups')||[];ops.push({kind:'setting',key:'backups',value:[{at:new Date().toISOString(),data:this.data},...backups].slice(0,3)});for(const a of members)ops.push({kind:'delete',id:a.id});}else for(const a of members)ops.push({kind:'atom',expectedRevision:a.revision,atom:{...a,...(action==='pin'||action==='unpin'?{pinned:action==='pin',spatial:{resistance:0}}:{state:action}),revision:a.revision+1,updated_at:new Date().toISOString()}});await this.commit(ops);for(const op of ops){if(op.kind==='atom')this.emit('atom:update',op.atom);if(op.kind==='delete')this.emit('atom:delete',{id:op.id});}});}
+ groupUpdate(ids:string[],patch:Partial<Pick<Atom,'importance'|'appearance'>>){return this.serial(async()=>{
+  const members=this.data.atoms.filter(a=>ids.includes(a.id));
+  await this.commit(members.map(a=>({kind:'atom',expectedRevision:a.revision,atom:{...a,...patch,revision:a.revision+1,updated_at:new Date().toISOString()}})));
+  for(const a of this.data.atoms.filter(a=>ids.includes(a.id)))this.emit('atom:update',a);
+ });}
+ moveInto(ids:string[],target:string){return this.serial(async()=>{
+  const selected=new Set(ids);const parent=this.data.atoms.find(a=>a.id===target);
+  if(!parent||selected.has(target)||!ids.length||ids.some(id=>!this.data.atoms.some(a=>a.id===id)))throw Error('Выберите группу вне выделения.');
+  // A grouped link has one parent. Moving a group must never make a cycle.
+  const descendants=new Set(selected);let changed=true;
+  while(changed){changed=false;for(const l of this.data.links)if(l.relation==='grouped'&&descendants.has(l.from)&&!descendants.has(l.to)){descendants.add(l.to);changed=true;}}
+  if(descendants.has(target))throw Error('Нельзя переместить группу внутрь самой себя.');
+  const internal=this.data.links.filter(l=>l.relation==='grouped'&&selected.has(l.from)&&selected.has(l.to));
+  const roots=[...selected].filter(id=>!internal.some(l=>l.to===id));
+  const removed=this.data.links.filter(l=>l.relation==='grouped'&&selected.has(l.to)&&!selected.has(l.from));
+  const added=roots.map(id=>makeLink(target,id,'grouped','manual'));
+  await this.commit([...removed.map(l=>({kind:'unlink' as const,id:l.id})),...added.map(link=>({kind:'link' as const,link}))]);
+  for(const l of removed)this.emit('link:delete',{id:l.id});for(const l of added)this.emit('link:create',l);
+ });}
  search(query:string):Atom[]{return this.searchIndex.search(query,this.data.atoms);}
 }

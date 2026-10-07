@@ -12,9 +12,9 @@ it('new workspace starts with one model and optional features off, once',async()
 });
 it('upgrade preserves enabled features, calendar defaults and explicit choices',async()=>{
  const h=storage({'disabled-builtins':['builtin.daily'],'plugin:builtin.daily:years':false});
- expect(await initializePluginDefaults(h.adapter,true)).toEqual(['builtin.daily','builtin.daily-tasks']);
+ expect(await initializePluginDefaults(h.adapter,true)).toEqual(['builtin.daily','builtin.daily-tasks','builtin.ambient','builtin.lasso']);
  expect(h.values['plugin:builtin.daily:years']).toBe(false);
  expect(h.values['plugin:builtin.daily:months']).toBe(true);
- const old=storage({map:{}});expect(await initializePluginDefaults(old.adapter,false)).toEqual(['builtin.daily-tasks']);
- const populated=storage();expect(await initializePluginDefaults(populated.adapter,true)).toEqual(['builtin.daily-tasks']);
+ const old=storage({map:{}});expect(await initializePluginDefaults(old.adapter,false)).toEqual(['builtin.daily-tasks','builtin.ambient','builtin.lasso']);
+ const populated=storage();expect(await initializePluginDefaults(populated.adapter,true)).toEqual(['builtin.daily-tasks','builtin.ambient','builtin.lasso']);
 });

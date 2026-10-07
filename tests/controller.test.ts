@@ -13,7 +13,12 @@ it('drag moves connected free atoms but preserves pins and unrelated islands',as
  let latest:any;const persist=vi.fn(async()=>{}),error=vi.fn(),controller=new GraphController(providers,m=>latest=m,persist,error);
  const atoms=['a','b','pin','island'].map((id,i)=>makeAtom({id,title:id,x:i*200,y:0,pinned:id==='pin'}));
  try{controller.sync({atoms,links:[makeLink('a','b'),makeLink('a','pin')]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);
- controller.beginDrag('a');controller.drag('a',100,50);
+ controller.beginDrag('a');
+ // A hand sends far more pointer events than the screen has frames. Rebuilding
+ // the projection per event is what made a drag feel like it was fighting the hand.
+ const node0=(id:string)=>latest.expanded.nodes.find((n:any)=>n.id===id);const shown=latest;for(let i=1;i<=20;i++)controller.drag('a',i*5,i*2.5);
+ expect(latest).toBe(shown);expect(node0('a').x).toBe(100);expect(node0('a').y).toBe(50);
+ controller.cancelDrag();controller.beginDrag('a');controller.drag('a',100,50);
  const node=(id:string)=>latest.expanded.nodes.find((n:any)=>n.id===id);
  expect(node('a').x).toBe(100);expect(node('b').x).toBeGreaterThan(200);expect(node('b').x).toBeLessThan(300);expect(node('b').y).toBeGreaterThan(0);
  expect(node('pin').x).toBe(400);expect(node('pin').y).toBe(0);expect(node('island').x).toBe(600);

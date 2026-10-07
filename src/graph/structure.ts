@@ -10,6 +10,17 @@ export function structure(data:Snapshot){
   // be the same every time the same knowledge is loaded, or the map stops being
   // a place the user can rely on.
   for(const atom of [...data.atoms].sort((a,b)=>rank(b.id)-rank(a.id)||a.created_at.localeCompare(b.created_at)||a.id.localeCompare(b.id))){if(seen.has(atom.id))continue;roots.push(atom.id);seen.add(atom.id);const queue=[atom.id];for(let i=0;i<queue.length;i++){const id=queue[i];const links=[...adjacency.get(id)!].sort((a,b)=>Number(b.source==='context')-Number(a.source==='context')||a.from.localeCompare(b.from)||a.to.localeCompare(b.to)||a.relation.localeCompare(b.relation));for(const l of links){const other=l.from===id?l.to:l.from;if(seen.has(other))continue;seen.add(other);edges.add(l.id);parent.set(other,id);children.get(id)!.push(other);queue.push(other);}}}
+ // Explicit user grouping outranks the inferred tree. Other relationships remain
+ // in the graph as cross-links. Break only inferred edges when they form a cycle.
+ const explicit=new Set<string>();
+ const detach=(child:string)=>{const from=parent.get(child);if(!from)return;children.set(from,children.get(from)!.filter(id=>id!==child));parent.delete(child);for(const l of adjacency.get(child)||[])if((l.from===from&&l.to===child)||(l.to===from&&l.from===child))edges.delete(l.id);};
+ for(const l of data.links.filter(l=>l.relation==='grouped'&&atoms.has(l.from)&&atoms.has(l.to)).sort((a,b)=>a.created_at.localeCompare(b.created_at)||a.id.localeCompare(b.id))){
+  const path:string[]=[];let cursor:string|undefined=l.from;
+  while(cursor&&cursor!==l.to){path.push(cursor);cursor=parent.get(cursor);}
+  if(cursor===l.to){const inferred=path.find(id=>!explicit.has(id));if(!inferred)continue;detach(inferred);}
+  detach(l.to);parent.set(l.to,l.from);children.get(l.from)!.push(l.to);edges.add(l.id);explicit.add(l.to);
+ }
+ if(explicit.size)roots.splice(0,roots.length,...data.atoms.filter(a=>!parent.has(a.id)).map(a=>a.id));
  const size=new Map<string,number>();const count=(id:string):number=>{const value=1+children.get(id)!.reduce((sum,k)=>sum+count(k),0);size.set(id,value);return value;};roots.forEach(count);
  const descendants=(id:string):string[]=>[id,...children.get(id)!.flatMap(descendants)];
  return {roots,parent,children,size,edges,descendants};

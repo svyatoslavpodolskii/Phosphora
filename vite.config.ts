@@ -1,6 +1,13 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
+import { readFileSync } from 'node:fs';
+
+// The version shown in the app is the real one, and every build stamps itself.
+// A phone keeps running the old bundle until the page reloads, so without a
+// per build stamp there is no way to tell an updated PWA from a stale one.
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
+const buildId = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
 const isolationHeaders = {
   'Cross-Origin-Opener-Policy': 'same-origin',
@@ -10,6 +17,10 @@ const isolationHeaders = {
 export default defineConfig({
   // One build works at a domain root and under any GitHub Pages repository path.
   base: './',
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(pkg.version),
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(buildId),
+  },
   plugins: [
     svelte(),
     VitePWA({
@@ -21,8 +32,8 @@ export default defineConfig({
         lang: 'ru',
         start_url: '.',
         display: 'standalone',
-        background_color: '#101b1a',
-        theme_color: '#101b1a',
+        background_color: '#141618',
+        theme_color: '#141618',
         icons: [
           {
             src: 'icon.svg',

@@ -9,6 +9,10 @@ const view={width:1000,height:700};
 const node=(id:string,x:number,y=0,over:Partial<GraphNode>={}):GraphNode&{opacity:number}=>({id,x,y,radius:26,label:id,color:'#b4ecc1',icon:'·',shape:'circle',style:'solid',state:'normal',opacity:1,...over});
 const screen=(p:{x:number;y:number},camera:{x:number;y:number;zoom:number})=>({x:view.width/2+camera.x+p.x*camera.zoom,y:view.height/2+camera.y+p.y*camera.zoom});
 const regionsAt=(nodes:GraphNode[],camera:any)=>hitRegions(nodes.map(n=>({...n,opacity:1})),camera,view);
+it('a lone atom keeps a clickable label at distant zoom',()=>{
+ const region=regionsAt([node('Lone',0)],{x:0,y:0,zoom:.08})[0];expect(region.label).toBeDefined();
+ expect(pickTarget([region],{x:region.body.x,y:region.body.y+region.label!.bottom-1}).id).toBe('Lone');
+});
 
 it('hit testing follows what is painted, including the label',()=>{
   const camera={x:0,y:0,zoom:1},atoms=[node('a',-200),node('b',200)];

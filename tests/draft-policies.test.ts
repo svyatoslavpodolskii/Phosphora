@@ -16,6 +16,25 @@ async function setup(){
 }
 const manifest={id:'test.drafts',name:'Draft policy',version:'1',apiVersion:1,permissions:['atoms.read','atoms.write','links.read','links.write']} satisfies Plugin['manifest'];
 
+it('moves a selection atomically, preserves its internal group and rejects cycles',async()=>{
+ const h=await setup();try{
+  const old=await h.core.create({title:'Old'}),target=await h.core.create({title:'Target'}),root=await h.core.create({title:'Root'}),child=await h.core.create({title:'Child'});
+  await h.core.link(old.id,root.id,'grouped');await h.core.link(root.id,child.id,'grouped');await h.core.link(root.id,old.id,'related');
+  await h.core.moveInto([root.id,child.id],target.id);
+  expect(h.core.data.links.filter(l=>l.relation==='grouped').map(l=>[l.from,l.to])).toEqual([[root.id,child.id],[target.id,root.id]]);
+  expect(h.core.data.links.some(l=>l.relation==='related'&&l.to===old.id)).toBe(true);
+  const before=JSON.stringify(h.core.data);await expect(h.core.moveInto([target.id],child.id)).rejects.toThrow();expect(JSON.stringify(h.core.data)).toBe(before);
+  await h.core.groupUpdate([root.id,child.id],{importance:2,appearance:{color:'#eda8ae'}});expect(h.core.data.atoms.filter(a=>[root.id,child.id].includes(a.id)).every(a=>a.importance===2&&a.appearance.color==='#eda8ae')).toBe(true);expect(h.core.data.atoms.find(a=>a.id===target.id)?.importance).toBe(0);
+ }finally{h.close();}
+});
+it('map tool registrations require graph permission and disappear when disabled',async()=>{
+ const h=await setup();try{
+  const plugin:Plugin={manifest:{id:'test.map-tools',name:'Tools',version:'1',apiVersion:1,permissions:['graph']},activate:app=>{app.graph.registerMapTool({id:'selection',name:'Selection',kind:'lasso'});}};
+  await h.runtime.enable(plugin);expect(h.runtime.providers.hasTool('lasso')).toBe(true);h.runtime.disable(plugin.manifest.id);expect(h.runtime.providers.hasTool('lasso')).toBe(false);
+  await expect(h.runtime.enable({...plugin,manifest:{...plugin.manifest,permissions:[]}})).rejects.toThrow('graph');expect(h.runtime.providers.tools.size).toBe(0);
+ }finally{h.close();}
+});
+
 it('migrates bindings once and delegates unique file naming to the enabled plugin',async()=>{
  const h=await setup();try{
   const bindings=[{vault:'source',name:'Existing',files:{'old.md':{disk:'disk-hash',local:'local-hash'}}}];

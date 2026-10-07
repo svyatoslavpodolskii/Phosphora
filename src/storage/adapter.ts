@@ -22,6 +22,7 @@ export class SQLiteAdapter implements StorageAdapter {
  workspaces(){return this.call<WorkspaceCatalog>('workspaces');}
  createWorkspace(name:string){return this.call<WorkspaceCatalog>('createWorkspace',name);}
  renameWorkspace(id:string,name:string){return this.call<WorkspaceCatalog>('renameWorkspace',id,name);}
+ deleteWorkspace(id:string){return trackSave(()=>this.call<WorkspaceCatalog>('deleteWorkspace',id));}
  selectWorkspace(id:string){return this.call<WorkspaceCatalog>('selectWorkspace',id);}
  close(){this.stopped=true;this.worker.terminate();this.release?.();for(const p of this.pending.values())p.reject(Error('Хранилище закрыто.'));this.pending.clear();}
 }

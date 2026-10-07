@@ -21,6 +21,7 @@ const toScreen=(x:number,y:number,camera:Camera,view:{width:number;height:number
  *  label and the state caption the canvas actually draws. */
 export function hitRegions(nodes:(GraphNode&{opacity?:number})[],camera:Camera,view:{width:number;height:number},selected='',states:Record<string,string>={}):HitRegion[]{
   const regions:HitRegion[]=[];
+  const grouped=new Set(nodes.filter(n=>n.members&&(n.opacity??1)>.003).flatMap(n=>n.members!));
   for(const node of nodes){
    const opacity=node.opacity??1;
    if(opacity<=.02)continue;
@@ -28,24 +29,24 @@ export function hitRegions(nodes:(GraphNode&{opacity?:number})[],camera:Camera,v
    const r=Math.max(4,node.radius*camera.zoom);
    const foot=visualFootprint(node.label,node.radius,camera.zoom,view.width,node.id===selected||camera.zoom>1.2?states[node.id]||node.state:'normal');
    const region:HitRegion={id:node.id,kind:node.members?'cluster':'atom',members:node.members,body:{x:center.x,y:center.y,r},depth:node.members?1:0,opacity};
-   if(camera.zoom>.2&&(camera.zoom>.55||node.members||r>22||node.id===selected))region.label={x:center.x,y:center.y,halfWidth:foot.halfWidth*camera.zoom,top:foot.top*camera.zoom,bottom:foot.bottom*camera.zoom};
+   if(camera.zoom>.55||node.members||node.landmark||node.radius>36||!grouped.has(node.id)||node.id===selected)region.label={x:center.x,y:center.y,halfWidth:foot.halfWidth*camera.zoom,top:foot.top*camera.zoom,bottom:foot.bottom*camera.zoom};
    regions.push(region);
   }
   return regions;
 }
 
-interface Measurement{score:number;miss:boolean}
+interface Measurement{score:number;miss:boolean;part:'body'|'label'}
 function measure(region:HitRegion,point:Point,tolerance:number):Measurement{
   const d=Math.hypot(region.body.x-point.x,region.body.y-point.y);
-  if(d<=region.body.r)return{score:region.depth*DEPTH_PENALTY,miss:false};
+  if(d<=region.body.r)return{score:region.depth*DEPTH_PENALTY,miss:false,part:'body'};
   if(region.label){
    const l=region.label;
    if(point.x>=l.x-l.halfWidth&&point.x<=l.x+l.halfWidth&&point.y>=l.y-l.top&&point.y<=l.y+l.bottom)
-    return{score:region.depth*DEPTH_PENALTY+LABEL_PENALTY,miss:false};
+    return{score:region.depth*DEPTH_PENALTY+LABEL_PENALTY,miss:false,part:'label'};
   }
   const reach=region.body.r+tolerance;
-  if(d<=reach)return{score:region.depth*DEPTH_PENALTY+LABEL_PENALTY+.35+(d-region.body.r)/Math.max(1,reach-region.body.r),miss:true};
-  return{score:Infinity,miss:true};
+  if(d<=reach)return{score:region.depth*DEPTH_PENALTY+LABEL_PENALTY+.35+(d-region.body.r)/Math.max(1,reach-region.body.r),miss:true,part:'label'};
+  return{score:Infinity,miss:true,part:'body'};
 }
 
 /** Chooses the target the pointer is actually aimed at, and keeps it there.
@@ -53,18 +54,18 @@ function measure(region:HitRegion,point:Point,tolerance:number):Measurement{
  *  cluster can never swallow the atom drawn inside it. */
 export function pickTarget(regions:HitRegion[],point:Point,previous='',touch=false){
   const tolerance=touch?TOUCH_TOLERANCE:MOUSE_TOLERANCE;
-  let best:string='',bestScore=Infinity;
-  const scores=new Map<string,number>();
+  let best:string='',bestScore=Infinity,part:'body'|'label'='body';
+  const scores=new Map<string,number>(),parts=new Map<string,'body'|'label'>();
   for(const region of regions){
    const measured=measure(region,point,tolerance);
    const value=measured.score/(region.kind==='cluster'?1:1.35);
-   scores.set(region.id,value);
-   if(value<bestScore){bestScore=value;best=region.id;}
+   scores.set(region.id,value);parts.set(region.id,measured.part);
+   if(value<bestScore){bestScore=value;best=region.id;part=measured.part;}
   }
-  if(!best)return{id:'',changed:previous!==''};
+  if(!best)return{id:'',changed:previous!=='',part:'body' as const};
   // Intent stability: an aimed target is only released for a clearly better one.
-  if(previous&&previous!==best&&scores.has(previous)&&bestScore>=scores.get(previous)!-HANDOVER)return{id:previous,changed:false};
-  return{id:best,changed:previous!==best};
+  if(previous&&previous!==best&&scores.has(previous)&&bestScore>=scores.get(previous)!-HANDOVER)return{id:previous,changed:false,part:parts.get(previous)??'body'};
+  return{id:best,changed:previous!==best,part};
 }
 
 export type IntentPhase='idle'|'hover'|'selected'|'focused'|'opened';
