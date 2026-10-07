@@ -148,7 +148,7 @@ export class CameraRig{
    this.wake();
   }
   /** Stops all motion where it stands. Used when the user grabs the canvas. */
-  halt(){this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.settled=true;this.moving=false;}
+  halt(){this.direct=false;this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.settled=true;this.moving=false;}
 
   /** Records that the hand produced another event, and how long since the last one. */
   private event(){

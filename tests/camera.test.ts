@@ -152,3 +152,9 @@ it('reduced motion applies the target immediately',()=>{
   h.beat();h.rig.zoomAt({x:300,y:200},2);
   expect(h.rig.value.zoom).toBe(2);expect(h.rig.moving).toBe(false);
 });
+
+it('interrupting a live pan does not strand subsequent wheel zoom',()=>{
+ const rig=new CameraRig();rig.resize(view);rig.trackTo({x:40,y:20,zoom:1});rig.halt();
+ expect(rig.gesturing).toBe(false);rig.zoomAt({x:300,y:200},1.4);settle(rig);
+ expect(rig.value.zoom).toBeCloseTo(1.4,3);
+});

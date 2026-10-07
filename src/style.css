@@ -139,7 +139,7 @@ and the floating zoom cluster is just furniture over the thing being touched. */
 
 /* Gestures own the mobile viewport; desktop keeps precise zoom controls. */
 @media (pointer:coarse), (max-width:650px){.zoom-controls{display:none}}
-main.booting{background:#141618;color:#d9dddf}main.booting header{visibility:hidden}
+html,body,#app{background:#141618}main.booting{background:#141618;color:#d9dddf;--theme-text:#d9dddf}main.booting header,main.booting footer{visibility:hidden}
 main.app-ready{animation:map-appear .35s ease-out}
 @keyframes map-appear{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){main.app-ready{animation:none}}
