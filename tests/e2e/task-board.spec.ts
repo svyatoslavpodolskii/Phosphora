@@ -6,7 +6,7 @@ for(const mobile of [false,true])test(`task board persists tasks and source stat
  await page.setViewportSize({width:mobile?390:1280,height:844});await page.goto('/');
  await importMap(page,{atoms:[makeAtom({id:'tasks',title:'Project',content:'- [ ] First task\n- [ ] Second task',pinned:true})],links:[]});
  await page.locator('.view-toggle button').last().click();
- const group=page.locator('[data-source="tasks"]');await expect(group).toBeVisible();
+ await expect(page.locator('.toast')).toHaveCount(0);const group=page.locator('[data-source="tasks"]');await expect(group).toBeVisible();
  await group.getByRole('checkbox',{name:'First task',exact:true}).check();
  await group.locator('details').first().locator('summary').click();
  await group.locator('details').first().locator('select').first().selectOption('daily');
@@ -25,10 +25,14 @@ for(const mobile of [false,true])test(`task board persists tasks and source stat
  const start={x:box.x+box.width/2,y:box.y+box.height/2};
  const cdp=await page.context().newCDPSession(page);
  if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...start,id:1}]});else{await page.mouse.move(start.x,start.y);await page.mouse.down();}
+ await expect(page.locator('.task-drag-preview')).toBeVisible();await expect(group).toHaveClass(/drag-source/);await page.screenshot({path:`artifacts/task-drag-${mobile?'mobile':'desktop'}.png`});
+ if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});else{await page.keyboard.press('Escape');await page.mouse.up();}
+ await expect(page.locator('.task-drag-preview')).toHaveCount(0);await expect(page.locator('[data-task-lane="now"] [data-source="tasks"]')).toBeVisible();
+ if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...start,id:1}]});else{await page.mouse.move(start.x,start.y);await page.mouse.down();}
  const target=page.locator('.task-destinations [data-task-lane="archived"]');await expect(target).toBeVisible();const end=(await target.boundingBox())!;const dest={x:end.x+end.width/2,y:end.y+end.height/2};
  if(mobile){for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:start.x+(dest.x-start.x)*i/8,y:start.y+(dest.y-start.y)*i/8,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}else{await page.mouse.move(dest.x,dest.y,{steps:8});await page.mouse.up();}
  await expect(page.locator('[data-task-lane="archived"] [data-source="tasks"]')).toBeVisible();
- expect((await readMap(page)).atoms[0].state).toBe('archived');
+ await expect(page.locator('.task-drag-preview')).toHaveCount(0);expect((await readMap(page)).atoms[0].state).toBe('archived');
  await page.locator('.search-trigger').click();await page.locator('.search input').fill('Project');await page.locator('.search-results button').first().click();await expect(page.locator('canvas.map')).toBeVisible();await expect(page.locator('.kanban')).toHaveCount(0);
 });
 

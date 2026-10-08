@@ -42,7 +42,7 @@
  let branch=$state<string[]>([]);let workspaces=$state(false);let workspaceName=$state('Основное');
   let prefs=$state(preferences());let contextIds=$state<string[]>([]);let contextId=$state('');let editorSection=$state('');
   let board=$state(false);
-  async function changeView(value:boolean){board=value;try{await core.storage.transaction([{kind:'setting',key:'workspace-view',value:value?'kanban':'field'}]);}catch(e){error=(e as Error).message;}}
+  async function changeView(value:boolean){notice='';board=value;try{await core.storage.transaction([{kind:'setting',key:'workspace-view',value:value?'kanban':'field'}]);}catch(e){error=(e as Error).message;}}
   let core:Core=$state()!;let runtime:PluginRuntime=$state()!;let data:Snapshot=$state({atoms:[],links:[]});let camera=$state({x:0,y:0,zoom:1});let ready=$state(false);let fatal=$state(false);let error=$state('');let notice=$state('');let editing:Partial<Atom>|null=$state(null);let parent:string|undefined=$state();let selected=$state('');let query=$state('');let lens=$state('all');let persistent=$state(false);let settings=$state(false);let menu=$state(false);let registry=$state(0);let installEvent:any=$state(null);let offlineReady=$state(false);let activeView=$state<ViewDefinition|null>(null);let searchInput:HTMLInputElement;let searchButton:HTMLButtonElement;let searchOpen=$state(false);
   $effect(()=>{if(ready)applyTheme(currentTheme(prefs.theme,prefs.customThemes));});
   const states:Record<AtomState,string>={normal:'Обычный',now:'Сейчас',paused:'Пауза',archived:'Архив'};
