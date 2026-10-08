@@ -1,6 +1,6 @@
 import {it,expect} from 'vitest';
 import {makeAtom} from '../src/core/model';
-import {readTasks,syncTasks,taskPatch,tasksAt,occurrence} from '../src/core/tasks';
+import {readTasks,syncTasks,taskPatch,tasksAt,occurrence,taskHistory} from '../src/core/tasks';
 it('parses real checklists, ignores fenced examples and retains identity through edits and insertions',()=>{
  let atom=syncTasks(makeAtom({title:'Project',content:'- [ ] First\n- [x] Second\n```md\n- [ ] Example\n```'}));
  const tasks=readTasks(atom);expect(tasks.map(t=>t.text)).toEqual(['First','Second']);
@@ -19,4 +19,10 @@ it('weekly occurrences use local Monday and completed one-off tasks stay complet
  expect(occurrence('weekly',new Date(2026,9,11,12))).toBe('2026-10-05');expect(occurrence('weekly',new Date(2026,9,12,12))).toBe('2026-10-12');
  const atom=syncTasks(makeAtom({title:'Once',content:'- [x] Done'}));expect(tasksAt(atom,new Date(2030,0,1))[0].checked).toBe(true);
  expect(()=>taskPatch(atom,'missing',{checked:true})).toThrow();expect(()=>taskPatch(atom,readTasks(atom)[0].id,{checked:'yes' as any})).toThrow();
+});
+
+it('shows chronological calendar history without counting weekly completions seven times',()=>{
+ const atom=syncTasks(makeAtom({title:'Weekly',content:'- [ ] Review'}));const now=new Date(2026,9,8,12),id=readTasks(atom)[0].id;
+ const task=readTasks({...atom,...taskPatch(atom,id,{recurrence:'weekly',checked:true},now)})[0];
+ const week=taskHistory(task,7,now);expect(week.map(d=>d.key)).toEqual(['2026-09-28','2026-10-05']);expect(week.filter(d=>d.completed)).toHaveLength(1);expect(week.at(-1)?.current).toBe(true);
 });

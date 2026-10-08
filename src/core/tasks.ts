@@ -34,3 +34,10 @@ export function taskPatch(atom:Atom,id:string,patch:{checked?:boolean;recurrence
  lines[task.line]=lines[task.line].replace(/\[([ xX])\]/,task.checked?'[x]':'[ ]');
  return {content:lines.join(atom.content.includes('\r\n')?'\r\n':'\n'),properties:{...atom.properties,[KEY]:tasks}};
 }
+
+/** Calendar occurrences in a trailing window; weekly buckets are counted once. */
+export function taskHistory(task:NoteTask,days:7|30,now=new Date()){
+ const entries=new Map<string,{key:string;completed:boolean;current:boolean}>();
+ for(let i=days-1;i>=0;i--){const date=new Date(now);date.setDate(date.getDate()-i);const key=task.recurrence?occurrence(task.recurrence,date):dayKey(date);entries.set(key,{key,completed:task.history[key]===true,current:key===(task.recurrence?occurrence(task.recurrence,now):dayKey(now))});}
+ return [...entries.values()];
+}

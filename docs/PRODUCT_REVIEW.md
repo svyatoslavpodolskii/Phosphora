@@ -24,3 +24,5 @@ Next priority: direct link manipulation and the Field/Kanban view audit. Keep th
 ## Task board checkpoint
 
 Implemented Field/Kanban switching, source-atom groups, state changes by selector or pointer drag, independent paused section, daily/weekly recurrence, and completion history. Verified desktop/mobile checkbox and recurrence edits, column changes, reload persistence and return to map in Playwright; verified recurring identity/history through rollover and SQLite reload in unit tests. Remaining broader product and physical-device performance review is still required.
+
+Recurring-task history now shows calendar occurrences in the trailing 7/30-day window, with weekly completions counted once. Desktop mouse and CDP touch group drag are verified. Search from Kanban returns to the visible map before focusing its result. Typecheck/build, 150 unit tests, and both board browser scenarios pass.
