@@ -8,3 +8,10 @@ test('spatial search, browser history and editor return preserve the world',asyn
  await page.locator('canvas.map').press('Enter');await expect(page.getByRole('dialog',{name:'Редактор атома'})).toBeVisible();await page.keyboard.press('Escape');await expect(page.getByRole('dialog',{name:'Редактор атома'})).toBeHidden();await expect(page.locator('canvas.map')).toHaveAttribute('data-focus','nav-b');
  const after=await readMap(page);expect(after.atoms.map(a=>[a.id,a.x,a.y]).sort()).toEqual(atoms.map(a=>[a.id,a.x,a.y]).sort());
 });
+
+test('transient menu owns keyboard focus and consumes outside input',async({page})=>{
+ await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();await page.locator('header>button').last().click();const menu=page.locator('.main-menu');await expect(menu).toBeVisible();const buttons=menu.locator('button');await expect(buttons.first()).toBeFocused();
+ await buttons.last().focus();await page.keyboard.press('Tab');await expect(buttons.first()).toBeFocused();await page.keyboard.press('Shift+Tab');await expect(buttons.last()).toBeFocused();
+ await page.keyboard.press('Control+k');await expect(page.locator('.search input')).not.toBeFocused();await expect(buttons.last()).toBeFocused();
+ await page.evaluate(()=>document.querySelector<HTMLCanvasElement>('canvas.map')!.focus());await expect(buttons.first()).toBeFocused();await page.keyboard.press('Escape');await expect(menu).toHaveCount(0);await expect(page.locator('header>button').last()).toBeFocused();
+});
