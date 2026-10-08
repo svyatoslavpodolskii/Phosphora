@@ -163,3 +163,17 @@ it('keeps recurring task identity and history through rollover and SQLite reload
   expect(task.id).toBe(id);expect(task.checked).toBe(false);expect(task.history[dayKey()]).toBe(true);expect(h.core.data.atoms).toHaveLength(1);
  }finally{h.close();}
 });
+
+it('snapshots plugin write arguments before queued work and returns isolated task data',async()=>{
+ const h=await setup();try{
+  let api:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.task-writes'},activate(app){api=app;}});
+  const input={title:'Original',content:'- [ ] Read',properties:{nested:{value:1}}};const creating=api!.atoms.create(input);input.title='Mutated';input.properties.nested.value=9;const created=await creating;
+  expect(created.title).toBe('Original');expect(created.properties.nested).toEqual({value:1});
+  const patch={title:'Updated',properties:{nested:{value:2}}};const updating=api!.atoms.update(created.id,patch);patch.title='Mutated again';patch.properties.nested.value=10;await updating;
+  expect(h.core.data.atoms[0].title).toBe('Updated');expect(h.core.data.atoms[0].properties.nested).toEqual({value:2});
+  const {readTasks}=await import('../src/core/tasks');const taskId=readTasks(h.core.data.atoms[0])[0].id;
+  const completed=await api!.atoms.setTask(created.id,taskId,{recurrence:'daily',checked:true});(completed.properties['phosphora.tasks'] as any[])[0].history={};expect(Object.values(readTasks(h.core.data.atoms[0])[0].history)).toContain(true);
+  let denied:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.task-reader',permissions:['atoms.read']},activate(app){denied=app;}});await expect(denied!.atoms.setTask(created.id,taskId,{checked:false})).rejects.toThrow('atoms.write');
+  h.runtime.disable('test.task-writes');await expect(api!.atoms.setTask(created.id,taskId,{checked:false})).rejects.toThrow();expect(readTasks(h.core.data.atoms[0])[0].checked).toBe(true);
+ }finally{h.close();}
+});

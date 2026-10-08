@@ -49,3 +49,10 @@ test('sandbox pause modifier preserves state through independent changes',async(
  await command(page,'Run pause API');
  expect((await readMap(page)).atoms.find(a=>a.title==='Pause API atom')).toMatchObject({state:'archived',paused:true});
 });
+
+test('sandbox task API completes a recurring source task and persists its history',async({page})=>{
+ await page.goto('/');await install(page,'test.tasks','Task API',['atoms.read','atoms.write','ui'],`export async function activate(app){await app.commands.add({id:'task-test',name:'Run task API',async run(){const a=await app.atoms.create({title:'Task API atom',content:'- [ ] Review'});const id=a.properties['phosphora.tasks'][0].id;await app.atoms.setTask(a.id,id,{recurrence:'daily',checked:true});try{await app.atoms.setTask(a.id,'missing',{checked:false});app.ui.notify('Missing task accepted');}catch(e){app.ui.notify('Task API passed');}}});}`);
+ await command(page,'Run task API');await expect(page.getByText('Task API passed',{exact:true})).toBeVisible();const before=await readMap(page);const tasks=before.atoms[0].properties['phosphora.tasks'] as any[];expect(tasks).toHaveLength(1);expect(tasks[0].recurrence).toBe('daily');expect(Object.values(tasks[0].history)).toContain(true);expect(before.atoms[0].content).toBe('- [x] Review');
+ await page.reload();await expect(page.locator('canvas.map')).toBeVisible();expect((await readMap(page)).atoms[0].properties['phosphora.tasks']).toEqual(tasks);
+ await page.locator('.view-toggle button').last().click();await expect(page.locator('[data-source] input[type="checkbox"]')).toBeChecked();
+});

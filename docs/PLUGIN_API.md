@@ -85,3 +85,5 @@ API v1 still accepts legacy `setState(id, 'paused')`, `create` and `update` inpu
 ## Task operations
 
 `atoms.setTask(atomId, taskId, { checked?, recurrence? })` requires `atoms.write`. Recurrence accepts `daily`, `weekly`, or `null` to stop repeating. Task IDs and completion history are stored in the source atom properties under `phosphora.tasks`; Markdown checkboxes remain editable. Stale revisions reject rather than overwriting concurrent edits.
+
+Atom create/update arguments are cloned at the runtime boundary before entering the write queue. Later changes to the supplied objects do not change the queued operation. Atom return values are independent copies, including task metadata/history. Disabled plugin handles reject subsequent calls.
