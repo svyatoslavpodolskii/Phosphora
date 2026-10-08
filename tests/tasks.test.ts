@@ -26,3 +26,16 @@ it('shows chronological calendar history without counting weekly completions sev
  const task=readTasks({...atom,...taskPatch(atom,id,{recurrence:'weekly',checked:true},now)})[0];
  const week=taskHistory(task,7,now);expect(week.map(d=>d.key)).toEqual(['2026-09-28','2026-10-05']);expect(week.filter(d=>d.completed)).toHaveLength(1);expect(week.at(-1)?.current).toBe(true);
 });
+
+it('preserves renamed duplicate identity and ignores fenced copies during matching',()=>{
+ const now=new Date(2026,9,8,12);let atom=syncTasks(makeAtom({title:'Duplicate',content:'- [ ] Review\n- [ ] Review'}));const ids=readTasks(atom).map(t=>t.id);
+ atom=syncTasks({...atom,...taskPatch(atom,ids[0],{recurrence:'daily',checked:true},now)},atom,now);
+ const changed=syncTasks({...atom,content:'- [x] Renamed\n- [ ] Review\n```md\n- [ ] Review\n```'},atom,now);
+ const tasks=readTasks(changed);expect(tasks.map(t=>t.id)).toEqual(ids);expect(tasks[0].recurrence).toBe('daily');expect(tasks[0].history['2026-10-08']).toBe(true);expect(tasks[1].recurrence).toBeUndefined();
+});
+
+it('does not give a renamed task the existing namesake identity',()=>{
+ const atom=syncTasks(makeAtom({title:'Namesakes',content:'- [ ] First\n- [ ] Second'}));const ids=readTasks(atom).map(t=>t.id);
+ expect(readTasks({...atom,content:'- [ ] Second\n- [ ] Second'}).map(t=>t.id)).toEqual(ids);
+ expect(readTasks({...atom,content:'- [ ] Second\n- [ ] First'}).map(t=>t.id)).toEqual([...ids].reverse());
+});

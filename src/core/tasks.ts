@@ -5,16 +5,24 @@ const KEY='phosphora.tasks';
 export function dayKey(now=new Date()){return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;}
 export function occurrence(rule:Recurrence,now=new Date()){const date=new Date(now);if(rule==='weekly')date.setDate(date.getDate()-(date.getDay()+6)%7);return dayKey(date);}
 export function readTasks(atom:Pick<Atom,'content'|'id'|'properties'>):NoteTask[]{
- const currentTexts=new Set(atom.content.split(/\r?\n/).map(line=>/^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+(.+)$/.exec(line)?.[2]).filter(Boolean));
- const stored=Array.isArray(atom.properties[KEY])?atom.properties[KEY] as NoteTask[]:[],used=new Set<string>(),result:NoteTask[]=[];let fence='';
+ const stored=Array.isArray(atom.properties[KEY])?atom.properties[KEY] as NoteTask[]:[],used=new Set<string>();
+ const parsed:{text:string;line:number;checked:boolean}[]=[];let fence='';
  for(const [line,text] of atom.content.split(/\r?\n/).entries()){
   const delimiter=/^\s{0,3}(`{3,}|~{3,})/.exec(text);if(delimiter){if(!fence)fence=delimiter[1];else if(delimiter[1][0]===fence[0]&&delimiter[1].length>=fence.length)fence='';continue;}if(fence)continue;
-  const match=/^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+(.+)$/.exec(text);if(!match)continue;
-  const previous=stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.text===match[2])||stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.line===line&&!currentTexts.has(t.text));let id=previous?.id||`${atom.id}:task:${line}`;while(!previous&&(used.has(id)||stored.some(t=>t?.id===id)))id+=':new';used.add(id);
+  const match=/^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+(.+)$/.exec(text);if(match)parsed.push({text:match[2],line,checked:match[1].toLowerCase()==='x'});
+ }
+ // Reserve unchanged tasks first, so a renamed line cannot steal a later task's history.
+ const matches=new Map<number,NoteTask>();
+ for(const task of parsed){const previous=stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.text===task.text&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ for(const task of parsed)if(!matches.has(task.line)){const candidates=stored.filter(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.text===task.text).sort((a,b)=>Math.abs(a.line-task.line)-Math.abs(b.line-task.line));const previous=candidates[0];if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ for(const task of parsed)if(!matches.has(task.line)){const previous=stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ return parsed.map(task=>{
+  const previous=matches.get(task.line);let id=previous?.id||`${atom.id}:task:${task.line}`;while(!previous&&(used.has(id)||stored.some(t=>t?.id===id)))id+=':new';used.add(id);
   const history=previous?.history&&typeof previous.history==='object'&&!Array.isArray(previous.history)?Object.fromEntries(Object.entries(previous.history).filter(([key,value])=>/^\d{4}-\d{2}-\d{2}$/.test(key)&&typeof value==='boolean')):{};
-  result.push({id,text:match[2],line,checked:match[1].toLowerCase()==='x',...(previous?.recurrence==='daily'||previous?.recurrence==='weekly'?{recurrence:previous.recurrence}:{}),history});
- }return result;
+  return {...task,id,...(previous?.recurrence==='daily'||previous?.recurrence==='weekly'?{recurrence:previous.recurrence}:{}),history};
+ });
 }
+
 export function tasksAt(atom:Atom,now=new Date()){return readTasks(atom).map(t=>({...t,checked:t.recurrence?Boolean(t.history[occurrence(t.recurrence,now)]):t.checked}));}
 export function syncTasks(atom:Atom,before?:Atom,now=new Date(),rolling=false):Atom{
  const tasks=readTasks(atom),old=before?new Map(readTasks(before).map(t=>[t.id,t])):new Map<string,NoteTask>(),lines=atom.content.split(/\r?\n/);let contentChanged=false;

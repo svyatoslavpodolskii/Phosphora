@@ -31,3 +31,15 @@ for(const mobile of [false,true])test(`task board persists tasks and source stat
  expect((await readMap(page)).atoms[0].state).toBe('archived');
  await page.locator('.search-trigger').click();await page.locator('.search input').fill('Project');await page.locator('.search-results button').first().click();await expect(page.locator('canvas.map')).toBeVisible();await expect(page.locator('.kanban')).toHaveCount(0);
 });
+
+test('editing a duplicate checklist keeps recurrence on the renamed task',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/');
+ await importMap(page,{atoms:[makeAtom({id:'duplicate',title:'Routine',content:'- [ ] Review\n- [ ] Review'})],links:[]});
+ await page.locator('.view-toggle button').last().click();const group=page.locator('[data-source="duplicate"]');
+ await group.getByRole('checkbox').first().check();await group.locator('summary').first().click();await group.locator('details select').first().selectOption('daily');
+ const before=(await readMap(page)).atoms[0].properties['phosphora.tasks'] as any[];
+ await group.locator('.group-title').click();await expect(page.locator('.note-editor')).toBeVisible();
+ await page.locator('.markdown.note-content').click();await page.locator('textarea.note-content').fill('- [x] Renamed\n- [ ] Review\n```md\n- [ ] Review\n```');await page.locator('.note-content').press('Control+Enter');
+ await expect(page.locator('.note-editor')).toHaveCount(0);await expect(group.getByRole('checkbox',{name:'Renamed',exact:true})).toBeChecked();
+ const after=(await readMap(page)).atoms[0].properties['phosphora.tasks'] as any[];expect(after.map(t=>t.id)).toEqual(before.map(t=>t.id));expect(after[0].history).toEqual(before[0].history);expect(after[0].recurrence).toBe('daily');expect(after[1].recurrence).toBeUndefined();
+});
