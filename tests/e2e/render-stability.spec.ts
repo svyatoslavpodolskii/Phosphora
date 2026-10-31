@@ -1,3 +1,4 @@
+import {writeFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {createHash} from 'node:crypto';
 import {test,expect,type Page} from '@playwright/test';
@@ -78,12 +79,13 @@ test('GPU textures stay consistent across zoom and theme cache refresh',async({p
  await page.goto('/');const map=page.locator('canvas.map');await expect(map).toHaveAttribute('data-renderer','webgl');
  await importMap(page,{atoms:[makeAtom({id:'texture-a',title:'First',pinned:true,x:0,y:0,appearance:{icon:'X',size_override:18}}),makeAtom({id:'texture-b',title:'Second',pinned:true,x:2,y:1,appearance:{icon:'O',size_override:18}})],links:[]});
  await expect(map).toHaveAttribute('data-nodes','2');
+ const toast=page.locator('.toast button');if(await toast.isVisible())await toast.click();
  for(const key of ['-','-','-','-','+','+','+','+']){
   await map.press(key);await page.waitForTimeout(700);
   const before=await map.screenshot({animations:'disabled'});
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('phosphora-theme-change',{detail:(window as any).__theme})));
   await page.waitForTimeout(100);
-  expect(createHash('sha256').update(await map.screenshot({animations:'disabled'})).digest('hex')).toBe(createHash('sha256').update(before).digest('hex'));
+  const after=await map.screenshot({animations:'disabled'});if(!after.equals(before)){writeFileSync('artifacts/zoom-cache-before.png',before);writeFileSync('artifacts/zoom-cache-after.png',after);console.log('CACHE_MISMATCH',await map.getAttribute('data-zoom'));}expect(createHash('sha256').update(after).digest('hex')).toBe(createHash('sha256').update(before).digest('hex'));
  }
 });
 

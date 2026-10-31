@@ -1,0 +1,14 @@
+{
+  "environment": "Headless Chromium, software WebGL fixture, 4x CPU throttle, 1280x800 at DPR 2",
+  "note": "render times measure the CPU draw call, not GPU completion; step timings include automation and are not FPS",
+  "atoms": 20,
+  "endZoom": 0.7,
+  "steps": 40,
+  "idleDraws": 0,
+  "rasterBuilds": 0,
+  "overlayClears": 0,
+  "renderP95Ms": 7.11999998986721,
+  "renderWorstMs": 7.420000001788139,
+  "p95StepMs": 166.6235999999999,
+  "worstStepMs": 170.46060000000034
+}

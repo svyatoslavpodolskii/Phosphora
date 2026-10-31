@@ -1,0 +1,11 @@
+import {test,expect} from '@playwright/test';
+import {makeAtom} from '../../src/core/model';
+import {importMap,readMap,openSettings,closeSettings} from './helpers';
+test.use({viewport:{width:390,height:844}});
+for(const fallback of [false,true])test(`small viewport: 20 atoms zoom and persist with ${fallback?'forced Canvas':'default backend'}`,async({page,browserName})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});if(fallback)await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:any[]):any{return type.includes('webgl')?null:(get as any).call(this,type,...args);};});
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');const atoms=Array.from({length:20},(_,i)=>makeAtom({id:'cross-zoom-'+i,title:'Thought '+i,pinned:true,state:i%3===0?'now':'normal',x:i%5*120-240,y:Math.floor(i/5)*110-165,appearance:{shape:i%3===0?'square':i%3===1?'diamond':'circle',style:i%2?'dashed':'solid'}}));await importMap(page,{atoms,links:[]});const map=page.locator('canvas.map');await expect(map).toHaveAttribute('data-nodes','20');
+ await page.evaluate(async()=>{const map=document.querySelector('canvas.map')!,rect=map.getBoundingClientRect();for(let i=0;i<30;i++){const zoom=.6+i/29,current=Number(map.getAttribute('data-zoom'));map.dispatchEvent(new WheelEvent('wheel',{deltaY:-Math.log(zoom/current)/.01,ctrlKey:true,clientX:rect.left+rect.width/2,clientY:rect.top+rect.height/2,bubbles:true,cancelable:true}));await new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r())));}});await expect.poll(async()=>Number(await map.getAttribute('data-zoom'))).toBeCloseTo(1.6,6);
+ const backend=await map.getAttribute('data-renderer');console.log(JSON.stringify({browserName,backend,fallback}));if(fallback)expect(backend).toBe('canvas');
+ await openSettings(page);await page.locator('.render-diagnostics summary').click();await expect(page.locator('.render-diagnostics strong')).toHaveText(backend==='webgl'?'WebGL':'Canvas 2D');await closeSettings(page);expect((await readMap(page)).atoms.map(a=>[a.id,a.x,a.y])).toEqual(atoms.map(a=>[a.id,a.x,a.y]));await page.screenshot({path:`artifacts/${browserName}-zoom-${fallback?'canvas':'default'}.png`});expect(errors).toEqual([]);
+});
