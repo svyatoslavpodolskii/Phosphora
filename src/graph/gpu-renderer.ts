@@ -516,7 +516,7 @@ export class GpuMapRenderer {
                 for (const e of batch)
                     this.lines.moveTo(e.ax, e.ay).quadraticCurveTo(e.cx, e.cy, e.bx, e.by);
                 const e = batch[0];
-                this.lines.stroke({ color: e.color, alpha: e.alpha, width: e.width });
+                this.lines.stroke({ color: e.color, alpha: e.alpha, width: e.width, join: 'round', cap: 'round' });
             }
         }
         const used = new Set<string>(), frame = ++this.frame;

@@ -5,6 +5,7 @@ import {normalize,candidates,sameTextContext,type Rejection} from './matching';
 import {preferences,type Preferences} from './preferences';
 import {syncTasks,taskPatch,type Recurrence} from './tasks';
 import {DraftPolicies} from './drafts';
+import {EDITOR_CHECKPOINT} from './editor-checkpoint';
 export {normalize} from './matching';
 export class Core {
  readonly drafts=new DraftPolicies();
@@ -31,7 +32,7 @@ export class Core {
    const x=root?root.x:(Math.min(...xs)+Math.max(...xs))/2+Math.max(...xs)-Math.min(...xs)+190;
    const y=root?root.y:(Math.min(...ys)+Math.max(...ys))/2;
    for(let i=0;i<2000;i++){const angle=i*2.39996;const radius=root?165+Math.floor(i/8)*95:170*Math.sqrt(i);const p={x:x+Math.cos(angle)*radius,y:y+Math.sin(angle)*radius};if(!atoms.some(a=>Math.hypot(a.x-p.x,a.y-p.y)<110))return p;}return{x:x+1000,y:y+1000};}
- saveDraft(input:Partial<Atom>&{title:string},add:{to:string;relation:string;source?:string}[]=[],remove:string[]=[],parent?:string,preservePosition=true){return this.serial(async()=>{
+ saveDraft(input:Partial<Atom>&{title:string},add:{to:string;relation:string;source?:string}[]=[],remove:string[]=[],parent?:string,preservePosition=true,consumeCheckpoint=false){return this.serial(async()=>{
  const plain=JSON.parse(JSON.stringify(input));const before=input.id?this.data.atoms.find(a=>a.id===input.id):undefined;if(input.id&&!before)throw Error('Атом не найден.');if(!before){delete plain.id;if(plain.x===undefined||plain.y===undefined)Object.assign(plain,this.placementProvider?await this.placementProvider({data:structuredClone(this.data),parent}):this.place(parent));}
  let atom:Atom=before?{...before,...plain,id:before.id,x:preservePosition?before.x:plain.x??before.x,y:preservePosition?before.y:plain.y??before.y,spatial:preservePosition?before.spatial:plain.spatial??before.spatial,created_at:before.created_at,updated_at:new Date().toISOString(),revision:before.revision+1}:makeAtom(plain);
  atom=syncTasks(transitionState(before,atom),before);
@@ -41,6 +42,7 @@ export class Core {
  if(remove.length)ops.push({kind:'setting',key:'rejected:'+atom.id,value:rejection});
  if(parent&&!before)ops.push({kind:'link',link:makeLink(parent,atom.id,'related','context')});
  const additions=[...add];if(this.prefs.linkMode==='automatic'){const excluded=new Set([atom.id,...this.data.links.filter(l=>l.from===atom.id||l.to===atom.id).flatMap(l=>[l.from,l.to]),...add.map(l=>l.to),...(parent?[parent]:[])]);const matches=candidates(text,this.data.atoms,excluded,rejection,false);for(const c of matches.filter(c=>c.confidence===1&&this.data.atoms.filter(a=>[a.title,...a.aliases].some(t=>normalize(t)===c.matched)).length===1))additions.push({to:c.atom.id,relation:'related',source:'automatic'});}
+ if(consumeCheckpoint)ops.push({kind:'setting',key:EDITOR_CHECKPOINT,value:null});
  const effects=await this.drafts.prepare({atom,before,data:this.data,parent,add:additions,remove,rejected:rejection.targets});
  atom.properties=effects.properties;additions.push(...effects.add);for(const id of effects.remove)ops.push({kind:'unlink',id});
  for(const l of additions)ops.push({kind:'link',link:makeLink(atom.id,l.to,l.relation,l.source||'manual')});await this.commit(ops);this.emit(before?'atom:update':'atom:create',atom);for(const op of ops){if(op.kind==='link')this.emit('link:create',op.link);if(op.kind==='unlink')this.emit('link:delete',{id:op.id});}return atom;

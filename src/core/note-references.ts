@@ -1,0 +1,9 @@
+import {marked} from 'marked';
+import type {Atom} from './model';
+
+export interface SourcePath {vault:string;path:string}
+export const notePath=(a:Atom)=>a.properties?.vault as SourcePath|undefined;
+export function references(text:string):string[]{const clean=text.replace(/^\s*(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\s*\1\s*$/gm,'').replace(/`+[^`]*`+/g,'');const targets=[...clean.matchAll(/!?\[\[([^\]\n]+)\]\]/g)].map(m=>m[1].split('|')[0]);marked.walkTokens(marked.lexer(text),token=>{if(token.type==='link'||token.type==='image')targets.push(token.href);});return targets.map(t=>t.split('#')[0]).filter(Boolean);}
+function relative(path:string,target:string){const parts=path.split('/').slice(0,-1);for(const part of target.split('/')){if(part==='..')parts.pop();else if(part!=='.')parts.push(part);}return parts.join('/');}
+export function resolvePath(target:string,source:string,paths:string[]):string|undefined{try{target=decodeURIComponent(target);}catch{}if(/^[a-z][a-z\d+.-]*:/i.test(target)||target.startsWith('//'))return;target=target.split('#')[0];const candidates=[relative(source,target),target];for(const value of candidates){if(paths.includes(value))return value;if(paths.includes(value+'.md'))return value+'.md';}const name=target.replace(/\.md$/i,'');const matches=paths.filter(p=>p.replace(/\.md$/i,'')===name||p.split('/').at(-1)!.replace(/\.md$/i,'')===name);return matches.length===1?matches[0]:undefined;}
+export function resolveAtom(target:string,source:Atom,atoms:Atom[]):Atom|undefined{const v=notePath(source);const scoped=v?atoms.filter(a=>notePath(a)?.vault===v.vault):atoms;const paths=scoped.map(a=>notePath(a)?.path||a.title+'.md');const path=resolvePath(target,v?.path||source.title+'.md',paths);if(path)return scoped[paths.indexOf(path)];const names=scoped.filter(a=>a.title===target||a.aliases.includes(target));return names.length===1?names[0]:undefined;}

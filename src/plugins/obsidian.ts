@@ -1,6 +1,6 @@
 import type {Plugin,PluginAPI} from './api';
 import type {DraftPolicy,DraftLink} from '../core/drafts';
-import {references,resolveAtom} from '../core/vault';
+import {references,resolveAtom} from '../core/note-references';
 
 export function vaultPaths(app:PluginAPI):DraftPolicy{return {id:'paths',name:'Vault source paths',async prepare({atom,before,data,parent}){
  if(before||atom.properties.vault)return {};

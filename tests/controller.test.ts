@@ -4,7 +4,7 @@ import {GraphProviders} from '../src/graph/providers';
 import {graphModel} from '../src/graph/model';
 import {makeAtom,makeLink} from '../src/core/model';
 import {preferences} from '../src/core/preferences';
-it('drag moves connected free atoms but preserves pins and unrelated islands',async()=>{
+it('drag moves only the held atoms and preserves the rest of the map',async()=>{
  vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();
  providers.physics.set('test',{id:'test',name:'Test',step:input=>({nodes:input.nodes,energy:0})});
  providers.clustering.set('test',{id:'test',name:'Test',project:({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected)});
@@ -20,11 +20,11 @@ it('drag moves connected free atoms but preserves pins and unrelated islands',as
  expect(latest).toBe(shown);expect(node0('a').x).toBe(100);expect(node0('a').y).toBe(50);
  controller.cancelDrag();controller.beginDrag('a');controller.drag('a',100,50);
  const node=(id:string)=>latest.expanded.nodes.find((n:any)=>n.id===id);
- expect(node('a').x).toBe(100);expect(node('b').x).toBeGreaterThan(200);expect(node('b').x).toBeLessThan(300);expect(node('b').y).toBeGreaterThan(0);
+ expect(node('a').x).toBe(100);expect(node('b').x).toBe(200);expect(node('b').y).toBe(0);
  expect(node('pin').x).toBe(400);expect(node('pin').y).toBe(0);expect(node('island').x).toBe(600);
  controller.cancelDrag();expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
  controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(true);expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
- controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(false);await controller.flush();expect(persist).toHaveBeenCalled();expect(error).not.toHaveBeenCalled();
+ controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(false);await vi.advanceTimersByTimeAsync(2000);expect(node('b').x).toBe(200);expect(node('b').y).toBe(0);await controller.flush();expect(persist).toHaveBeenCalled();expect(error).not.toHaveBeenCalled();
  }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
 it('reopening keeps saved positions and a local insertion does not recalculate the full layout',async()=>{
@@ -33,7 +33,7 @@ it('reopening keeps saved positions and a local insertion does not recalculate t
 });
 it('camera changes never wake resting physics; semantic changes reuse the retained pair',async()=>{
  vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();const step=vi.fn(input=>({nodes:input.nodes,energy:0})),project=vi.fn(({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected));providers.physics.set('test',{id:'test',name:'Test',step});providers.clustering.set('test',{id:'test',name:'Test',project});providers.reduction.set('test',{id:'test',name:'Test',reduce:({data})=>data.links});providers.weight.set('test',{id:'test',name:'Test',weigh:data=>Object.fromEntries(data.atoms.map(a=>[a.id,30]))});const render=vi.fn(),persist=vi.fn(async()=>{}),error=vi.fn(),controller=new GraphController(providers,render,persist,error);
- try{controller.sync({atoms:[makeAtom({title:'Still',x:200,y:-80})],links:[]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);const count=step.mock.calls.length,projections=project.mock.calls.length;for(const zoom of [.9,.8,.7,.6])controller.view({x:zoom*70,y:zoom*30,zoom},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(step).toHaveBeenCalledTimes(count);expect(project).toHaveBeenCalledTimes(projections);controller.view({x:0,y:0,zoom:.3},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(project).toHaveBeenCalledTimes(projections);expect(step).toHaveBeenCalledTimes(count);expect(error).not.toHaveBeenCalled();}finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
+ try{controller.sync({atoms:[makeAtom({title:'Still',x:200,y:-80})],links:[]},preferences(),0);await vi.advanceTimersByTimeAsync(1000);const count=step.mock.calls.length,projections=project.mock.calls.length;controller.setInteracting(true);controller.setInteracting(false);for(const zoom of [.9,.8,.7,.6])controller.view({x:zoom*70,y:zoom*30,zoom},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(step).toHaveBeenCalledTimes(count);expect(project).toHaveBeenCalledTimes(projections);controller.view({x:0,y:0,zoom:.3},1280,720,'all','',false,false);await vi.advanceTimersByTimeAsync(1000);expect(project).toHaveBeenCalledTimes(projections);expect(step).toHaveBeenCalledTimes(count);expect(error).not.toHaveBeenCalled();}finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
 
 it('reconnection with the same link ID updates both retained projections',async()=>{

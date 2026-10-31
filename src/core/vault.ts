@@ -1,18 +1,17 @@
+import {notePath,references,resolvePath,resolveAtom,type SourcePath} from './note-references';
+export {notePath,references,resolvePath,resolveAtom,type SourcePath} from './note-references';
 import {metadata as noteMetadata,readProperties,writeProperties} from './note-metadata';
 import {unzip,zip,strToU8} from 'fflate';
 import {parseDocument,stringify} from 'yaml';
-import {marked} from 'marked';
 import {makeAtom,makeLink,validateAtom,type Atom,type Mutation,type StorageAdapter} from './model';
 import type {Core} from './core';
 
 export interface VaultFile {path:string;bytes:Uint8Array}
 interface StoredFile {path:string;key:string;chunks:number;note?:string}
 export interface Vault {id:string;name:string;files:StoredFile[]}
-export interface SourcePath {vault:string;path:string}
 const LIMIT=512*1024*1024,CHUNK=3*1024*1024;
 interface GraphFile {format:'phosphored-vault';version:1;notes:{path:string;atom:Omit<Atom,'content'>}[];links:{from:string;to:string;relation:string;source:string}[]}
 function graphFile(bytes:Uint8Array):GraphFile|undefined{try{const value=JSON.parse(new TextDecoder().decode(bytes));if(value.format!=='phosphored-vault'||value.version!==1||!Array.isArray(value.notes)||!Array.isArray(value.links))return;for(const n of value.notes){safePath(n.path);validateAtom({...n.atom,content:''});}return value;}catch{return;}}
-export const notePath=(a:Atom)=>a.properties?.vault as SourcePath|undefined;
 export function safePath(path:string){if(!path||path.startsWith('/')||path.includes('\\')||path.includes('\0')||/^[a-z]:/i.test(path)||path.split('/').some(p=>p==='..'||p==='.'))throw Error('Недопустимый путь в хранилище: '+path);return path;}
 export async function readVaultFiles(files:File[]):Promise<VaultFile[]>{
  if(files.reduce((n,f)=>n+f.size,0)>LIMIT)throw Error('Хранилище превышает 512 МБ. Импорт не выполнен.');
@@ -21,11 +20,7 @@ export async function readVaultFiles(files:File[]):Promise<VaultFile[]>{
 }
 export function splitNote(text:string){const match=/^(\uFEFF?---\r?\n)([\s\S]*?)(\r?\n(?:---|\.\.\.)\r?\n|\r?\n(?:---|\.\.\.)$)/.exec(text);return match?{header:match[0],yaml:match[2],body:text.slice(match[0].length)}:{header:'',yaml:'',body:text};}
 function aliasesOf(yaml:string):string[]{try{const value=parseDocument(yaml,{logLevel:'silent'}).toJS({maxAliasCount:100})?.aliases;return (Array.isArray(value)?value:typeof value==='string'?[value]:[]).filter((v:unknown):v is string=>typeof v==='string'&&v.length<=500).slice(0,100);}catch{return[];}}
-export function references(text:string):string[]{const clean=text.replace(/^\s*(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\s*\1\s*$/gm,'').replace(/`+[^`]*`+/g,'');const targets=[...clean.matchAll(/!?\[\[([^\]\n]+)\]\]/g)].map(m=>m[1].split('|')[0]);marked.walkTokens(marked.lexer(text),token=>{if(token.type==='link'||token.type==='image')targets.push(token.href);});return targets.map(t=>t.split('#')[0]).filter(Boolean);}
-function relative(path:string,target:string){const parts=path.split('/').slice(0,-1);for(const part of target.split('/')){if(part==='..')parts.pop();else if(part!=='.')parts.push(part);}return parts.join('/');}
 function relocateWiki(text:string,source:string,paths:string[],prefix:string){const note=splitNote(text);return note.header+note.body.replace(/(^[ \t]*(`{3,}|~{3,})[^\n]*\n[\s\S]*?^[ \t]*\2[ \t]*$|`+[^`]*`+)|(!?\[\[)([^\]\n]+)(\]\])/gm,(raw,code,_fence,open,body,close)=>{if(code)return raw;const target=body.split(/[|#]/)[0];const path=resolvePath(target,source,paths);return path?open+prefix+path.replace(/\.md$/i,'')+body.slice(target.length)+close:raw;});}
-export function resolvePath(target:string,source:string,paths:string[]):string|undefined{try{target=decodeURIComponent(target);}catch{}if(/^[a-z][a-z\d+.-]*:/i.test(target)||target.startsWith('//'))return;target=target.split('#')[0];const candidates=[relative(source,target),target];for(const value of candidates){if(paths.includes(value))return value;if(paths.includes(value+'.md'))return value+'.md';}const name=target.replace(/\.md$/i,'');const matches=paths.filter(p=>p.replace(/\.md$/i,'')===name||p.split('/').at(-1)!.replace(/\.md$/i,'')===name);return matches.length===1?matches[0]:undefined;}
-export function resolveAtom(target:string,source:Atom,atoms:Atom[]):Atom|undefined{const v=notePath(source);const scoped=v?atoms.filter(a=>notePath(a)?.vault===v.vault):atoms;const paths=scoped.map(a=>notePath(a)?.path||a.title+'.md');const path=resolvePath(target,v?.path||source.title+'.md',paths);if(path)return scoped[paths.indexOf(path)];const names=scoped.filter(a=>a.title===target||a.aliases.includes(target));return names.length===1?names[0]:undefined;}
 function base64(bytes:Uint8Array){let text='';for(let i=0;i<bytes.length;i+=32768)text+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(text);}
 export async function storedBytes(storage:StorageAdapter,file:StoredFile){const chunks:Uint8Array[]=[];let size=0;for(let i=0;i<file.chunks;i++){const value=await storage.getSetting<string>(file.key+':'+i);if(value===undefined)throw Error('Не удалось прочитать файл '+file.path);const bytes=Uint8Array.from(atob(value),c=>c.charCodeAt(0));chunks.push(bytes);size+=bytes.length;}const result=new Uint8Array(size);let offset=0;for(const c of chunks){result.set(c,offset);offset+=c.length;}return result;}
 export async function listVaults(storage:StorageAdapter){return await storage.getSetting<Vault[]>('vaults')||[];}

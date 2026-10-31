@@ -7,6 +7,7 @@ import {snapshot,transact} from '../src/storage/operations';
 import {PluginRuntime} from '../src/plugins/runtime';
 import {obsidian} from '../src/plugins/obsidian';
 import {DIRECT_VAULTS_KEY,migrateObsidianBindings} from '../src/plugins/obsidian-storage';
+import {EDITOR_CHECKPOINT} from '../src/core/editor-checkpoint';
 import type {Plugin,PluginAPI} from '../src/plugins/api';
 
 async function setup(){
@@ -16,6 +17,15 @@ async function setup(){
  return {core,runtime,close(){runtime.dispose();raw.close();}};
 }
 const manifest={id:'test.drafts',name:'Draft policy',version:'1',apiVersion:1,permissions:['atoms.read','atoms.write','links.read','links.write']} satisfies Plugin['manifest'];
+
+it('consumes the editor checkpoint only with a successful editor commit',async()=>{
+ const h=await setup();try{
+  await h.core.storage.transaction([{kind:'setting',key:EDITOR_CHECKPOINT,value:{text:'Keep me'}}]);
+  await h.core.create({title:'Plugin write'});expect(await h.core.storage.getSetting(EDITOR_CHECKPOINT)).toEqual({text:'Keep me'});
+  await expect(h.core.saveDraft({title:''},[],[],undefined,true,true)).rejects.toThrow();expect(await h.core.storage.getSetting(EDITOR_CHECKPOINT)).toEqual({text:'Keep me'});
+  await h.core.saveDraft({title:'Editor write'},[],[],undefined,true,true);expect(await h.core.storage.getSetting(EDITOR_CHECKPOINT)).toBeNull();expect(h.core.data.atoms).toHaveLength(2);
+ }finally{h.close();}
+});
 
 it('moves a selection atomically, preserves its internal group and rejects cycles',async()=>{
  const h=await setup();try{
