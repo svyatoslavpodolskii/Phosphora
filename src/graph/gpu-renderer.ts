@@ -1,8 +1,10 @@
-import { Container, Graphics, GraphicsContext, FillGradient, Sprite, Texture, WebGLRenderer } from 'pixi.js';
+import {CurveStrip} from './curve-strip';
+import { Container, Graphics, GraphicsContext, FillGradient, Sprite, Texture, MeshSimple, WebGLRenderer } from 'pixi.js';
 import { measureText } from './footprint';
 import { iconSprite } from './sprites';
 import type { Camera } from './model';
 export interface GpuEdge {
+    id: string;
     ax: number;
     ay: number;
     cx: number;
@@ -101,7 +103,9 @@ export class GpuMapRenderer {
     private renderer = new WebGLRenderer();
     private stage = new Container();
     private world = new Container();
-    private lines = new Graphics();
+    private lines = new Container();
+    private edgeCache = new Map<string,{mesh:MeshSimple;strip:CurveStrip;usedAt:number;order:number;color:string}>();
+    private curveBuilds=0;
     private field = new Container();
     private dotLayer = new Container();
     private edgeLabelLayer = new Container();
@@ -122,7 +126,6 @@ export class GpuMapRenderer {
     private width = 0;
     private height = 0;
     private resolution = 0;
-    private edgesSignature = '';
     private textureBytes = 0;
     private frame = 0;
     private textureBuilds = 0;
@@ -159,7 +162,6 @@ export class GpuMapRenderer {
     get canvas() { return this.renderer.canvas as HTMLCanvasElement; }
     get available() { return !this.lost; }
     invalidate() {
-        this.edgesSignature = '';
         for (const entry of this.edgeLabelCache.values())
             for (const label of entry.labels)
                 label.signature = '';
@@ -500,24 +502,22 @@ export class GpuMapRenderer {
         }
         this.world.position.set(width / 2 + camera.x, height / 2 + camera.y);
         this.world.scale.set(camera.zoom);
-        const edgesSignature = edges.map(e => [e.ax, e.ay, e.cx, e.cy, e.bx, e.by, e.width, e.color, e.alpha].join(',')).join('|');
-        if (edgesSignature !== this.edgesSignature) {
-            changed = true;
-            this.edgesSignature = edgesSignature;
-            this.lines.clear();
-            const batches = new Map<string, GpuEdge[]>();
-            for (const e of edges) {
-                const key = [e.color, e.alpha, e.width].join('|');
-                const batch = batches.get(key) || [];
-                batch.push(e);
-                batches.set(key, batch);
-            }
-            for (const batch of batches.values()) {
-                for (const e of batch)
-                    this.lines.moveTo(e.ax, e.ay).quadraticCurveTo(e.cx, e.cy, e.bx, e.by);
-                const e = batch[0];
-                this.lines.stroke({ color: e.color, alpha: e.alpha, width: e.width, join: 'round', cap: 'round' });
-            }
+        const edgeFrame=this.frame+1;
+        let edgeOrder=0;
+        for(const edge of edges){
+            let entry=this.edgeCache.get(edge.id);
+            if(!entry){const strip=new CurveStrip(),mesh=new MeshSimple({texture:Texture.WHITE,vertices:strip.vertices,uvs:strip.uvs,indices:strip.indices});mesh.autoUpdate=false;this.lines.addChild(mesh);entry={mesh,strip,usedAt:edgeFrame,order:edgeOrder,color:edge.color};this.edgeCache.set(edge.id,entry);changed=true;}
+            const update=entry.strip.update(edge,edge.width);
+            if(update.updated){entry.mesh.geometry.getBuffer('aPosition').update();changed=true;}
+            if(update.rebuilt){this.curveBuilds++;this.canvas.dataset.curveBuilds=String(this.curveBuilds);}
+            if(!entry.mesh.visible||entry.mesh.alpha!==edge.alpha||entry.color!==edge.color||entry.order!==edgeOrder)changed=true;
+            entry.mesh.visible=true;entry.mesh.alpha=edge.alpha;entry.mesh.tint=edge.color;entry.color=edge.color;
+            if(entry.order!==edgeOrder)this.lines.setChildIndex(entry.mesh,Math.min(edgeOrder,this.lines.children.length-1));
+            entry.order=edgeOrder++;entry.usedAt=edgeFrame;
+        }
+        for(const [id,entry] of this.edgeCache)if(entry.usedAt!==edgeFrame){
+            if(entry.mesh.visible){entry.mesh.visible=false;changed=true;}
+            if(this.edgeCache.size>4096||edgeFrame-entry.usedAt>180){entry.mesh.geometry.destroy();entry.mesh.destroy();this.edgeCache.delete(id);}
         }
         const used = new Set<string>(), frame = ++this.frame;
         let order = 0;
@@ -571,6 +571,8 @@ export class GpuMapRenderer {
         for (const node of this.nodes.values())
             this.remove(node);
         this.nodes.clear();
+        for(const entry of this.edgeCache.values()){entry.mesh.geometry.destroy();entry.mesh.destroy();}
+        this.edgeCache.clear();
         this.lines.destroy();
         for (const entry of this.edgeLabelCache.values()) {
             entry.labelLayer.destroy({ children: true });

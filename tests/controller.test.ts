@@ -38,6 +38,8 @@ it('drag moves only the held atoms and preserves the rest of the map',async()=>{
  controller.cancelDrag();expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
  controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(true);expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
  controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(false);await vi.advanceTimersByTimeAsync(2000);expect(node('b').x).toBe(200);expect(node('b').y).toBe(0);await controller.flush();expect(persist).toHaveBeenCalled();expect(error).not.toHaveBeenCalled();
+ persist.mockRejectedValueOnce(Error('Disk full'));controller.beginDrag('a',['a','b']);controller.drag('a',500,300);const rejected=controller.endDrag(false),checkRejected=expect(rejected).rejects.toThrow('Disk full');controller.setInteracting(true);await checkRejected;controller.setInteracting(false);expect(node('a')).toMatchObject({x:100,y:50});expect(node('b')).toMatchObject({x:200,y:0});
+ let reject!: (error:Error)=>void;persist.mockImplementationOnce(()=>new Promise<void>((_,fail)=>reject=fail));controller.beginDrag('a');controller.drag('a',300,200);const pending=controller.endDrag(false),failed=expect(pending).rejects.toThrow('First write failed');controller.beginDrag('a');controller.drag('a',450,250);reject(Error('First write failed'));await failed;expect(node('a')).toMatchObject({x:450,y:250});await controller.endDrag(false);
  }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
 it('reopening keeps saved positions and a local insertion does not recalculate the full layout',async()=>{

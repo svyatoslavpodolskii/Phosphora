@@ -101,10 +101,11 @@
    if(!accelerated&&!batch){batch={path:new Path2D(),alpha,skeleton};edgeBatches.set(key,batch);}
    const curve=edgeCurve(a,b);if(!curve)continue;
    const {ax,ay,bx,by,cx,cy}=curve;
-   if(batch){batch.path.moveTo(ax,ay);batch.path.quadraticCurveTo(cx,cy,bx,by);}if(accelerated)gpuEdges.push({...curve,width:(skeleton?1.9:1.2)/camera.zoom,color:skeleton?palette.accent:palette.edge,alpha});
+   if(batch){batch.path.moveTo(ax,ay);batch.path.quadraticCurveTo(cx,cy,bx,by);}if(accelerated)gpuEdges.push({id:l.id,...curve,width:(skeleton?1.9:1.2)/camera.zoom,color:skeleton?palette.accent:palette.edge,alpha});
 
-   if(!skeleton&&camera.zoom>1.15&&l.relation!=='related')edgeLabels.push({id:l.id,text:l.relation,x:(a.x+b.x)/2,y:(a.y+b.y)/2-8});
+   if(activeLink&&(l.id===activeLink||l.id==='detail:'+activeLink)&&camera.zoom>.55&&l.relation!=='related')edgeLabels.push({id:l.id,text:l.relation,x:(a.x+b.x)/2,y:(a.y+b.y)/2-8});
   }
+  canvas.dataset.edgeLabels=String(edgeLabels.length);
   const labelLayout=new Map<string,{text:ReturnType<typeof labelGeometry>;show:boolean}>(),labelRects=new LabelCollisions();
   for(const original of ordered){const n=original;
    const text=labelGeometry(n.label,n.radius,camera.zoom,width,n.id===selected?n.state:'normal');
@@ -113,7 +114,7 @@
    const show=Boolean(eligible&&(n.id===selected||!labelRects.overlaps(box)));
    labelLayout.set(n.id,{text,show});if(show)labelRects.add(box);
   }
-  if(accelerated&&groups.length){const cloud=new Map([...(model.expanded?.nodes||model.nodes),...satelliteCache.values()].map(p=>[p.id,p]));for(const l of model.expanded?.links||model.links){if(!grouped.has(l.from)&&!grouped.has(l.to))continue;const a=cloud.get(l.from),b=cloud.get(l.to),group=grouped.get(l.from)||grouped.get(l.to)!;if(a&&b)gpuEdges.push({ax:a.x,ay:a.y,cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,bx:b.x,by:b.y,width:.65/camera.zoom,color:palette.edge,alpha:.22*group.opacity*(group.attention??1)});}for(const [id,group] of grouped){const p=satelliteCache.get(id);if(p)gpuDots.push({id,x:p.x,y:p.y,radius:Math.max(3,1.15/camera.zoom),color:p.color==='#b4ecc1'?palette.accent:inkFor(p.color,palette.background),alpha:.55*group.opacity*(group.attention??1)});}}
+  if(accelerated&&groups.length){const cloud=new Map([...(model.expanded?.nodes||model.nodes),...satelliteCache.values()].map(p=>[p.id,p]));for(const l of model.expanded?.links||model.links){if(!grouped.has(l.from)&&!grouped.has(l.to))continue;const a=cloud.get(l.from),b=cloud.get(l.to),group=grouped.get(l.from)||grouped.get(l.to)!;if(a&&b)gpuEdges.push({id:'cloud:'+l.id,ax:a.x,ay:a.y,cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,bx:b.x,by:b.y,width:.65/camera.zoom,color:palette.edge,alpha:.22*group.opacity*(group.attention??1)});}for(const [id,group] of grouped){const p=satelliteCache.get(id);if(p)gpuDots.push({id,x:p.x,y:p.y,radius:Math.max(3,1.15/camera.zoom),color:p.color==='#b4ecc1'?palette.accent:inkFor(p.color,palette.background),alpha:.55*group.opacity*(group.attention??1)});}}
   const gpuEdgeLabels:GpuEdgeLabel[]=accelerated?edgeLabels.filter(label=>{const x=width/2+camera.x+label.x*camera.zoom,y=height/2+camera.y+label.y*camera.zoom,half=measureText(label.text,13)*11/26*camera.zoom+8;return x+half>0&&x-half<width&&y>-40&&y<height+40;}).map(label=>({...label,y:label.y-11,size:11,color:palette.muted,alpha:1})):[];
   const worldOverlay=!accelerated;
   const screenOverlay=Boolean(lasso?.length||start&&pointers.size===1&&!dragging&&!lasso&&(holdReady||now-holdStarted>100));
