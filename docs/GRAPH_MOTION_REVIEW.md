@@ -9,7 +9,7 @@ Reference: [Obsidian Graph View](https://obsidian.md/help/Plugins/Graph%2Bview).
 - Label collision checks used a greedy all-pairs scan every frame. A spatial grid preserves the exact padding, order and acceptance decisions. A deterministic 1,000-label field changes 499,500 pair checks into 3,848 checks; randomized decisions are compared against the original algorithm. This measures algorithmic work, not phone FPS.
 - GPU frames no longer build unused Canvas edge paths; Canvas frames do not build unused GPU edge records.
 - Off-screen GPU sprites/textures are retained and reused when panning back. Least-recently-used off-screen entries are evicted above an estimated 64 MiB of texture pixels or 2,048 nodes. Visible entries are never evicted for the budget, so a larger visible working set can exceed those bounds. Actual graphics/Canvas overhead is additional. Context restoration and theme invalidation retain correctness.
-- New atoms and links fade in separately from camera-driven semantic reveal. Existing coordinates are unchanged; zoom reveal remains direct. Reduced motion displays arrivals immediately.
+- New atoms and their incident links fade in separately from camera-driven semantic reveal. A new link between two already visible atoms is not given a separate arrival animation in this milestone. Existing coordinates are unchanged; zoom reveal remains direct. Reduced motion displays arrivals immediately.
 
 ## Verification and limits
 
