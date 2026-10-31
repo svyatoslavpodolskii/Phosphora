@@ -83,6 +83,14 @@ test('GPU textures stay consistent across zoom and theme cache refresh',async({p
   const before=await map.screenshot({animations:'disabled'});
   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('phosphora-theme-change',{detail:(window as any).__theme})));
   await page.waitForTimeout(100);
-  expect(await map.screenshot({animations:'disabled'})).toEqual(before);
+  expect(createHash('sha256').update(await map.screenshot({animations:'disabled'})).digest('hex')).toBe(createHash('sha256').update(before).digest('hex'));
  }
+});
+
+test('GPU reuses raster textures when a pan takes an atom off screen and back',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.addInitScript(()=>{for(const prototype of [WebGLRenderingContext.prototype,WebGL2RenderingContext.prototype]){const get=prototype.getParameter;prototype.getParameter=function(parameter:number){return parameter===37446?'GPU test fixture':get.call(this,parameter);};}});
+ await page.goto('/');const map=page.locator('canvas.map');await expect(map).toHaveAttribute('data-renderer','webgl');await importMap(page,{atoms:[makeAtom({id:'reuse',title:'Retained label',pinned:true,x:0,y:0})],links:[]});
+ const gpu=page.locator('.gpu-map-host canvas');await expect(gpu).toHaveAttribute('data-texture-builds',/^[1-9]/);await page.mouse.move(1150,650);await page.mouse.down();const before=await gpu.getAttribute('data-texture-builds');
+ await page.mouse.move(50,650,{steps:8});await expect(map).toHaveAttribute('data-camera-x','-1100');await page.mouse.move(1150,650,{steps:8});await expect(map).toHaveAttribute('data-camera-x','0');await expect(gpu).toHaveAttribute('data-texture-builds',before!);await page.mouse.up();
 });

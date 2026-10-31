@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {LabelCollisions} from './label-collision';
  import RelationshipLayer from '../ui/RelationshipLayer.svelte';
  import {pickLink} from './relationships';
  import type {Link} from '../core/model';
@@ -33,9 +34,10 @@
  $effect(()=>controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced));
  let visualFocus=$state('');let recent='';let recentAt=0;let focal:Point|undefined;let previewCamera=$state({x:0,y:0,zoom:1});
  $effect(()=>{model;selected;paused;schedule();});
- const rig=new CameraRig();
+ const rig=new CameraRig();let publishedCamera:Camera|undefined;
+ const sameCamera=(a:Camera,b:Camera)=>a.x===b.x&&a.y===b.y&&a.zoom===b.zoom;
  // A camera assigned from outside (restore, editor return, reduced motion) replaces rig state outright.
- $effect(()=>{const external=$state.snapshot(camera);if(Math.abs(external.x-rig.value.x)>.01||Math.abs(external.y-rig.value.y)>.01||Math.abs(external.zoom-rig.value.zoom)>.0001)rig.set(external);});
+ $effect(()=>{const external=$state.snapshot(camera);if(publishedCamera&&sameCamera(external,publishedCamera))return;if(!sameCamera(external,rig.value))rig.set(external);});
   const inkCache=new Map<string,string>();function inkFor(color:string,background:string){const key=color+background;let ink=inkCache.get(key);if(!ink){ink=readable(color,[background,mix(background,color,.19)]);if(inkCache.size>256)inkCache.clear();inkCache.set(key,ink);}return ink;}
   // Reading computed style forces a style recalculation, which is one of the most
   // expensive things a frame can ask for on a phone. The theme only changes rarely.
@@ -51,13 +53,13 @@
  function inside(point:Point,polygon:Point[]){let found=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){const a=polygon[i],b=polygon[j];if((a.y>point.y)!==(b.y>point.y)&&point.x<(b.x-a.x)*(point.y-a.y)/(b.y-a.y)+a.x)found=!found;}return found;}
  function finishLasso(){const path=lasso;lasso=null;if(!path||path.length<3){schedule();return;}lassoSelection=[...new Set(painted.filter(n=>n.opacity>.5&&inside({x:width/2+camera.x+n.x*camera.zoom,y:height/2+camera.y+n.y*camera.zoom},path)).flatMap(n=>n.members||[n.id]))];schedule();}
 
- const pointers=new Map<number,Point>();let start:{x:number;y:number;worldX?:number;worldY?:number;node?:GraphNode;target?:GraphNode;panX:number;panY:number}|null=null;let moving:GraphNode|null=null;let pinch=0;let pinchStart:{distance:number;zoom:number}|null=null;let fromPinch=false;let longTimer:ReturnType<typeof setTimeout>;let holdStarted=0;let pendingDrag=false;let holdReady=false;let touchStart=false;let suppressReleaseClick=false;let panSample={x:0,y:0,time:0},panVelocity={x:0,y:0};
+ const pointers=new Map<number,Point>();let start:{x:number;y:number;worldX?:number;worldY?:number;node?:GraphNode;target?:GraphNode;panX:number;panY:number;moved?:boolean}|null=null;let moving:GraphNode|null=null;let pinch=0;let pinchStart:{distance:number;zoom:number}|null=null;let fromPinch=false;let longTimer:ReturnType<typeof setTimeout>;let holdStarted=0;let pendingDrag=false;let holdReady=false;let touchStart=false;let suppressReleaseClick=false;let panSample={x:0,y:0,time:0},panVelocity={x:0,y:0};
  function adopt(){rig.resize({width,height});}
  function schedule(){if(frame)return;frame=requestAnimationFrame(tick);}
  function tick(now=performance.now()){frame=0;if(!canvas)return;draw(now);}
    function draw(now:number){if(!rendererSettled)return;const dt=Math.min(64,Math.max(1,now-lastFrame||16));lastFrame=now;if(pendingDrag&&moving){pendingDrag=false;controller?.drag(moving.id,moving.x,moving.y);}
-   const wasMoving=rig.moving;
-   if(wasMoving){const next=rig.step(dt);camera={x:next.x,y:next.y,zoom:next.zoom};cameraMoving=true;}
+   const next=rig.moving?rig.step(dt):rig.value;
+   if(!sameCamera(camera,next)){publishedCamera={x:next.x,y:next.y,zoom:next.zoom};camera=publishedCamera;cameraMoving=true;}
    controller?.setInteracting(pointers.size>0||rig.moving||linkInteracting);
   const visual=scene.advance(model,dt,reduced,moving?.id,collapseAmount(camera.zoom));
   const unsettled=visual.active;transitioning=unsettled;const attention=visualAttention(visual.nodes,camera,{width,height},selected,now-recentAt<3000?recent:'',focal);visualFocus=attention.focus;painted=visual.nodes.map(n=>({...n,attention:attention.scores.get(n.id)??.4}));displayed.clear();for(const n of painted)displayed.set(n.id,n);
@@ -73,27 +75,28 @@
    const ordered=painted.filter(visible).sort((a,b)=>Number(Boolean(b.members||b.landmark))-Number(Boolean(a.members||a.landmark))||b.radius-a.radius||a.id.localeCompare(b.id));
    const dense=data.atoms.length>250&&(!gpu?.available||gpuFailed),iconIds=new Set(ordered.slice(0,dense?Math.min(icons,8):icons).map(n=>n.id));
    const softIds=new Set(ordered.filter(n=>softHighlightVisible(n.radius,camera.zoom)||inBranch.has(n.id)).slice(0,dense?0:SOFT_BUDGET).map(n=>n.id));
+  const accelerated=Boolean(gpu?.available&&!gpuFailed);
   const edgeBatches=new Map<string,{path:Path2D;alpha:number;skeleton:boolean}>();
-  const edgeLabels:{text:string;x:number;y:number}[]=[];const gpuEdges:GpuEdge[]=[];const gpuNodes:GpuNode[]=[];const accelerated=Boolean(gpu?.available&&!gpuFailed);renderBackend=accelerated?'webgl':'canvas';
+  const edgeLabels:{text:string;x:number;y:number}[]=[];const gpuEdges:GpuEdge[]=[];const gpuNodes:GpuNode[]=[];renderBackend=accelerated?'webgl':'canvas';
   for(const l of visual.links){
    const na=nodes.get(l.from),nb=nodes.get(l.to);const a=na?{...na,...l.start}:undefined,b=nb?{...nb,...l.end}:undefined;
    if(!a||!b||(!visible(a)&&!visible(b)))continue;
    const skeleton=inBranch.has(l.from)&&inBranch.has(l.to),alpha=Math.round(l.opacity*Math.max(a.attention??1,b.attention??1)*(skeleton?1:.5)*16)/16;
    if(alpha<=0)continue;const key=Number(skeleton)+':'+alpha;let batch=edgeBatches.get(key);
-   if(!batch){batch={path:new Path2D(),alpha,skeleton};edgeBatches.set(key,batch);}
+   if(!accelerated&&!batch){batch={path:new Path2D(),alpha,skeleton};edgeBatches.set(key,batch);}
    const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),bend=Math.min(14,d*.045);
    const ax=a.x+dx/d*a.radius,ay=a.y+dy/d*a.radius,bx=b.x-dx/d*b.radius,by=b.y-dy/d*b.radius;
-   batch.path.moveTo(ax,ay);batch.path.quadraticCurveTo((ax+bx)/2-dy/d*bend,(ay+by)/2+dx/d*bend,bx,by);gpuEdges.push({ax,ay,cx:(ax+bx)/2-dy/d*bend,cy:(ay+by)/2+dx/d*bend,bx,by,width:(skeleton?1.9:1.2)/camera.zoom,color:skeleton?palette.accent:palette.edge,alpha});
+   if(batch){batch.path.moveTo(ax,ay);batch.path.quadraticCurveTo((ax+bx)/2-dy/d*bend,(ay+by)/2+dx/d*bend,bx,by);}if(accelerated)gpuEdges.push({ax,ay,cx:(ax+bx)/2-dy/d*bend,cy:(ay+by)/2+dx/d*bend,bx,by,width:(skeleton?1.9:1.2)/camera.zoom,color:skeleton?palette.accent:palette.edge,alpha});
 
    if(!skeleton&&camera.zoom>1.15&&l.relation!=='related')edgeLabels.push({text:l.relation,x:(a.x+b.x)/2,y:(a.y+b.y)/2-8});
   }
-  const labelLayout=new Map<string,{text:ReturnType<typeof labelGeometry>;show:boolean}>(),labelRects:{x:number;y:number;width:number;height:number}[]=[];
+  const labelLayout=new Map<string,{text:ReturnType<typeof labelGeometry>;show:boolean}>(),labelRects=new LabelCollisions();
   for(const original of ordered){const n=moving?.id===original.id?moving:original;
    const text=labelGeometry(n.label,n.radius,camera.zoom,width,n.id===selected||camera.zoom>1.2?n.state:'normal');
    const box={x:(n.x-text.halfWidth)*camera.zoom,y:(n.y+text.top)*camera.zoom,width:text.halfWidth*2*camera.zoom,height:(text.bottom-text.top)*camera.zoom};
    const eligible=camera.zoom>.55||!grouped.has(n.id)||n.members||n.landmark||n.radius>36||n.id===selected;
-   const show=Boolean(eligible&&(n.id===selected||!labelRects.some(r=>box.x<r.x+r.width+8&&box.x+box.width+8>r.x&&box.y<r.y+r.height+4&&box.y+box.height+4>r.y)));
-   labelLayout.set(n.id,{text,show});if(show)labelRects.push(box);
+   const show=Boolean(eligible&&(n.id===selected||!labelRects.overlaps(box)));
+   labelLayout.set(n.id,{text,show});if(show)labelRects.add(box);
   }
   ctx.clearRect(0,0,width,height);ctx.save();ctx.translate(width/2+camera.x,height/2+camera.y);ctx.scale(camera.zoom,camera.zoom);
   if(groups.length){ctx.save();const cloud=new Map([...(model.expanded?.nodes||model.nodes),...satelliteCache.values()].map(p=>[p.id,p]));ctx.strokeStyle=palette.edge;ctx.lineWidth=.65/camera.zoom;for(const l of model.expanded?.links||model.links){if(!grouped.has(l.from)&&!grouped.has(l.to))continue;const a=cloud.get(l.from),b=cloud.get(l.to),group=grouped.get(l.from)||grouped.get(l.to)!;if(!a||!b)continue;ctx.globalAlpha=.22*group.opacity*(group.attention??1);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}for(const [id,group] of grouped){const p=satelliteCache.get(id);if(!p)continue;ctx.globalAlpha=.55*group.opacity*(group.attention??1);ctx.beginPath();ctx.arc(p.x,p.y,Math.max(3,1.15/camera.zoom),0,Math.PI*2);ctx.fillStyle=p.color==='#b4ecc1'?palette.accent:inkFor(p.color,palette.background);ctx.fill();}ctx.restore();}
@@ -180,7 +183,7 @@
    if(pinchStart&&distance>0){focal=midpoint;rig.pinchTo(midpoint,pinchStart.zoom*distance/Math.max(1,pinchStart.distance));}
    pinch=distance;schedule();return;}
   if(!start){aim(p,e.pointerType==='touch');schedule();return;}
-   if(Math.hypot(p.x-start.x,p.y-start.y)>DRAG_THRESHOLD){clearTimeout(longTimer);
+   if(start.moved||Math.hypot(p.x-start.x,p.y-start.y)>DRAG_THRESHOLD){start.moved=true;clearTimeout(longTimer);
     if(holdReady&&!start.target&&!fromPinch&&providers.hasTool('lasso')){lasso=[{x:start.x,y:start.y},p];start=null;candidate='';hover='';schedule();return;}
     if(touchStart&&!holdReady)start.node=undefined;
     if(start.node){if(!dragging){controller?.beginDrag(start.node.id,start.node.members);const states=new Set((start.node.members||[start.node.id]).map(id=>data.atoms.find(a=>a.id===id)?.state));dragState=states.size>1?'mixed':start.node.state as AtomState;}dragging=true;candidate='';hover='';const w=world(p);moving={...start.node,x:start.node.x+w.x-(start.worldX??w.x),y:start.node.y+w.y-(start.worldY??w.y)};pendingDrag=true;}
@@ -194,7 +197,7 @@
   const gesture=rig.gesturing;
    if(gesture&&pinchStart){pinchStart=null;pinch=0;rig.endPinch();
     // The surviving finger must keep panning, otherwise pinch strands the gesture.
-    if(pointers.size===1){const [remaining]=[...pointers.values()];start={...remaining,panX:camera.x,panY:camera.y};panSample={...remaining,time:performance.now()};panVelocity={x:0,y:0};}
+    if(pointers.size===1){const [remaining]=[...pointers.values()];start={...remaining,panX:rig.value.x,panY:rig.value.y};panSample={...remaining,time:performance.now()};panVelocity={x:0,y:0};}
     else start=null;
     schedule();return;}
   if(start){const p=position(e),travel=Math.hypot(p.x-start.x,p.y-start.y);

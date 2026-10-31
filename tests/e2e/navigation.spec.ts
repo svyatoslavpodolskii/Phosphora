@@ -15,3 +15,14 @@ test('transient menu owns keyboard focus and consumes outside input',async({page
  await page.keyboard.press('Control+k');await expect(page.locator('.search input')).not.toBeFocused();await expect(buttons.last()).toBeFocused();
  await page.evaluate(()=>document.querySelector<HTMLCanvasElement>('canvas.map')!.focus());await expect(buttons.first()).toBeFocused();await page.keyboard.press('Escape');await expect(menu).toHaveCount(0);await expect(page.locator('header>button').last()).toBeFocused();
 });
+
+test('reduced-motion wheel zoom publishes the camera even without an animation loop',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');const map=page.locator('canvas.map');await expect(map).toBeVisible();
+ await map.evaluate(el=>el.dispatchEvent(new WheelEvent('wheel',{deltaY:-50,ctrlKey:true,clientX:300,clientY:220,cancelable:true,bubbles:true})));
+ await expect.poll(async()=>Number(await map.getAttribute('data-zoom'))).toBeCloseTo(Math.exp(.5),6);
+});
+
+test('touch pan keeps tracking when the finger returns inside the initial movement threshold',async({page,context})=>{
+ await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');const map=page.locator('canvas.map');await expect(map).toBeVisible();
+ const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,x:350,y:600}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,x:60,y:600}]});await expect(map).toHaveAttribute('data-camera-x','-290');await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,x:350,y:600}]});await expect(map).toHaveAttribute('data-camera-x','0');await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await expect(map).toHaveAttribute('data-camera-x','0');
+});
