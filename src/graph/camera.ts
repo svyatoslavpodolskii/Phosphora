@@ -15,7 +15,7 @@ const NOTCH_SHARE=.2,STREAM_SHARE=.85,CONTINUOUS_MS=45,DISCRETE_MS=15,REFERENCE_
 /** Hard perceptual ceiling: the world may not expand or slide faster than this per
  *  frame, whatever the input asked for. Ordinary gestures never reach it, so it
  *  adds no lag, but it guarantees no single frame can ever be a visible jump. */
-const MAX_ZOOM_RATE=.13,MAX_PAN_RATE=420,COAST=70;
+const MAX_ZOOM_RATE=.13,MAX_PAN_RATE=80,COAST=70;
 
 export const clampZoom=(zoom:number)=>Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,zoom));
 
@@ -69,7 +69,7 @@ export class CameraRig{
   private view:Viewport={width:1,height:1};
   private reduced=false;
   moving=false;
-  private settled=true;
+  private settled=true;private retargeting=false;
   private clock:()=>number;
 
   constructor(clock?:()=>number){this.clock=clock||(()=>performance.now());}
@@ -78,7 +78,7 @@ export class CameraRig{
   setReduced(reduced:boolean){this.reduced=reduced;}
 
   /** Immediate placement, used for restore, resize and reduced motion only. */
-  set(camera:Camera){this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
+  set(camera:Camera){this.retargeting=false;this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
 
   get value(){return this.camera;}
   get anchored(){return this.anchor!==null;}
@@ -110,8 +110,9 @@ export class CameraRig{
    *  point under the pointer stays under the pointer for the whole gesture. */
   zoomAt(screen:Point,factor:number){
    this.pinching=false;
-   if(this.anchor)this.anchor={...this.anchor,screen};
-   else this.anchor={world:screenToWorld(screen,this.camera,this.view),screen};
+   if(this.retargeting){this.target={...this.camera};this.pending.z=0;this.retargeting=false;}
+   this.anchor={world:screenToWorld(screen,this.camera,this.view),screen};
+   this.pending.x=this.pending.y=0;
    const zoom=clampZoom(this.target.zoom*factor);
    this.event();this.pending.z+=Math.log(zoom)-Math.log(this.target.zoom);
    this.target=fromAnchor(this.anchor,zoom,this.view);
@@ -121,7 +122,7 @@ export class CameraRig{
    const zoom=clampZoom(this.target.zoom*factor);
    this.retarget({...this.target,zoom});
   }
-  panBy(dx:number,dy:number){this.anchor=null;this.pinching=false;this.event();this.pending.x+=dx;this.pending.y+=dy;this.target={...this.target,x:this.target.x+dx,y:this.target.y+dy};this.wake();}
+  panBy(dx:number,dy:number){this.retargeting=false;this.anchor=null;this.pinching=false;this.event();this.pending.x+=dx;this.pending.y+=dy;this.target={...this.target,x:this.target.x+dx,y:this.target.y+dy};this.wake();}
   /** Keeps an active zoom anchor while the gesture's midpoint travels. */
   moveAnchor(dx:number,dy:number){
    if(!this.anchor)return;
@@ -132,7 +133,7 @@ export class CameraRig{
   }
   /** Sets an absolute destination. Used for focus corrections and fit views. */
   retarget(camera:Camera){
-   this.anchor=null;this.pinching=false;this.event();
+   this.retargeting=true;this.anchor=null;this.pinching=false;this.event();
    this.pending.x+=camera.x-this.target.x;this.pending.y+=camera.y-this.target.y;this.pending.z+=Math.log(camera.zoom)-Math.log(this.target.zoom);
    this.target={...camera};this.wake();
   }
@@ -140,7 +141,7 @@ export class CameraRig{
    *  distance is one smoothing window of travel, so a flick is delivered over the
    *  same few frames as the drag was, never as a single lurch. */
   release(velocity:Point){
-   this.direct=false;
+   this.retargeting=false;this.interval=Infinity;this.direct=false;
    if(this.anchor)return;
    const x=Math.max(-MAX_PAN_RATE*8,Math.min(MAX_PAN_RATE*8,velocity.x*COAST)),y=Math.max(-MAX_PAN_RATE*8,Math.min(MAX_PAN_RATE*8,velocity.y*COAST));
    this.pending.x+=x;this.pending.y+=y;
@@ -148,7 +149,7 @@ export class CameraRig{
    this.wake();
   }
   /** Stops all motion where it stands. Used when the user grabs the canvas. */
-  halt(){this.direct=false;this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.settled=true;this.moving=false;}
+  halt(){this.retargeting=false;this.direct=false;this.target={...this.camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.settled=true;this.moving=false;}
 
   /** Records that the hand produced another event, and how long since the last one. */
   private event(){
@@ -169,7 +170,7 @@ export class CameraRig{
    const continuity=Math.max(0,Math.min(1,(CONTINUOUS_MS-span)/(CONTINUOUS_MS-DISCRETE_MS)));
    const share=NOTCH_SHARE+(STREAM_SHARE-NOTCH_SHARE)*continuity;
    const frames=Math.max(.25,Math.max(0,Math.min(MAX_STEP,dt))/REFERENCE_FRAME);
-   const alpha=1-Math.pow(1-share,frames),zoomCap=MAX_ZOOM_RATE*frames,panCap=MAX_PAN_RATE*frames;
+   const alpha=1-Math.pow(1-share,frames),zoomCap=Math.min(.16,MAX_ZOOM_RATE*frames),panCap=Math.min(MAX_PAN_RATE,MAX_PAN_RATE*frames);
    // Movement is a share of what is outstanding, capped by what the eye can follow.
    const move=(wanted:number,remaining:number,cap:number)=>{
     const bounded=Math.abs(wanted)<=Math.abs(remaining)?wanted:Math.sign(wanted)*Math.abs(remaining);
@@ -186,9 +187,13 @@ export class CameraRig{
     return this.camera;
    }
    const gapX=this.target.x-this.camera.x,gapY=this.target.y-this.camera.y,gapZ=Math.log(this.target.zoom)-Math.log(this.camera.zoom);
-   const stepX=move(alpha*this.pending.x,gapX,panCap),stepY=move(alpha*this.pending.y,gapY,panCap),stepZ=move(alpha*this.pending.z,gapZ,zoomCap);
-   this.pending.x-=stepX;this.pending.y-=stepY;this.pending.z-=stepZ;
-   this.camera={x:this.camera.x+stepX,y:this.camera.y+stepY,zoom:Math.exp(Math.log(this.camera.zoom)+stepZ)};
+   const stepZ=move(alpha*this.pending.z,gapZ,zoomCap),zoom=Math.exp(Math.log(this.camera.zoom)+stepZ),ratio=zoom/this.camera.zoom;
+   // Scale around the presented viewport center, then approach the target center.
+   // Raw translation interpolation would make distant zoom flights orbit off screen.
+   const baseX=this.camera.x*ratio,baseY=this.camera.y*ratio,targetX=this.target.x*zoom/this.target.zoom,targetY=this.target.y*zoom/this.target.zoom;
+   const stepX=move(alpha*(targetX-baseX),targetX-baseX,panCap),stepY=move(alpha*(targetY-baseY),targetY-baseY,panCap);
+   this.pending.z-=stepZ;this.camera={x:baseX+stepX,y:baseY+stepY,zoom};
+   this.pending.x=this.target.x-this.camera.x;this.pending.y=this.target.y-this.camera.y;
    if(Math.hypot(gapX,gapY)<PAN_EPS&&Math.abs(gapZ)<ZOOM_EPS&&Math.abs(this.pending.z)<ZOOM_EPS){
     this.camera={...this.target};this.pending.x=this.pending.y=this.pending.z=0;this.settled=true;this.moving=false;
    }

@@ -6,11 +6,11 @@ interface Box {x:number;y:number;width:number;height:number}
 const overlaps=(a:Box,b:Box)=>a.x<b.x+b.width+8&&a.x+a.width+8>b.x&&a.y<b.y+b.height+8&&a.y+a.height+8>b.y;
 /** Screen-space detail never changes the saved spatial world or wakes physics. */
 export function contentPreviews(nodes:(GraphNode&{opacity?:number})[],camera:Camera,width:number,height:number,selected:string,heights=new Map<string,number>(),previous:Preview[]=[]):Preview[]{
- const detail=Math.max(0,Math.min(1,(camera.zoom-1.35)/1.35));if(!detail)return [];
+ const detail=Math.max(0,Math.min(1,(camera.zoom-1.35)/1.35));if(!detail||!selected)return [];
  const screen=(n:GraphNode)=>({x:width/2+camera.x+n.x*camera.zoom,y:height/2+camera.y+n.y*camera.zoom});
  const local=nodes.filter(n=>{const p=screen(n);return p.x>-400&&p.x<width+400&&p.y>-400&&p.y<height+400;});
- const obstacles=local.map(n=>{const p=screen(n),f=visualFootprint(n.label,n.radius,camera.zoom,width,n.id===selected||camera.zoom>1.2?n.state:'normal');return {id:n.id,x:p.x-f.halfWidth*camera.zoom,y:p.y-f.top*camera.zoom,width:f.halfWidth*2*camera.zoom,height:(f.top+f.bottom)*camera.zoom};});
- const candidates=local.filter(n=>!n.members&&n.content?.trim()&&(n.attention??1)>.5&&(n.opacity??1)>.5).sort((a,b)=>Number(b.id===selected)-Number(a.id===selected)||Math.hypot(screen(a).x-width/2,screen(a).y-height/2)-Math.hypot(screen(b).x-width/2,screen(b).y-height/2));
+ const obstacles=local.map(n=>{const p=screen(n),f=visualFootprint(n.label,n.radius,camera.zoom,width,n.id===selected?n.state:'normal');return {id:n.id,x:p.x-f.halfWidth*camera.zoom,y:p.y-f.top*camera.zoom,width:f.halfWidth*2*camera.zoom,height:(f.top+f.bottom)*camera.zoom};});
+ const candidates=local.filter(n=>n.id===selected&&!n.members&&n.content?.trim()&&(n.attention??1)>.5&&(n.opacity??1)>.5).sort((a,b)=>Number(b.id===selected)-Number(a.id===selected)||Math.hypot(screen(a).x-width/2,screen(a).y-height/2)-Math.hypot(screen(b).x-width/2,screen(b).y-height/2));
  const result:Preview[]=[];const panelWidth=Math.min(260,width-32),heightBudget=36+Math.max(0,detail-.15)/.85*172;
  for(const node of candidates){if(result.length>=3)break;const p=screen(node);if(p.x<0||p.x>width||p.y<65||p.y>height-65)continue;
   const own=obstacles.find(o=>o.id===node.id)!;

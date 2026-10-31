@@ -44,7 +44,7 @@ export class SemanticScene{
   }
   const linkTargets=new Map(model.links.map(l=>[l.id,l]));for(const l of model.links)if(!this.links.has(l.id))this.links.set(l.id,{...l,opacity:0});
   for(const [id,old] of this.links){const target=linkTargets.get(id),opacity=old.opacity+((target?1:0)-old.opacity)*blend;if(!target&&opacity<.003){this.links.delete(id);continue;}if(Math.abs(opacity-(target?1:0))>.003)active=true;
-   const next={...old,...target,opacity};for(const [key,id] of [['start',next.from],['end',next.to]] as const){const n=this.nodes.get(id),prior=old[key];if(!n)continue;const k=id===dragging?1:blend;next[key]=prior?{x:prior.x+(n.x-prior.x)*k,y:prior.y+(n.y-prior.y)*k,radius:prior.radius+(n.radius-prior.radius)*k}:{x:n.x,y:n.y,radius:n.radius};if(Math.hypot(next[key]!.x-n.x,next[key]!.y-n.y)>.03)active=true;}this.links.set(id,next);
+   const next={...old,...target,opacity};for(const [key,id] of [['start',next.from],['end',next.to]] as const){const n=this.nodes.get(id);if(!n)continue;next[key]={x:n.x,y:n.y,radius:n.radius};}this.links.set(id,next);
   }
   return{nodes:[...this.nodes.values()],links:[...this.links.values()],active};
  }

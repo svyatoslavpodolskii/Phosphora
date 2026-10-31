@@ -27,7 +27,7 @@ export function hitRegions(nodes:(GraphNode&{opacity?:number})[],camera:Camera,v
    if(opacity<=.02)continue;
    const center=toScreen(node.x,node.y,camera,view);
    const r=Math.max(4,node.radius*camera.zoom);
-   const foot=visualFootprint(node.label,node.radius,camera.zoom,view.width,node.id===selected||camera.zoom>1.2?states[node.id]||node.state:'normal');
+   const foot=visualFootprint(node.label,node.radius,camera.zoom,view.width,node.id===selected?states[node.id]||node.state:'normal');
    const region:HitRegion={id:node.id,kind:node.members?'cluster':'atom',members:node.members,body:{x:center.x,y:center.y,r},depth:node.members?1:0,opacity};
    if(camera.zoom>.55||node.members||node.landmark||node.radius>36||!grouped.has(node.id)||node.id===selected)region.label={x:center.x,y:center.y,halfWidth:foot.halfWidth*camera.zoom,top:foot.top*camera.zoom,bottom:foot.bottom*camera.zoom};
    regions.push(region);

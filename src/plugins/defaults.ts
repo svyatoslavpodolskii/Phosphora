@@ -1,6 +1,6 @@
 import type {StorageAdapter,Mutation} from '../core/model';
 
-export const optionalBuiltins=['builtin.templates','builtin.daily','builtin.molecule','builtin.compact','builtin.ambient','builtin.lasso'];
+export const optionalBuiltins=['builtin.templates','builtin.daily','builtin.molecule','builtin.compact','builtin.ambient'];
 /** Builtins that were withdrawn. They are switched off once and then forgotten;
  *  anything they wrote stays in the workspace, because that is the user's data. */
 const retired=['builtin.daily-tasks'];
@@ -17,7 +17,7 @@ export async function initializePluginDefaults(storage:StorageAdapter,hasAtoms:b
   disabled=[...new Set([...(disabled??(existing?retired:optionalBuiltins)),'builtin.ambient','builtin.lasso'])];
   await storage.transaction([{kind:'setting',key:'disabled-builtins',value:disabled},{kind:'setting',key:'map-tools-defaults-v1',value:true}]);
  }
- if(await storage.getSetting('plugin-defaults-v2'))return disabled??(existing?retired:optionalBuiltins);
+ if(await storage.getSetting('plugin-defaults-v2'))return lassoDefault(storage,disabled??(existing?retired:optionalBuiltins));
  const next=disabled??(existing?retired:[...optionalBuiltins]);
  const ops:Mutation[]=[{kind:'setting',key:'disabled-builtins',value:next},{kind:'setting',key:'plugin-defaults-v2',value:true}];
  if(existing)for(const field of ['years','months']){
@@ -25,5 +25,12 @@ export async function initializePluginDefaults(storage:StorageAdapter,hasAtoms:b
   if(await storage.getSetting(key)===undefined)ops.push({kind:'setting',key,value:true});
  }
  await storage.transaction(ops);
- return next;
+ return lassoDefault(storage,next);
+}
+
+/** One-time repair of the old release's automatically disabled lasso. Later choices persist. */
+async function lassoDefault(storage:StorageAdapter,disabled:string[]){
+ if(await storage.getSetting('lasso-default-v2'))return disabled;
+ const next=disabled.filter(id=>id!=='builtin.lasso');
+ await storage.transaction([{kind:'setting',key:'disabled-builtins',value:next},{kind:'setting',key:'lasso-default-v2',value:true}]);return next;
 }

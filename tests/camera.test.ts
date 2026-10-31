@@ -9,6 +9,16 @@ const hand=(gapMs:number)=>{let t=0;const rig=new CameraRig(()=>t);return{rig,be
 const settle=(rig:CameraRig,dt=16)=>{let frames=0;while(rig.moving&&frames++<3000)rig.step(dt);return frames;};
 const trace=(rig:CameraRig,frames:number,dt=16)=>{const values:number[]=[];for(let i=0;i<frames;i++)values.push(Math.log(rig.step(dt).zoom));return values;};
 
+it('wheel zoom rebases a moving cursor without carrying the old anchor across the screen',()=>{
+ const h=hand(16);h.rig.resize(view);h.rig.set({x:12000,y:-5000,zoom:.4});h.beat();h.rig.zoomAt({x:80,y:100},1.2);h.rig.step(16);
+ const pointer={x:820,y:500},held=screenToWorld(pointer,h.rig.value,view);h.beat();h.rig.zoomAt(pointer,1.1);const after=screenToWorld(pointer,h.rig.step(16),view);expect(after.x).toBeCloseTo(held.x,8);expect(after.y).toBeCloseTo(held.y,8);
+});
+it('a distant fit flight moves viewport centers continuously, even after a long frame',()=>{
+ const h=hand(16);h.rig.resize(view);h.rig.set({x:20000,y:-12000,zoom:2});const target={x:-8000,y:15000,zoom:.1};h.rig.retarget(target);
+ let frames=0;while(h.rig.moving&&frames++<3000){const before={...h.rig.value},after=h.rig.step(frames%5?16:64),ratio=after.zoom/before.zoom;expect(Math.hypot(after.x-before.x*ratio,after.y-before.y*ratio)).toBeLessThan(120);expect(Math.abs(Math.log(ratio))).toBeLessThanOrEqual(.161);}
+ expect(h.rig.value).toEqual(target);expect(frames).toBeLessThan(3000);
+});
+
 it('keeps the world point under the pointer exactly pinned for the whole zoom',()=>{
   const h=hand(90);h.rig.resize(view);h.rig.set({x:120,y:-80,zoom:.8});
   const pointer={x:237,y:411},held=screenToWorld(pointer,h.rig.value,view);
@@ -96,12 +106,12 @@ it('pan momentum coasts to a stop without a lurch',()=>{
   // A drag, then a release, sampled the way the renderer sees it.
   const drag:number[]=[];
   for(let i=0;i<8;i++){h.beat();h.rig.panBy(14,0);drag.push(h.rig.step(16).x);}
-  h.rig.release({x:3,y:0});
+  h.rig.release({x:(drag.at(-1)!-drag.at(-2)!)/16,y:0});
   const coast:number[]=[];
   for(let i=0;i<40&&h.rig.moving;i++)coast.push(h.rig.step(16).x);
   const step=(a:number[])=>Math.max(...a.slice(1).map((v,i)=>Math.abs(v-a[i])));
   // The first frame after release is in the same league as the drag itself.
-  expect(step(coast)).toBeLessThan(step(drag)*1.6);
+  expect(step([drag.at(-1)!,...coast])).toBeLessThan(step(drag)*1.6);
   expect(coast[coast.length-1]).toBeGreaterThan(drag[drag.length-1]+30);
   const rest=h.rig.value.x;h.rig.step(16);expect(h.rig.value.x).toBe(rest);
 });

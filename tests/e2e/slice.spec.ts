@@ -9,7 +9,7 @@ test('compact appearance flow, linked creation and offline persistence',async({p
  const canvas=page.locator('canvas.map');
  const menu=async()=>{await focus(page,'Atom A',false);await canvas.click({position:{x:640,y:360},button:'right'});};
  await menu();await page.getByRole('button',{name:'Закрепить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
- await menu();await page.getByRole('group',{name:'Важность',exact:true}).getByRole('button',{name:'Ключевой',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
+ await menu();await page.locator('.context-details > summary').click();await page.getByRole('group',{name:'Важность',exact:true}).getByRole('button',{name:'Ключевой',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
  await menu();await page.getByRole('button',{name:'Оформление',exact:true}).click();await page.getByLabel('Цвет',{exact:true}).fill('#e09fe8');await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
  await menu();await page.getByRole('button',{name:'Связанный атом',exact:true}).click();await page.getByRole('textbox',{name:'Название',exact:true}).fill('Atom B');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog')).toBeHidden();
  await expect(canvas).toHaveAttribute('data-nodes','2');await expect(page.locator('footer')).toContainText('1 связей');

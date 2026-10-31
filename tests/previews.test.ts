@@ -25,7 +25,7 @@ it('places a mobile preview below the complete title and state caption',()=>{
 it('keeps rich previews clear of neighbors and caps visible detail',()=>{
  const nodes=[node('a'),node('b',150),node('c',-150),node('d',0,200),node('e',0,-200)];
  const result=contentPreviews(nodes,{x:0,y:0,zoom:2},1600,1200,'b');
- expect(result.length).toBeGreaterThan(0);expect(result.length).toBeLessThanOrEqual(3);
+ expect(result.length).toBeGreaterThan(0);expect(result).toHaveLength(1);expect(contentPreviews(nodes,{x:0,y:0,zoom:2},1600,1200,'')).toEqual([]);
  expect(result[0].id).toBe('b');
  for(const p of result)for(const n of nodes){const x=800+n.x*2,y=600+n.y*2;expect(x>p.x&&x<p.x+p.width&&y>p.y&&y<p.y+p.height).toBe(false);}
 });

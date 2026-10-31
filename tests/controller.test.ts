@@ -4,6 +4,18 @@ import {GraphProviders} from '../src/graph/providers';
 import {graphModel} from '../src/graph/model';
 import {makeAtom,makeLink} from '../src/core/model';
 import {preferences} from '../src/core/preferences';
+it('model changes finish at provider coordinates, preserve pins, and can be interrupted in place',async()=>{
+ vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders(),step=vi.fn(input=>({nodes:input.nodes.map((n:any)=>({...n,x:n.x+100})),energy:100}));
+ providers.physics.set('motion',{id:'motion',name:'Motion',step});
+ for(const id of ['a','b'])providers.structure.set(id,{id,name:id,description:id,physicsId:'motion',defaults:preferences().physics,arrange:({data,locked})=>({positions:data.atoms.map((n,i)=>({id:n.id,x:locked?.includes(n.id)?n.x:i*250+(id==='b'?1000:0),y:locked?.includes(n.id)?n.y:id==='b'?300:0})),skeleton:data.links.map(l=>l.id)})});
+ providers.clustering.set('cluster',{id:'cluster',name:'Cluster',project:({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected)});providers.reduction.set('links',{id:'links',name:'Links',reduce:({data})=>data.links});providers.weight.set('weights',{id:'weights',name:'Weights',weigh:data=>Object.fromEntries(data.atoms.map(a=>[a.id,30]))});
+ const atoms=Array.from({length:8},(_,i)=>makeAtom({id:'motion-'+i,title:'Atom '+i,x:i*250,y:0,pinned:i===0})),data={atoms,links:atoms.slice(1).map(a=>makeLink(atoms[0].id,a.id))};let latest:any;const persist=vi.fn(async()=>{}),error=vi.fn(),controller=new GraphController(providers,m=>latest=m,persist,error),prefs=preferences({graphModel:'a'});
+ const points=()=>latest.expanded.nodes.map((n:any)=>[n.x,n.y]);
+ try{controller.sync(data,prefs,0);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map(a=>[a.x,a.y]));expect(step).not.toHaveBeenCalled();
+  controller.sync(data,{...prefs,graphModel:'b'},0);await vi.advanceTimersByTimeAsync(180);expect(points()[1][0]).toBeGreaterThan(250);expect(points()[1][0]).toBeLessThan(1250);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map((a,i)=>[i?i*250+1000:0,i?300:0]));expect(latest.arranging).toBe(false);expect(step).not.toHaveBeenCalled();expect(persist).toHaveBeenCalled();
+  controller.sync(data,prefs,0);await vi.advanceTimersByTimeAsync(90);controller.setInteracting(true);expect(latest.arranging).toBe(false);const interrupted=points();await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(interrupted);controller.setInteracting(false);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(interrupted);expect(error).not.toHaveBeenCalled();
+ }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
+});
 it('drag moves only the held atoms and preserves the rest of the map',async()=>{
  vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();
  providers.physics.set('test',{id:'test',name:'Test',step:input=>({nodes:input.nodes,energy:0})});

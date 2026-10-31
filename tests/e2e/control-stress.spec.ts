@@ -30,7 +30,7 @@ async function readRecorder(page:Page){
 function worstStep(log:number[][]){
   let zoom=0,pan=0,moving=0;
   for(let i=1;i<log.length;i++){
-   const dz=Math.abs(Math.log(log[i][2]/log[i-1][2])),dp=Math.hypot(log[i][0]-log[i-1][0],log[i][1]-log[i-1][1]);
+   const dz=Math.abs(Math.log(log[i][2]/log[i-1][2])),ratio=log[i][2]/log[i-1][2],dp=Math.hypot(log[i][0]-log[i-1][0]*ratio,log[i][1]-log[i-1][1]*ratio);
    if(dz<1e-6&&dp<1e-6)continue;
    moving++;zoom=Math.max(zoom,dz);pan=Math.max(pan,dp);
   }
@@ -53,10 +53,11 @@ async function driveMap(page:Page,rounds:number){
     await page.waitForTimeout(90);
     if(await page.getByRole('dialog',{name:'Редактор атома'}).isVisible()){await page.getByRole('button',{name:'Закрыть редактор'}).click();await page.waitForTimeout(60);}
    }
-   // Drag a node, then pan the empty canvas.
-   await page.mouse.move(636,336);await page.mouse.down();await page.mouse.move(700,372,{steps:8});await page.mouse.up();
-   await page.waitForTimeout(120);
-   await page.mouse.move(200,560);await page.mouse.down();await page.mouse.move(280,590,{steps:6});await page.mouse.up();
+   // Keep this recorder camera-only; direct atom/group drags have dedicated tests.
+   // Measure screen displacement of the previous viewport center, not raw camera
+   // translation, which necessarily changes with zoom at a distant world origin.
+   await page.locator('canvas.map').focus();
+   for(const key of ['ArrowRight','ArrowDown','ArrowLeft','ArrowUp']){await page.keyboard.press(key);await page.waitForTimeout(60);}
    await page.waitForTimeout(260);
   }
 }
@@ -129,8 +130,10 @@ test('1000 atoms: input stays smooth while the background keeps refining',async(
   for(let i=0;i<8;i++){await page.getByRole('button',{name:'Приблизить',exact:true}).click();await page.waitForTimeout(70);}
   await expect(canvas).toHaveAttribute('data-nodes',String(data.atoms.length));
   await page.waitForTimeout(300);
-  for(let i=0;i<6;i++){await page.getByRole('button',{name:'Отдалить',exact:true}).click();await page.waitForTimeout(70);}
-  expect(Number(await canvas.getAttribute('data-nodes'))).toBeLessThan(140);
+  for(let i=0;i<24&&Number(await canvas.getAttribute('data-zoom'))>.32;i++){await page.getByRole('button',{name:'Отдалить',exact:true}).click();await page.waitForTimeout(70);}
+  await expect.poll(async()=>Number(await canvas.getAttribute('data-zoom'))).toBeLessThan(.42);
+  // Each of the 35 fixture trees has eight topology groups; 140 was the bound for the 17-tree case.
+  await expect.poll(async()=>Number(await canvas.getAttribute('data-nodes'))).toBe(35*8);
   await page.waitForTimeout(400);
   const after=await readMap(page);
   expect(after.atoms.map(a=>[a.id,a.x,a.y]).sort()).toEqual(data.atoms.map(a=>[a.id,a.x,a.y]).sort());
