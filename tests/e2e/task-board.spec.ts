@@ -33,7 +33,7 @@ for(const mobile of [false,true])test(`task board persists tasks and source stat
  if(mobile){for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:start.x+(dest.x-start.x)*i/8,y:start.y+(dest.y-start.y)*i/8,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}else{await page.mouse.move(dest.x,dest.y,{steps:8});await page.mouse.up();}
  await expect(page.locator('[data-task-lane="archived"] [data-source="tasks"]')).toBeVisible();
  await expect(page.locator('.task-drag-preview')).toHaveCount(0);expect((await readMap(page)).atoms[0].state).toBe('archived');
- await page.locator('.search-trigger').click();await page.locator('.search input').fill('Project');await page.locator('.search-results button').first().click();await expect(page.locator('canvas.map')).toBeVisible();await expect(page.locator('.kanban')).toHaveCount(0);
+ await page.locator('.search-trigger').click();await page.locator('.search input').fill('Project');await page.getByRole('button',{name:'Показать на карте',exact:true}).click();await expect(page.locator('canvas.map')).toBeVisible();await expect(page.locator('.kanban')).toHaveCount(0);
 });
 
 test('editing a duplicate checklist keeps recurrence on the renamed task',async({page})=>{

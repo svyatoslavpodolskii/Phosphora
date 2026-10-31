@@ -78,7 +78,7 @@ export class CameraRig{
   setReduced(reduced:boolean){this.reduced=reduced;}
 
   /** Immediate placement, used for restore, resize and reduced motion only. */
-  set(camera:Camera){this.retargeting=false;this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
+  set(camera:Camera){this.direct=false;this.retargeting=false;this.camera={...camera};this.target={...camera};this.pending.x=this.pending.y=this.pending.z=0;this.anchor=null;this.pinching=false;this.lastEvent=0;this.interval=Infinity;this.settled=true;this.moving=false;}
 
   get value(){return this.camera;}
   get anchored(){return this.anchor!==null;}

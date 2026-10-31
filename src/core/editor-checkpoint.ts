@@ -1,6 +1,7 @@
 import type {Atom,StorageAdapter} from './model';
 
 export const EDITOR_CHECKPOINT='editor-checkpoint-v1';
+export type CheckpointState='clean'|'pending'|'saved'|'error';
 export interface EditorCheckpoint {
  version:1; initial:Partial<Atom>; draft:Partial<Atom>; aliases:string;
  add:{to:string;relation:string;source?:string}[]; remove:string[]; parent?:string;
@@ -16,14 +17,15 @@ export class CheckpointWriter {
  private timer:ReturnType<typeof setTimeout>|undefined;
  private pending:EditorCheckpoint|null|(()=>EditorCheckpoint|null)|undefined;
  private queue:Promise<void>=Promise.resolve();
- constructor(private storage:StorageAdapter,private failed:(error:Error)=>void){}
- schedule(value:EditorCheckpoint|null|(()=>EditorCheckpoint|null)){this.pending=value;clearTimeout(this.timer);this.timer=setTimeout(()=>{void this.flush().catch(()=>{});},300);}
+ private revision=0;
+ constructor(private storage:StorageAdapter,private failed:(error:Error)=>void,private changed:(state:CheckpointState)=>void=()=>{}){}
+ schedule(value:EditorCheckpoint|null|(()=>EditorCheckpoint|null)){this.revision++;this.pending=value;this.changed('pending');clearTimeout(this.timer);this.timer=setTimeout(()=>{void this.flush().catch(()=>{});},300);}
  flush(){clearTimeout(this.timer);this.timer=undefined;if(this.pending===undefined)return this.queue;
-  const pending=this.pending;this.pending=undefined;const value=typeof pending==='function'?pending():pending;
-  const next=this.queue.catch(()=>{}).then(()=>this.storage.transaction([{kind:'setting',key:EDITOR_CHECKPOINT,value}]));
-  this.queue=next.catch(error=>{if(this.pending===undefined)this.pending=value;this.failed(error);throw error;});
+  const pending=this.pending,revision=this.revision;this.pending=undefined;const value=typeof pending==='function'?pending():pending;
+  const next=this.queue.catch(()=>{}).then(()=>this.storage.transaction([{kind:'setting',key:EDITOR_CHECKPOINT,value}])).then(()=>{if(revision===this.revision)this.changed(value?'saved':'clean');});
+  this.queue=next.catch(error=>{if(this.pending===undefined)this.pending=value;if(revision===this.revision)this.changed('error');this.failed(error);throw error;});
   // flush callers can handle errors, while background persistence never creates an unhandled rejection.
   void this.queue.catch(()=>{});return this.queue;
  }
- cancel(){clearTimeout(this.timer);this.timer=undefined;this.pending=undefined;}
+ cancel(){this.revision++;clearTimeout(this.timer);this.timer=undefined;this.pending=undefined;}
 }

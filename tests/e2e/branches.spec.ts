@@ -9,7 +9,7 @@ test('hundred atoms: branch drag, group pin/state, stable zoom and reload',async
  // Pin the fixture to isolate camera invariance from an independently moving simulation.
  const before=await readMap(page);await page.locator('canvas.map').hover();await page.mouse.wheel(0,-70);await page.waitForTimeout(250);const after=await readMap(page);expect(after.atoms.map(a=>a.id)).toEqual(before.atoms.map(a=>a.id));
  const map=graphModel(after,'all',.3,'');const group=map.nodes.find(n=>n.members&&n.members.length>=3)!;expect(group).toBeTruthy();
-  await page.getByRole('button',{name:'Открыть поиск',exact:true}).click();await page.getByRole('textbox',{name:'Поиск',exact:true}).fill(group.label);await page.locator('.search-results button').first().click();await expect(page.locator('main')).toHaveAttribute('data-navigation','idle');await page.locator('canvas.map').focus();await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'Открыть поиск',exact:true}).click();await page.getByRole('textbox',{name:'Поиск',exact:true}).fill(group.label);await page.getByRole('button',{name:'Показать на карте',exact:true}).click();await expect(page.locator('main')).toHaveAttribute('data-navigation','idle');await page.locator('canvas.map').focus();await page.keyboard.press('Escape');
  for(let i=0;i<4;i++)await page.getByRole('button',{name:'Отдалить',exact:true}).click();
  // Center projection uses the same branch centroid; capture current source coordinates for its screen position.
  const snapshot=await readMap(page),projection=graphModel(snapshot,'all',.4096,'');const target=projection.nodes.find(n=>n.id===group.id)!;const focused=snapshot.atoms.find(a=>a.title===group.label)!;

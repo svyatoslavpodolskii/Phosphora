@@ -1,7 +1,8 @@
 <script lang="ts">
  import {Marked} from 'marked';
  import {sanitizeHTML} from './markdown';
- import {listVaults,storedBytes,notePath,resolvePath,resolveAtom} from '../core/vault';
+ import {listVaults,storedBytes} from '../core/vault-files';
+ import {notePath,resolvePath,resolveAtom} from '../core/note-references';
  import type {Atom,StorageAdapter} from '../core/model';
  import {download} from '../core/backup';
  let {content,source,atoms,storage,onopen,onedit}:{content:string;source:Atom;atoms:Atom[];storage:StorageAdapter;onopen:(id:string)=>void;onedit?:()=>void}=$props();let root:HTMLDivElement;let error=$state('');

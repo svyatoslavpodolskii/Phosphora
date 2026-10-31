@@ -8,6 +8,9 @@ const view={width:900,height:620};
 const hand=(gapMs:number)=>{let t=0;const rig=new CameraRig(()=>t);return{rig,beat(ms=gapMs){t+=ms;},advance(ms:number){t+=ms;}};};
 const settle=(rig:CameraRig,dt=16)=>{let frames=0;while(rig.moving&&frames++<3000)rig.step(dt);return frames;};
 const trace=(rig:CameraRig,frames:number,dt=16)=>{const values:number[]=[];for(let i=0;i<frames;i++)values.push(Math.log(rig.step(dt).zoom));return values;};
+it('restoring a camera ends a previous live gesture before the next wheel input',()=>{
+ const h=hand(16);h.rig.resize(view);h.rig.trackTo({x:80,y:50,zoom:1});h.rig.set({x:0,y:0,zoom:1});expect(h.rig.gesturing).toBe(false);h.beat();h.rig.zoomAt({x:450,y:310},1.2);expect(h.rig.step(16).zoom).toBeGreaterThan(1);
+});
 
 it('wheel zoom rebases a moving cursor without carrying the old anchor across the screen',()=>{
  const h=hand(16);h.rig.resize(view);h.rig.set({x:12000,y:-5000,zoom:.4});h.beat();h.rig.zoomAt({x:80,y:100},1.2);h.rig.step(16);

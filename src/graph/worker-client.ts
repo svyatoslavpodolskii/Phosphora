@@ -1,7 +1,22 @@
 export class GraphWorkerClient {
  private stopped=false;
- private worker=new Worker(new URL('./graph.worker.ts',import.meta.url),{type:'module'});private seq=0;private pending=new Map<number,{resolve:(v:any)=>void;reject:(e:Error)=>void;timer:ReturnType<typeof setTimeout>}>();
- constructor(){this.worker.onmessage=({data})=>{const p=this.pending.get(data.id);if(p){clearTimeout(p.timer);this.pending.delete(data.id);data.error?p.reject(Error(data.error)):p.resolve(data.result);}};this.worker.onerror=()=>this.close();}
- call<T>(method:string,input:unknown):Promise<T>{if(this.stopped)return Promise.reject(Error('Graph worker is closed'));return new Promise((resolve,reject)=>{const id=++this.seq,timer=setTimeout(()=>{this.pending.delete(id);reject(Error('Расчёт карты не ответил.'));},5000);this.pending.set(id,{resolve,reject,timer});this.worker.postMessage({id,method,input});});}
- close(){this.stopped=true;this.worker.terminate();for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(Error('Worker карты остановлен.'));}this.pending.clear();}
+ private worker?:Worker;
+ private seq=0;
+ private pending=new Map<number,{resolve:(value:any)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>}>();
+ private start(){
+  if(this.worker)return this.worker;
+  const worker=new Worker(new URL('./graph.worker.ts',import.meta.url),{type:'module'});
+  worker.onmessage=({data})=>{const request=this.pending.get(data.id);if(!request)return;clearTimeout(request.timer);this.pending.delete(data.id);data.error?request.reject(Error(data.error)):request.resolve(data.result);};
+  worker.onerror=()=>this.close();this.worker=worker;return worker;
+ }
+ call<T>(method:string,input:unknown):Promise<T>{
+  if(this.stopped)return Promise.reject(Error('Graph worker is closed'));
+  return new Promise((resolve,reject)=>{
+   let worker:Worker;try{worker=this.start();}catch(error){reject(error);return;}
+   const id=++this.seq,timer=setTimeout(()=>{this.pending.delete(id);reject(Error('Расчёт карты не ответил.'));},5000);
+   this.pending.set(id,{resolve,reject,timer});
+   try{worker.postMessage({id,method,input});}catch(error){clearTimeout(timer);this.pending.delete(id);reject(error);}
+  });
+ }
+ close(){this.stopped=true;this.worker?.terminate();this.worker=undefined;for(const request of this.pending.values()){clearTimeout(request.timer);request.reject(Error('Worker карты остановлен.'));}this.pending.clear();}
 }

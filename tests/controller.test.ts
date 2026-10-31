@@ -14,6 +14,7 @@ it('model changes finish at provider coordinates, preserve pins, and can be inte
  try{controller.sync(data,prefs,0);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map(a=>[a.x,a.y]));expect(step).not.toHaveBeenCalled();
   controller.sync(data,{...prefs,graphModel:'b'},0);await vi.advanceTimersByTimeAsync(180);expect(points()[1][0]).toBeGreaterThan(250);expect(points()[1][0]).toBeLessThan(1250);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map((a,i)=>[i?i*250+1000:0,i?300:0]));expect(latest.arranging).toBe(false);expect(step).not.toHaveBeenCalled();expect(persist).toHaveBeenCalled();
   controller.sync(data,prefs,0);await vi.advanceTimersByTimeAsync(90);controller.setInteracting(true);expect(latest.arranging).toBe(false);const interrupted=points();await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(interrupted);controller.setInteracting(false);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(interrupted);expect(error).not.toHaveBeenCalled();
+  controller.sync({atoms:[],links:[]},prefs,1);await vi.advanceTimersByTimeAsync(1000);controller.sync(data,{...prefs,graphModel:'b'},2,true);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map(a=>[a.x,a.y]));expect(step).not.toHaveBeenCalled();
  }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
 it('drag moves only the held atoms and preserves the rest of the map',async()=>{

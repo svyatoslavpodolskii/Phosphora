@@ -18,6 +18,13 @@ async function setup(){
 }
 const manifest={id:'test.drafts',name:'Draft policy',version:'1',apiVersion:1,permissions:['atoms.read','atoms.write','links.read','links.write']} satisfies Plugin['manifest'];
 
+it('undo restores only the deleted atoms and links, preserving later work',async()=>{
+ const h=await setup();try{const a=await h.core.create({title:'Deleted',x:40,y:90}),b=await h.core.create({title:'Neighbor',x:400,y:-30});const link=await h.core.link(a.id,b.id);await h.core.delete(a.id);await h.core.update(b.id,{title:'Changed afterwards'});const c=await h.core.create({title:'Later note'});expect(await h.core.undoDeletion()).toEqual([a.id]);expect(h.core.data.atoms.find(n=>n.id===a.id)).toMatchObject({x:40,y:90,title:'Deleted'});expect(h.core.data.atoms.find(n=>n.id===b.id)?.title).toBe('Changed afterwards');expect(h.core.data.atoms.some(n=>n.id===c.id)).toBe(true);expect(h.core.data.links).toContainEqual(link);expect(await h.core.undoDeletion()).toEqual([]);expect(await h.core.storage.getSetting('last-deletion-summary')).toBeNull();}finally{h.close();}
+});
+it('failed undo keeps its recovery record and emits no successful restore events',async()=>{
+ const h=await setup();try{const a=await h.core.create({title:'Keep recoverable'});await h.core.delete(a.id);const transaction=h.core.storage.transaction.bind(h.core.storage),events:string[]=[];h.core.on('atom:create',(n:any)=>events.push(n.id));h.core.storage.transaction=async()=>{throw Error('disk full');};await expect(h.core.undoDeletion()).rejects.toThrow('disk full');expect(h.core.data.atoms).toHaveLength(0);expect(events).toEqual([]);h.core.storage.transaction=transaction;expect(await h.core.undoDeletion()).toEqual([a.id]);expect(events).toEqual([a.id]);}finally{h.close();}
+});
+
 it('consumes the editor checkpoint only with a successful editor commit',async()=>{
  const h=await setup();try{
   await h.core.storage.transaction([{kind:'setting',key:EDITOR_CHECKPOINT,value:{text:'Keep me'}}]);

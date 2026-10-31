@@ -3,6 +3,11 @@ import {CheckpointWriter,editorCheckpoint,EDITOR_CHECKPOINT,type EditorCheckpoin
 import type {StorageAdapter} from '../src/core/model';
 
 const draft=(title:string):EditorCheckpoint=>({version:1,initial:{title:'',content:''},draft:{title,content:'Unfinished'},aliases:'Alias',add:[{to:'other',relation:'related'}],remove:[]});
+it('does not label newer typing as saved when an older write finishes',async()=>{
+ let finish!:()=>void,started!:()=>void;const began=new Promise<void>(resolve=>started=resolve),states:string[]=[];
+ const transaction=vi.fn().mockImplementationOnce(()=>{started();return new Promise<void>(resolve=>finish=resolve);}).mockResolvedValue(undefined),writer=new CheckpointWriter({transaction} as unknown as StorageAdapter,()=>{},state=>states.push(state));
+ writer.schedule(draft('Old'));const old=writer.flush();await began;writer.schedule(draft('New'));finish();await old;expect(states.at(-1)).toBe('pending');await writer.flush();expect(states.at(-1)).toBe('saved');writer.cancel();
+});
 it('coalesces typing, flushes on backgrounding and never resurrects discarded text',async()=>{
  vi.useFakeTimers();const values:unknown[]=[];const storage={transaction:vi.fn(async ops=>{values.push(ops[0].value);})} as unknown as StorageAdapter;
  const writer=new CheckpointWriter(storage,()=>{});
