@@ -8,6 +8,7 @@
  *  only on the atom's own shape and size, and the gradient only on its colour.
  *  So the gradient and the path are built once and reused, which removes the
  *  per-frame allocation and colour parsing without changing a pixel. */
+import {iconDefinition} from '../core/icons';
 const SS=2;
 const gradients=new Map<string,CanvasGradient>();
 const shapes=new Map<string,{path:Path2D;radius:number}>();
@@ -109,7 +110,9 @@ export function iconSprite(icon:string,ink:string,size:number){
   ctx.scale(SS,SS);
   ctx.translate(box,box);
   ctx.fillStyle=ink;ctx.font=`${size}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(icon,0,0);
+  const definition=iconDefinition(icon);
+  if(definition){ctx.save();ctx.scale(size/24,size/24);ctx.translate(-12,-12);ctx.strokeStyle=ink;ctx.lineWidth=1.6;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke(new Path2D(definition.path));ctx.restore();}
+  else ctx.fillText(icon,0,0);
   if(glyphs.size>300)glyphs.clear();
   glyphs.set(key,canvas);
   return canvas;

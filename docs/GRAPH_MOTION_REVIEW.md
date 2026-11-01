@@ -1,6 +1,6 @@
 # Graph motion review: PWA first
 
-Reference: [Obsidian Graph View](https://obsidian.md/help/Plugins/Graph%2Bview). The public [Obsidian API repository](https://github.com/obsidianmd/obsidian-api) contains extension type definitions, not the built-in graph engine. This change implements independent improvements in Phosphora; it does not import Obsidian implementation or claim identical camera curves.
+Reference: [Obsidian Graph View](https://obsidian.md/help/Plugins/Graph%2Bview). The public [Obsidian API repository](https://github.com/obsidianmd/obsidian-api) contains extension type definitions, not the built-in graph engine. This change implements independent improvements in Posphorea; it does not import Obsidian implementation or claim identical camera curves.
 
 ## Verified causes and changes
 

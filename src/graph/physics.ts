@@ -5,6 +5,7 @@ export function safePhysics(value:Partial<PhysicsSettings>):PhysicsSettings{cons
 export interface Body {id:string;x:number;y:number;vx:number;vy:number;radius:number;mass:number;pinned:boolean;resistance:number;dragged?:boolean;boundary?:boolean;halfWidth?:number;top?:number;bottom?:number;target?:{x:number;y:number};component?:string;branch?:string}
 export interface PhysicsInput {nodes:Body[];links:{from:string;to:string;strength?:number;distance?:number}[];settings:PhysicsSettings;mode?:string;bondBehavior?:'tension'|'elastic'|'local';dt:number;reducedMotion:boolean}
 export interface PhysicsOutput {nodes:Body[];energy:number}
+const MAX_FORCE=12;
 export function forces(input:PhysicsInput,contacts=new Set<string>()):Map<string,{x:number;y:number}>{
  const result=new Map(input.nodes.map(n=>[n.id,{x:0,y:0}]));const byId=new Map(input.nodes.map(n=>[n.id,n]));const s=safePhysics(input.settings);
  for(const l of input.links){const a=byId.get(l.from),b=byId.get(l.to);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y;const d=Math.max(.1,Math.hypot(dx,dy));const preferred=Math.max(l.distance??s.distance,a.radius+b.radius+20);const strength=Math.max(.01,Math.min(3,l.strength??1));const stretch=input.bondBehavior==='elastic'?d-preferred:Math.max(0,d-preferred);if(input.bondBehavior==='local'&&d>preferred*1.8)continue;const field=input.mode==='free'?Math.exp(-((stretch/preferred)**2)):1;const cap=input.mode==='calm'?3:input.mode==='living'?5:12;const f=cap*Math.tanh(stretch*s.elasticity*strength/cap)*field;const fa=result.get(a.id)!,fb=result.get(b.id)!;fa.x+=dx/d*f;fa.y+=dy/d*f;fb.x-=dx/d*f;fb.y-=dy/d*f;}
@@ -25,7 +26,7 @@ export function forces(input:PhysicsInput,contacts=new Set<string>()):Map<string
  const branches=[...groups].filter(([key])=>key.startsWith('b:')).map(([,g])=>g);
  for(let i=0;i<branches.length;i++)for(let j=i+1;j<branches.length;j++){const a=branches[i],b=branches[j];if(a.nodes[0].component!==b.nodes[0].component)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),reach=(Math.sqrt(a.area)+Math.sqrt(b.area))*.38;if(d>=reach)continue;const push=.7*(1-d/reach);for(const [g,sign] of [[a,-1],[b,1]] as const)for(const n of g.nodes){const f=result.get(n.id)!;f.x+=dx/d*push*sign;f.y+=dy/d*push*sign;}}
  for(const n of input.nodes)if(n.target&&!n.resistance){const f=result.get(n.id)!,dx=n.target.x-n.x,dy=n.target.y-n.y,d=Math.hypot(dx,dy);if(d>1){const force=2*Math.tanh(d/100);f.x+=dx/d*force;f.y+=dy/d*force;}}
- for(const force of result.values()){const length=Math.hypot(force.x,force.y);if(length>12){force.x*=12/length;force.y*=12/length;}}
+ for(const force of result.values()){const length=Math.hypot(force.x,force.y);if(length>MAX_FORCE){force.x*=MAX_FORCE/length;force.y*=MAX_FORCE/length;}}
  return result;
 }
 export function physicsStep(input:PhysicsInput):PhysicsOutput {
@@ -46,4 +47,6 @@ function integrate(input:PhysicsInput):PhysicsOutput {
  const decay=damping**dt;const impulse=damping*(1-decay)/(1-damping);
  n.vx=n.vx*decay+force.x/mass*impulse;n.vy=n.vy*decay+force.y/mass*impulse;const v=Math.hypot(n.vx,n.vy);const max=3*motion;const nextSpeed=Math.min(max,Math.max(0,v-(contact?0:s.friction*.3*dt)));if(v>0){n.vx*=nextSpeed/v;n.vy*=nextSpeed/v;}n.x+=n.vx*dt*motion;n.y+=n.vy*dt*motion;energy+=Math.hypot(n.vx,n.vy);return n;});return{nodes,energy};
 }
-export function dropResistance(input:PhysicsInput,id:string){const f=forces(input).get(id);return Math.min(10000,(f?Math.hypot(f.x,f.y):0)*1.25+safePhysics(input.settings).friction*2);}
+/** Legacy manual friction must remain breakable by the bounded force field.
+ * Living drags release with zero resistance; this helper is for static placement. */
+export function dropResistance(input:PhysicsInput,id:string){const f=forces(input).get(id);return Math.min(MAX_FORCE*.75,(f?Math.hypot(f.x,f.y):0)*1.25+safePhysics(input.settings).friction*2);}

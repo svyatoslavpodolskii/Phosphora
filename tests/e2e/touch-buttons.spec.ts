@@ -1,3 +1,4 @@
+import {sourceText} from './helpers';
 import {test,expect,type Page} from '@playwright/test';
 import {makeAtom} from '../../src/core/model';
 import {importMap,readMap,focus} from './helpers';
@@ -12,5 +13,5 @@ test('touch without a buttons bitmask can lasso and move its selection without e
  const saved=await readMap(page);expect(saved.atoms.find(a=>a.id==='touch-left')).toMatchObject({x:-30,y:30});expect(saved.atoms.find(a=>a.id==='touch-right')).toMatchObject({x:110,y:30});expect(saved.atoms.find(a=>a.id==='touch-still')).toMatchObject({x:0,y:230});expect(errors).toEqual([]);
 });
 test('map text preview opens its text directly for editing',async({page})=>{
- await page.goto('/');await importMap(page,{atoms:[makeAtom({title:'Preview',content:'Tap this preview text',x:0,y:0,pinned:true})],links:[]});await focus(page,'Preview',false);const canvas=page.locator('canvas.map');for(let i=0;i<6;i++)await canvas.press('=');const preview=page.locator('.content-preview');await expect(preview).toBeVisible();const box=(await preview.boundingBox())!;await page.mouse.click(box.x+20,box.y+8);const text=page.getByRole('textbox',{name:'Текст',exact:true});await expect(text).toBeFocused();await text.fill('Updated directly');await page.getByRole('button',{name:'Сохранить',exact:true}).click();expect((await readMap(page)).atoms[0].content).toBe('Updated directly');
+ await page.goto('/');await importMap(page,{atoms:[makeAtom({title:'Preview',content:'Tap this preview text',x:0,y:0,pinned:true})],links:[]});await focus(page,'Preview',false);const canvas=page.locator('canvas.map');for(let i=0;i<6;i++)await canvas.press('=');const preview=page.locator('.content-preview');await expect(preview).toBeVisible();const box=(await preview.boundingBox())!;await page.mouse.click(box.x+20,box.y+8);const text=(await sourceText(page));await expect(text).toBeFocused();await text.fill('Updated directly');await page.getByRole('button',{name:'Готово',exact:true}).click();expect((await readMap(page)).atoms[0].content).toBe('Updated directly');
 });

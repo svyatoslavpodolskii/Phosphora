@@ -5,7 +5,7 @@
  import type {Core} from '../core/core';
  let {data,core,onopen}:{data:Snapshot;core:Core;onopen:(id:string)=>void}=$props();
  let clock=$state(Date.now());onMount(()=>{const timer=setInterval(()=>clock=Date.now(),60000);return()=>clearInterval(timer);});
- const lanes=[['now','Сейчас'],['normal','Обычные'],['archived','Архив']] as const;
+ const lanes=[['now','Сейчас'],['normal','Поле'],['archived','Архив']] as const;
  let busy=$state(false),error=$state(''),drag=$state<{id:string;title:string;pointer:number;lane:string;x:number;y:number}|null>(null),period=$state(7);
  const groups=$derived(data.atoms.map(atom=>({atom,tasks:tasksAt(atom,new Date(clock))})).filter(group=>group.tasks.length));
  async function run(fn:()=>Promise<unknown>){if(busy)return;busy=true;error='';try{await fn();}catch(e){error=(e as Error).message;}finally{busy=false;}}
@@ -30,7 +30,7 @@
  </div>{/each}
  </article>
  {/snippet}
- {#if !groups.length}<div class="board-empty"><h2>Задачи живут в ваших мыслях</h2><p>Добавьте список задач в текст любого атома. Он появится здесь целой группой.</p></div>{:else}<div class="board-lanes">{#each lanes as [state,label]}<section class="board-lane" class:drop-target={drag?.lane===state} data-task-lane={state} aria-label={label}><h2>{label}<small>{groups.filter(g=>!g.atom.paused&&g.atom.state===state).length}</small></h2>{#each groups.filter(g=>!g.atom.paused&&g.atom.state===state) as g (g.atom.id)}{@render group(g.atom,g.tasks)}{:else}<p class="lane-empty">Пока пусто</p>{/each}</section>{/each}</div>
+ {#if !groups.length}<div class="board-empty"><h2>Задачи живут в ваших мыслях</h2><p>В редакторе атома нажмите Task на панели инструментов или добавьте строку «- [ ] #task Купить билеты». Задачи появятся здесь группой. Обычные чекбоксы остаются в тексте.</p></div>{:else}<div class="board-lanes">{#each lanes as [state,label]}<section class="board-lane" class:drop-target={drag?.lane===state} data-task-lane={state} aria-label={label}><h2>{label}<small>{groups.filter(g=>!g.atom.paused&&g.atom.state===state).length}</small></h2>{#each groups.filter(g=>!g.atom.paused&&g.atom.state===state) as g (g.atom.id)}{@render group(g.atom,g.tasks)}{:else}<p class="lane-empty">Пока пусто</p>{/each}</section>{/each}</div>
  {@const paused=groups.filter(g=>g.atom.paused)}{#if paused.length}<details class="paused-groups"><summary>На паузе ({paused.length})</summary>{#each paused as g (g.atom.id)}{@render group(g.atom,g.tasks,true)}{/each}</details>{/if}{/if}
 </section>
 <style>

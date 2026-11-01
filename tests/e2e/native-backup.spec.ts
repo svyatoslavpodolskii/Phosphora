@@ -9,7 +9,7 @@ test('full storage backup restores through staged OPFS and rejects damaged input
  await expect(page.getByRole('button',{name:'Экспорт карты',exact:true})).toBeHidden();
  await page.getByLabel('Режим автосвязей',{exact:true}).selectOption('off');
  const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Создать резервную копию',exact:true}).click();const file=await downloading;
- expect(file.suggestedFilename()).toMatch(/^Основное_.*\.phosphora$/);
+ expect(file.suggestedFilename()).toMatch(/^Основное_.*\.posphorea$/);
  const stream=await file.createReadStream();const chunks:Buffer[]=[];for await(const chunk of stream!)chunks.push(chunk as Buffer);const bytes=Buffer.concat(chunks);
  await closeSettings(page);await importMap(page,{atoms:[original,makeAtom({title:'Later thought'})],links:[]});await openSettings(page);
  await page.getByLabel('Режим автосвязей',{exact:true}).selectOption('automatic');

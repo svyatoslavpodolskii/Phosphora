@@ -51,7 +51,7 @@ async function driveMap(page:Page,rounds:number){
    for(const [x,y] of [[560,300],[598,318],[636,336],[598,318]] as [number,number][]){
     await page.mouse.move(x,y);await page.mouse.down();await page.mouse.up();
     await page.waitForTimeout(90);
-    if(await page.getByRole('dialog',{name:'Редактор атома'}).isVisible()){await page.getByRole('button',{name:'Закрыть редактор'}).click();await page.waitForTimeout(60);}
+    if(await page.getByRole('dialog',{name:'Редактор атома'}).isVisible()){await page.getByRole('button',{name:'Отмена',exact:true}).click();await page.waitForTimeout(60);}
    }
    // Keep this recorder camera-only; direct atom/group drags have dedicated tests.
    // Measure screen displacement of the previous viewport center, not raw camera

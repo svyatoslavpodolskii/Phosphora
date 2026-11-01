@@ -1,0 +1,91 @@
+import {sourceText} from './helpers';
+import {test,expect} from '@playwright/test';
+import {makeAtom} from '../../src/core/model';
+import {closeSettings,focus,importMap,openSettings,readMap} from './helpers';
+
+for(const mobile of [false,true])test(`editor primary controls and draft cancellation on ${mobile?'mobile':'desktop'}`,async({page})=>{
+ await page.setViewportSize({width:mobile?390:1280,height:844});
+ await page.goto('/');
+ await expect(page.locator('canvas.map')).toBeVisible();
+ await page.locator('canvas.map').press('n');
+ const editor=page.getByRole('dialog',{name:'Редактор атома'});
+ await expect(editor.getByRole('combobox',{name:'Тип',exact:true})).toBeVisible();
+ await expect(editor.getByRole('combobox',{name:'Состояние'})).toHaveValue('normal');
+ await expect(editor.getByRole('combobox',{name:'Состояние'}).locator('option:checked')).toHaveText('Поле');
+ await expect(editor.getByRole('toolbar',{name:'Форматирование текста'})).toBeVisible();
+ await editor.getByRole('textbox',{name:'Название',exact:true}).fill('Discard this session');
+ await (await sourceText(page)).fill('Unsaved body');
+ await expect(editor.getByRole('status')).toHaveText('Черновик сохранён на устройстве');
+ await editor.getByRole('button',{name:'Отмена',exact:true}).click();
+ await expect(editor).toBeHidden();
+ await page.reload();
+ await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','0');
+ await expect(editor).toBeHidden();
+ await page.locator('canvas.map').press('n');
+ await editor.getByRole('textbox',{name:'Название',exact:true}).fill('Keep this session');
+ await (await sourceText(page)).fill('Original body');
+ await editor.getByRole('button',{name:'Готово',exact:true}).click();
+ await expect(editor).toBeHidden();
+ await focus(page,'Keep this session');
+ await expect(editor.locator('.markdown')).toContainText('Original body');
+ await expect(editor.getByRole('toolbar')).toBeVisible();
+ await editor.getByRole('button',{name:'Markdown',exact:true}).click();
+ await (await sourceText(page)).fill('Changed body');
+ await editor.locator('.note-metadata > summary').click();
+ await editor.getByRole('button',{name:'Отложить',exact:true}).click();
+ await editor.getByRole('button',{name:'Удалить атом',exact:true}).click();
+ await editor.locator('.confirm').getByRole('button',{name:'Отмена',exact:true}).click();
+ await editor.locator('.note-heading').getByRole('button',{name:'Отмена',exact:true}).click();
+ await expect(editor).toBeHidden();
+ const snapshot=await readMap(page);
+ expect(snapshot.atoms).toHaveLength(1);
+ expect(snapshot.atoms[0]).toMatchObject({title:'Keep this session',content:'Original body',state:'normal',paused:false});
+ await page.reload();
+ await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','1');
+ await expect(editor).toBeHidden();
+});
+
+test('legacy task type is preserved but cannot be chosen for other atoms',async({page})=>{
+ await page.goto('/');
+ await importMap(page,{atoms:[makeAtom({id:'legacy-task',title:'Legacy task',type:'task',content:'Legacy content',pinned:true})],links:[]});
+ await openSettings(page);
+ await page.getByRole('button',{name:'Плагины →',exact:true}).click();
+ const templates=page.locator('.plugin-row').filter({hasText:'Типы и шаблоны'});
+ const enable=templates.getByRole('button',{name:'Включить',exact:true});
+ if(await enable.count())await enable.click();
+ await closeSettings(page);
+ await focus(page,'Legacy task');
+ const editor=page.getByRole('dialog',{name:'Редактор атома'});
+ const type=editor.getByRole('combobox',{name:'Тип',exact:true});
+ await expect(type).toHaveValue('task');
+ await expect(type.locator('option:checked')).toHaveText('Задача (устаревший тип)');
+ await expect(type.locator('option:checked')).toHaveJSProperty('disabled',true);
+ await expect(editor.locator('.markdown')).toContainText('Legacy content');
+ await editor.getByRole('textbox',{name:'Название',exact:true}).fill('Legacy task retained');
+ await editor.getByRole('button',{name:'Готово',exact:true}).click();
+ expect((await readMap(page)).atoms[0].type).toBe('task');
+ await page.locator('canvas.map').press('n');
+ await expect(type.locator('option[value="task"],option[value="builtin.templates:task"]')).toHaveCount(0);
+ await expect(type.locator('option[value="builtin.templates:person"]')).toHaveCount(1);
+ await editor.getByRole('button',{name:'Отмена',exact:true}).click();
+});
+
+test('pause is a secondary action and preserves the atom category',async({page})=>{
+ await page.setViewportSize({width:1280,height:720});
+ await page.goto('/');
+ await importMap(page,{atoms:[makeAtom({title:'Pause me',state:'now',pinned:true})],links:[]});
+ const menu=page.getByRole('dialog',{name:'Действия с атомом'});
+ const open=async()=>{
+  await page.locator('canvas.map').click({position:{x:640,y:360},button:'right'});
+  await expect(menu).toBeVisible();
+ };
+ // The map uses the viewport centre for a single atom.
+ await open();
+ await expect(menu.locator('.state-shortcuts').getByRole('button',{name:'Поле',exact:true})).toBeVisible();
+ await expect(menu.locator('.state-shortcuts').getByRole('button',{name:/Отложить|Пауза|Возобновить/})).toHaveCount(0);
+ await menu.getByRole('button',{name:'Отложить',exact:true}).click();
+ expect((await readMap(page)).atoms[0]).toMatchObject({state:'now',paused:true});
+ await open();
+ await menu.getByRole('button',{name:'Возобновить',exact:true}).click();
+ expect((await readMap(page)).atoms[0]).toMatchObject({state:'now',paused:false});
+});

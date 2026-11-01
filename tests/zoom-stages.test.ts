@@ -8,7 +8,9 @@ it('drag transmission decays along connections and never includes another island
   const atoms=['a','b','c','d','e','other'].map(id=>makeAtom({id,title:id}));
   const weights=dragWeights({atoms,links:[makeLink('a','b'),makeLink('b','c'),makeLink('c','d'),makeLink('d','e')]},['a']);
   expect(weights.get('b')).toBeGreaterThan(weights.get('c')!);expect(weights.get('c')).toBeGreaterThan(weights.get('d')!);
-  expect(weights.has('a')).toBe(false);expect(weights.has('e')).toBe(false);expect(weights.has('other')).toBe(false);
+  // Transmission continues beyond the former three-hop cutoff, with attenuation.
+  expect(weights.get('e')).toBeGreaterThan(0);expect(weights.get('e')).toBeLessThan(weights.get('d')!);
+  expect(weights.has('a')).toBe(false);expect(weights.has('other')).toBe(false);
 });
 it('zooming never chooses what is selected, and never touches the world',()=>{
   const atoms=[makeAtom({id:'a',title:'A',x:-900,y:0}),makeAtom({id:'b',title:'B',x:400,y:0}),makeAtom({id:'c',title:'C',x:1500,y:0})];

@@ -1,6 +1,6 @@
 import type {StorageAdapter,Mutation} from '../core/model';
 
-export const optionalBuiltins=['builtin.templates','builtin.daily','builtin.molecule','builtin.compact','builtin.ambient'];
+export const optionalBuiltins=['builtin.templates','builtin.daily','builtin.molecule','builtin.compact','builtin.ambient','builtin.folders'];
 /** Builtins that were withdrawn. They are switched off once and then forgotten;
  *  anything they wrote stays in the workspace, because that is the user's data. */
 const retired=['builtin.daily-tasks'];

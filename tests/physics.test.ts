@@ -64,3 +64,12 @@ it('a compressed link settles without jitter or returning to preferred distance'
  expect(frame.nodes[1].x).toBe(resting);
  expect(frame.nodes[1].vx).toBe(0);
 });
+
+it('legacy drop resistance cannot exceed the force field and become an implicit permanent pin',()=>{
+ const nodes=[body('held',0),...Array.from({length:20},(_,i)=>body('anchor'+i,1000+i,0,true))];
+ const frame=input(nodes,nodes.slice(1).map(n=>({from:'held',to:n.id})));
+ frame.nodes[0].resistance=dropResistance(frame,'held');
+ expect(frame.nodes[0].resistance).toBeLessThan(Math.hypot(forces(frame).get('held')!.x,forces(frame).get('held')!.y));
+ expect(physicsStep(frame).nodes[0].x).toBeGreaterThan(0);
+ expect(physicsStep(frame).nodes[0].resistance).toBe(0);
+});

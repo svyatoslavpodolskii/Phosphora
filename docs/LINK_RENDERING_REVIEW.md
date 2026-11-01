@@ -1,4 +1,4 @@
-# Phosphora 0.4.1: relationship rendering and drag recovery
+# Posphorea 0.4.1: relationship rendering and drag recovery
 
 ## Cause and implementation
 

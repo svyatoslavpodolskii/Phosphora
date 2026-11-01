@@ -1,6 +1,7 @@
 export interface ThemeBase {background:string;accent:string;tint:string}
 export type Pattern='none'|'daisies'|'stars'|'fireflies'|'night-sky';
-export interface ThemeEffects {pattern:Pattern;grain:number;density:number;strength:number}
+export type BackgroundMode='static'|'world'|'parallax';
+export interface ThemeEffects {pattern:Pattern;grain:number;density:number;strength:number;mode?:BackgroundMode}
 export interface Theme {id:string;name:string;dark:boolean;base:ThemeBase;effects:ThemeEffects;colors:Record<'background'|'surface'|'surfaceAlt'|'text'|'muted'|'border'|'accent'|'onAccent'|'edge'|'grid'|'danger'|'warning'|'shadow',string>}
 const channels=(hex:string)=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
 export function mix(a:string,b:string,amount:number){const x=channels(a),y=channels(b);return '#'+x.map((n,i)=>Math.round(n+(y[i]-n)*amount).toString(16).padStart(2,'0')).join('');}
@@ -12,10 +13,14 @@ export function createTheme(id:string,name:string,base:ThemeBase,effects:Partial
  const surfaceAt=(n:number)=>{let c=mix(mix(background,tint,.035),dark?ink:opposite,n);for(let i=0;contrast(ink,c)<4.8&&i<100;i++)c=mix(c,opposite,.025);return c;};
  const surface=surfaceAt(dark?.035:.55),surfaceAlt=surfaceAt(dark?.075:.28),backgrounds=[background,surface,surfaceAlt];
  const text=readable(mix(ink,tint,.09),backgrounds),muted=readable(mix(text,background,.35),backgrounds),accent=readable(base.accent,backgrounds);
- return{id,name,base:{...base},dark,effects:{pattern:'none',grain:0,density:.45,strength:.2,...effects},colors:{background,surface,surfaceAlt,text,muted,accent,onAccent:readable(ink,[accent]),border:mix(background,text,.26),edge:mix(background,text,.42),grid:mix(background,text,.12),danger:readable(mix('#d95365',tint,.15),backgrounds),warning:readable(mix('#b98529',tint,.12),backgrounds),shadow:mix('#000000',tint,.08)}};
+ return{id,name,base:{...base},dark,effects:{pattern:'none',grain:0,density:.45,strength:.2,...effects,mode:effects.mode??'static'},colors:{background,surface,surfaceAlt,text,muted,accent,onAccent:readable(ink,[accent]),border:mix(background,text,.26),edge:mix(background,text,.42),grid:mix(background,text,.12),danger:readable(mix('#d95365',tint,.15),backgrounds),warning:readable(mix('#b98529',tint,.12),backgrounds),shadow:mix('#000000',tint,.08)}};
 }
 export const THEMES:Theme[]=[
  createTheme('phosphor','Фосфор',{background:'#101b1a',accent:'#b4ecc1',tint:'#68a483'},{pattern:'fireflies',strength:.13}),
+ createTheme('dark-contrast','Dark Contrast',{background:'#080a0d',accent:'#a9d7ff',tint:'#9baabc'}),
+ createTheme('light-contrast','Light Contrast',{background:'#ffffff',accent:'#174c83',tint:'#798ba0'}),
+ createTheme('soft-dark','Soft Dark',{background:'#25282d',accent:'#bad5c8',tint:'#9baaa3'}),
+ createTheme('soft-light','Soft Light',{background:'#eeeae2',accent:'#486655',tint:'#b4a48f'}),
  createTheme('dark','Тёмная',{background:'#111216',accent:'#c2cbff',tint:'#7a86ad'}),
  createTheme('light','Светлая',{background:'#f6f5f0',accent:'#246e4b',tint:'#88a17e'}),
  createTheme('neon','Неон',{background:'#0c0a19',accent:'#da9dff',tint:'#9a66d4'},{pattern:'none',strength:.2}),
@@ -29,11 +34,11 @@ export function validateTheme(value:unknown):Theme{
  const t=value as Partial<Theme>;if(!t||typeof t.id!=='string'||!/^[-a-z0-9]{1,80}$/.test(t.id)||typeof t.name!=='string'||!t.name.trim()||t.name.length>60)throw Error('Некорректный файл темы.');
  if(t.colors&&Object.values(t.colors).some(c=>!hex(c)))throw Error('В теме нужны цвета в формате #RRGGBB.');
  const base=t.base||{background:t.colors?.background,accent:t.colors?.accent,tint:t.colors?.surface};if(!hex(base.background)||!hex(base.accent)||!hex(base.tint))throw Error('Укажите три базовых цвета темы в формате #RRGGBB.');
- const e=t.effects;if(e&&(!['none','daisies','stars','fireflies','night-sky'].includes(e.pattern)||[e.grain,e.density,e.strength].some(n=>typeof n!=='number'||!Number.isFinite(n)||n<0||n>1)))throw Error('Некорректные параметры фона.');
+ const e=t.effects;if(e!==undefined&&(!e||!['none','daisies','stars','fireflies','night-sky'].includes(e.pattern)||(e.mode!==undefined&&!['static','world','parallax'].includes(e.mode))||[e.grain,e.density,e.strength].some(n=>typeof n!=='number'||!Number.isFinite(n)||n<0||n>1)))throw Error('Некорректные параметры фона.');
  return createTheme(t.id,t.name.trim(),base as ThemeBase,e);
 }
-export function parseTheme(text:string){if(text.length>16000)throw Error('Файл темы слишком большой.');const input=JSON.parse(text);if(input.format!=='phosphored-theme'||![1,2].includes(input.version))throw Error('Выберите файл темы Phosphora.');const theme=validateTheme(input.theme);return validateTheme({...theme,id:theme.id.startsWith('custom-')?theme.id:'custom-'+theme.id});}
-export function themeFile(theme:Theme){return JSON.stringify({format:'phosphored-theme',version:2,theme:{id:theme.id,name:theme.name,base:theme.base,effects:theme.effects}},null,2);}
+export function parseTheme(text:string){if(text.length>16000)throw Error('Файл темы слишком большой.');const input=JSON.parse(text);if(input.format!=='phosphored-theme'||![1,2].includes(input.version))throw Error('Выберите файл темы Posphorea.');const theme=validateTheme(input.theme);return validateTheme({...theme,id:theme.id.startsWith('custom-')?theme.id:'custom-'+theme.id});}
+export function themeFile(value:Theme){const theme=validateTheme(value);return JSON.stringify({format:'phosphored-theme',version:2,theme:{id:theme.id,name:theme.name,base:theme.base,effects:theme.effects}},null,2);}
 export function currentTheme(id:string,custom:Theme[]=[]){return custom.find(t=>t.id===id)||THEMES.find(t=>t.id===id)||THEMES[0];}
 const svgUrl=(body:string)=>`url("data:image/svg+xml,${encodeURIComponent(body)}")`;
 export interface Decoration {x:number;y:number;size:number;rotation:number;phase:number;duration:number;opacity:number}

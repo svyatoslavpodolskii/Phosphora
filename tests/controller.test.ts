@@ -17,7 +17,7 @@ it('model changes finish at provider coordinates, preserve pins, and can be inte
   controller.sync({atoms:[],links:[]},prefs,1);await vi.advanceTimersByTimeAsync(1000);controller.sync(data,{...prefs,graphModel:'b'},2,true);await vi.advanceTimersByTimeAsync(1000);expect(points()).toEqual(atoms.map(a=>[a.x,a.y]));expect(step).not.toHaveBeenCalled();
  }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });
-it('drag moves only the held atoms and preserves the rest of the map',async()=>{
+it('drag transmits to connected free atoms and restores all affected geometry on cancellation',async()=>{
  vi.useFakeTimers();vi.stubGlobal('document',{hidden:false});const providers=new GraphProviders();
  providers.physics.set('test',{id:'test',name:'Test',step:input=>({nodes:input.nodes,energy:0})});
  providers.clustering.set('test',{id:'test',name:'Test',project:({data,lens,zoom,selected})=>graphModel(data,lens,zoom,selected)});
@@ -33,12 +33,12 @@ it('drag moves only the held atoms and preserves the rest of the map',async()=>{
  expect(latest).toBe(shown);expect(node0('a').x).toBe(100);expect(node0('a').y).toBe(50);
  controller.cancelDrag();controller.beginDrag('a');controller.drag('a',100,50);
  const node=(id:string)=>latest.expanded.nodes.find((n:any)=>n.id===id);
- expect(node('a').x).toBe(100);expect(node('b').x).toBe(200);expect(node('b').y).toBe(0);
+ expect(node('a').x).toBe(100);expect(node('b').x).toBeGreaterThan(200);expect(node('b').x).toBeLessThan(300);expect(node('b').y).toBeGreaterThan(0);
  expect(node('pin').x).toBe(400);expect(node('pin').y).toBe(0);expect(node('island').x).toBe(600);
  controller.cancelDrag();expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
  controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(true);expect(node('a').x).toBe(0);expect(node('b').x).toBe(200);
- controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(false);await vi.advanceTimersByTimeAsync(2000);expect(node('b').x).toBe(200);expect(node('b').y).toBe(0);await controller.flush();expect(persist).toHaveBeenCalled();expect(error).not.toHaveBeenCalled();
- persist.mockRejectedValueOnce(Error('Disk full'));controller.beginDrag('a',['a','b']);controller.drag('a',500,300);const rejected=controller.endDrag(false),checkRejected=expect(rejected).rejects.toThrow('Disk full');controller.setInteracting(true);await checkRejected;controller.setInteracting(false);expect(node('a')).toMatchObject({x:100,y:50});expect(node('b')).toMatchObject({x:200,y:0});
+ controller.beginDrag('a');controller.drag('a',100,50);await controller.endDrag(false);const placedB={x:node('b').x,y:node('b').y};await vi.advanceTimersByTimeAsync(2000);expect(node('b')).toMatchObject(placedB);await controller.flush();expect(persist).toHaveBeenCalled();expect(error).not.toHaveBeenCalled();
+ persist.mockRejectedValueOnce(Error('Disk full'));controller.beginDrag('a',['a','b']);controller.drag('a',500,300);const rejected=controller.endDrag(false),checkRejected=expect(rejected).rejects.toThrow('Disk full');controller.setInteracting(true);await checkRejected;controller.setInteracting(false);expect(node('a')).toMatchObject({x:100,y:50});expect(node('b')).toMatchObject(placedB);
  let reject!: (error:Error)=>void;persist.mockImplementationOnce(()=>new Promise<void>((_,fail)=>reject=fail));controller.beginDrag('a');controller.drag('a',300,200);const pending=controller.endDrag(false),failed=expect(pending).rejects.toThrow('First write failed');controller.beginDrag('a');controller.drag('a',450,250);reject(Error('First write failed'));await failed;expect(node('a')).toMatchObject({x:450,y:250});await controller.endDrag(false);
  }finally{controller.close();vi.useRealTimers();vi.unstubAllGlobals();}
 });

@@ -64,7 +64,7 @@ test('GPU scene renders independently of the gesture canvas and survives context
 test('Canvas fallback remains interactive when WebGL is unavailable',async({page})=>{
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:any[]):any{return type.includes('webgl')?null:(get as any).call(this,type,...args);};});
  await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();await page.locator('canvas.map').press('n');
- await page.getByRole('textbox',{name:'Название',exact:true}).fill('Fallback');await page.getByRole('button',{name:'Сохранить',exact:true}).click();
+ await page.getByRole('textbox',{name:'Название',exact:true}).fill('Fallback');await page.getByRole('button',{name:'Готово',exact:true}).click();
  await expect(page.locator('canvas.map')).toHaveAttribute('data-renderer','canvas');await expect(page.locator('canvas.map')).toHaveAttribute('data-nodes','1');
 });
 

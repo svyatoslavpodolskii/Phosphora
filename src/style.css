@@ -150,6 +150,8 @@ main.app-ready{animation:map-appear .35s ease-out}
 .gpu-map-host{position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(color-mix(in srgb,var(--theme-surface),transparent 67%) 1px,transparent 1px);background-size:28px 28px}.gpu-map-host canvas{display:block;width:100%;height:100%}.map.gpu-active{background-image:none}
 
 .field-hidden{visibility:hidden;pointer-events:none}.footer-controls{display:flex;align-items:center;gap:8px}.view-toggle{display:flex;padding:4px;border-radius:24px;background:var(--theme-surface);border:1px solid var(--theme-border)}.view-toggle button{border:0;border-radius:20px;padding:8px 12px;font-size:12px}footer{z-index:3}
+.view-toggle button.active{background:var(--theme-accent);color:var(--theme-onAccent)}
+@media(max-width:650px){.footer-controls{flex-wrap:wrap;justify-content:center;max-width:100%}.footer-controls nav button{padding-inline:14px}.footer-controls .view-toggle button{padding-inline:12px}}
 
 .search-results button.search-current{background:color-mix(in srgb,var(--theme-accent),transparent 88%);outline:1px solid var(--theme-border);outline-offset:-1px}
 
@@ -157,7 +159,7 @@ main.app-ready{animation:map-appear .35s ease-out}
 
 /* Direct manipulation has one visual subject: the objects under the hand. */
 header,footer,.zoom-controls{transition:opacity 140ms ease-out}
-main.map-interacting header,main.map-interacting footer,main.map-interacting .zoom-controls,main.map-interacting .toast,main.map-interacting .update-prompt{opacity:0;pointer-events:none}
+main.map-interacting header,main.map-interacting footer,main.map-interacting .zoom-controls,main.map-interacting .update-prompt{opacity:0;pointer-events:none}
 .content-previews{transition:opacity 100ms ease-out}
 @media(prefers-reduced-motion:reduce){header,footer,.zoom-controls,.content-previews{transition:none}}
 @media(max-width:650px){footer .storage-status{display:none}.footer-controls{margin-inline:auto}header{top:max(16px,env(safe-area-inset-top));gap:10px}nav{border-radius:28px;padding:4px}nav button{border-radius:24px;padding-inline:19px}.footer-controls .view-toggle{border-radius:28px}}

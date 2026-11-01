@@ -1,4 +1,4 @@
-# Phosphora 0.4.0: daily workflow
+# Posphorea 0.4.0: daily workflow
 
 ## Behavior
 

@@ -1,22 +1,27 @@
 import type {Atom} from './model';
 export type Recurrence='daily'|'weekly';
-export interface NoteTask{id:string;text:string;line:number;checked:boolean;recurrence?:Recurrence;history:Record<string,boolean>}
+export interface NoteTask{id:string;text:string;line:number;checked:boolean;recurrence?:Recurrence;history:Record<string,boolean>;marker?:true}
 const KEY='phosphora.tasks';
+const TASK_MARKER=/^#task(?:\s+|$)/;
+const CHECKBOX=/^(\s*(?:[-+*]|\d+[.)])\s+\[[ xX]\]\s+)/;
 export function dayKey(now=new Date()){return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;}
 export function occurrence(rule:Recurrence,now=new Date()){const date=new Date(now);if(rule==='weekly')date.setDate(date.getDate()-(date.getDay()+6)%7);return dayKey(date);}
 export function readTasks(atom:Pick<Atom,'content'|'id'|'properties'>):NoteTask[]{
  const stored=Array.isArray(atom.properties[KEY])?atom.properties[KEY] as NoteTask[]:[],used=new Set<string>();
- const parsed:{text:string;line:number;checked:boolean}[]=[];let fence='';
+ const parsed:{text:string;line:number;checked:boolean;marker?:true}[]=[];let fence='';
  for(const [line,text] of atom.content.split(/\r?\n/).entries()){
   const delimiter=/^\s{0,3}(`{3,}|~{3,})/.exec(text);if(delimiter){if(!fence)fence=delimiter[1];else if(delimiter[1][0]===fence[0]&&delimiter[1].length>=fence.length)fence='';continue;}if(fence)continue;
-  const match=/^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+(.+)$/.exec(text);if(match)parsed.push({text:match[2],line,checked:match[1].toLowerCase()==='x'});
+  const match=/^\s*(?:[-+*]|\d+[.)])\s+\[([ xX])\]\s+(.+)$/.exec(text);if(match){const marked=TASK_MARKER.test(match[2]);parsed.push({text:marked?match[2].replace(TASK_MARKER,''):match[2],line,checked:match[1].toLowerCase()==='x',...(marked?{marker:true as const}:{})});}
  }
  // Reserve unchanged tasks first, so a renamed line cannot steal a later task's history.
  const matches=new Map<number,NoteTask>();
- for(const task of parsed){const previous=stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.text===task.text&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
- for(const task of parsed)if(!matches.has(task.line)){const candidates=stored.filter(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.text===task.text).sort((a,b)=>Math.abs(a.line-task.line)-Math.abs(b.line-task.line));const previous=candidates[0];if(previous){matches.set(task.line,previous);used.add(previous.id);}}
- for(const task of parsed)if(!matches.has(task.line)){const previous=stored.find(t=>t&&typeof t.id==='string'&&!used.has(t.id)&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
- return parsed.map(task=>{
+ const eligible=(task:typeof parsed[number],previous:NoteTask)=>previous&&typeof previous.id==='string'&&!used.has(previous.id)&&Boolean(task.marker||!previous.marker);
+ for(const task of parsed){const previous=stored.find(t=>eligible(task,t)&&t.text===task.text&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ for(const task of parsed)if(!matches.has(task.line)){const candidates=stored.filter(t=>eligible(task,t)&&t.text===task.text).sort((a,b)=>Math.abs(a.line-task.line)-Math.abs(b.line-task.line));const previous=candidates[0];if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ for(const task of parsed)if(!matches.has(task.line)){const previous=stored.find(t=>eligible(task,t)&&t.line===task.line);if(previous){matches.set(task.line,previous);used.add(previous.id);}}
+ // Only metadata from before explicit markers can promote an unmarked checkbox.
+ // Keep that distinction until sync writes the portable marker into the source.
+ return parsed.filter(task=>task.marker||matches.has(task.line)&&!matches.get(task.line)!.marker).map(task=>{
   const previous=matches.get(task.line);let id=previous?.id||`${atom.id}:task:${task.line}`;while(!previous&&(used.has(id)||stored.some(t=>t?.id===id)))id+=':new';used.add(id);
   const history=previous?.history&&typeof previous.history==='object'&&!Array.isArray(previous.history)?Object.fromEntries(Object.entries(previous.history).filter(([key,value])=>/^\d{4}-\d{2}-\d{2}$/.test(key)&&typeof value==='boolean')):{};
   return {...task,id,...(previous?.recurrence==='daily'||previous?.recurrence==='weekly'?{recurrence:previous.recurrence}:{}),history};
@@ -26,6 +31,7 @@ export function readTasks(atom:Pick<Atom,'content'|'id'|'properties'>):NoteTask[
 export function tasksAt(atom:Atom,now=new Date()){return readTasks(atom).map(t=>({...t,checked:t.recurrence?Boolean(t.history[occurrence(t.recurrence,now)]):t.checked}));}
 export function syncTasks(atom:Atom,before?:Atom,now=new Date(),rolling=false):Atom{
  const tasks=readTasks(atom),old=before?new Map(readTasks(before).map(t=>[t.id,t])):new Map<string,NoteTask>(),lines=atom.content.split(/\r?\n/);let contentChanged=false;
+ for(const task of tasks)if(!task.marker){lines[task.line]=lines[task.line].replace(CHECKBOX,'$1#task ');task.marker=true;contentChanged=true;}
  for(const task of tasks)if(task.recurrence){const key=occurrence(task.recurrence,now),prior=old.get(task.id);
   if(!rolling&&prior&&prior.checked!==task.checked)task.history[key]=task.checked;
   const checked=Boolean(task.history[key]);if(task.checked!==checked){lines[task.line]=lines[task.line].replace(/\[([ xX])\]/,checked?'[x]':'[ ]');contentChanged=true;}task.checked=checked;

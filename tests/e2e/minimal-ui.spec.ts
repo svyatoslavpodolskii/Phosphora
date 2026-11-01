@@ -1,3 +1,4 @@
+import {sourceText} from './helpers';
 import {test,expect} from '@playwright/test';
 import {readMap} from './helpers';
 
@@ -6,13 +7,13 @@ for(const mobile of [false,true])test(`minimal card and visual appearance persis
  await page.setViewportSize({width,height});await page.goto('/');
  await page.locator('canvas.map').press('n');
  await page.getByRole('textbox',{name:'Название',exact:true}).fill('Музыка для нового дня');
- await page.getByRole('textbox',{name:'Текст',exact:true}).fill('Собрать звуки, к которым хочется возвращаться.\n\nТихое утро, немного джаза и одна неожиданная мелодия.');
+ await (await sourceText(page)).fill('Собрать звуки, к которым хочется возвращаться.\n\nТихое утро, немного джаза и одна неожиданная мелодия.');
  const editor=page.getByRole('dialog',{name:'Редактор атома'});
  await expect(editor.getByLabel('Цвет',{exact:true})).toHaveCount(0);
  await expect(editor.getByRole('combobox',{name:'Важность'})).toHaveCount(0);
  await expect(editor.getByRole('button',{name:'Закрепить',exact:true})).toHaveCount(0);
  await page.screenshot({animations:'disabled',path:`artifacts/minimal-card-${mobile?'mobile':'desktop'}.png`});
- await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(editor).toBeHidden();
+ await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(editor).toBeHidden();
  const openMenu=async()=>{await page.locator('canvas.map').click({position:{x:width/2,y:height/2},button:'right'});await expect(page.getByRole('dialog',{name:'Действия с атомом'})).toBeVisible();};
  await openMenu();const menu=page.getByRole('dialog',{name:'Действия с атомом'});
  expect((await menu.boundingBox())!.height).toBeLessThan(440);
@@ -30,11 +31,11 @@ for(const mobile of [false,true])test(`minimal card and visual appearance persis
  await page.getByRole('button',{name:'Роза',exact:true}).click();await page.getByRole('button',{name:'Закрыть меню атома'}).click();
  expect((await readMap(page)).atoms[0].appearance.color).toBe('#d4a2e5');
  await page.locator('canvas.map').click({position:{x:width/2,y:height/2}});
- await expect(page.locator('.markdown')).toContainText('Тихое утро');
+ await page.getByRole('button',{name:'Просмотр',exact:true}).click();await expect(page.locator('.markdown')).toContainText('Тихое утро');
  expect(await page.getByRole('textbox',{name:'Название',exact:true}).evaluate(el=>document.activeElement===el)).toBe(false);
- await page.getByRole('button',{name:'Редактировать',exact:true}).click();
- await page.getByRole('textbox',{name:'Текст',exact:true}).fill('Новая мелодия');
- await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(editor).toBeHidden();
+ await page.getByRole('button',{name:'Markdown',exact:true}).click();
+ await (await sourceText(page)).fill('Новая мелодия');
+ await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(editor).toBeHidden();
  expect((await readMap(page)).atoms[0].content).toBe('Новая мелодия');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

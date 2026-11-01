@@ -1,12 +1,12 @@
-Продолжай разработку текущего Phosphora.
+Продолжай разработку текущего Posphorea.
 
 Не проводи повторный аудит всего репозитория и не переписывай работающие части без причины. Изучи только затронутые подсистемы и их зависимости.
 
 Работай как сильный senior/staff engineer, product engineer и interaction designer.
 
-Задача этой итерации не просто закрыть список функций. Нужно заложить фундамент Phosphora как нового типа personal knowledge workspace.
+Задача этой итерации не просто закрыть список функций. Нужно заложить фундамент Posphorea как нового типа personal knowledge workspace.
 
-Phosphora не должен быть:
+Posphorea не должен быть:
 
 * Obsidian с другим интерфейсом;
 * mind-map;
@@ -41,7 +41,7 @@ Smoothness, continuity, spatial memory, offline reliability и сохранно�
 
 # 1. Главная модель продукта: Gigagraph + Local Graph
 
-Phosphora не имеет folder-first интерфейса.
+Posphorea не имеет folder-first интерфейса.
 
 Поэтому graph является не дополнительной визуализацией базы, а **главным рабочим столом продукта**.
 
@@ -647,7 +647,7 @@ Progressive detail:
 
 Очень важный архитектурный принцип.
 
-Сам Phosphora должен полноценно работать без:
+Сам Posphorea должен полноценно работать без:
 
 * Obsidian;
 * Markdown folder structure;
@@ -674,9 +674,9 @@ Core отвечает за:
 
 ---
 
-# 18. Native Phosphora backup: один файл
+# 18. Native Posphorea backup: один файл
 
-Основной export/backup Phosphora должен быть **одним файлом**.
+Основной export/backup Posphorea должен быть **одним файлом**.
 
 Экспорт в папку с сотнями `.md` не является основным backup mechanism.
 
@@ -745,7 +745,7 @@ Obsidian interoperability не должна загрязнять core.
 
 Создать полноценный bundled **Obsidian Plugin**.
 
-Если plugin отключён, Phosphora остаётся полностью функциональным.
+Если plugin отключён, Posphorea остаётся полностью функциональным.
 
 Plugin отвечает за:
 
@@ -793,7 +793,7 @@ Core предоставляет только общие import/export APIs и At
 
 Никакой сломанной кнопки.
 
-Phosphora остаётся PWA.
+Posphorea остаётся PWA.
 
 Не переходить на Electron/Tauri только ради Vault.
 
@@ -817,14 +817,14 @@ Phosphora остаётся PWA.
 Например:
 
 Projects/
-Phosphora/
+Posphorea/
 Physics.md
 Plugins.md
 
 становится:
 
 Projects
-→ Phosphora
+→ Posphorea
 ↙ Physics
 ↘ Plugins
 
@@ -842,7 +842,7 @@ Folder Atom может иметь plugin-defined type/property.
 
 Obsidian Plugin должен максимально сохранять:
 
-* stable Phosphora ID;
+* stable Posphorea ID;
 * title;
 * content;
 * aliases;
@@ -860,7 +860,7 @@ Obsidian Plugin должен максимально сохранять:
 
 Spatial metadata не должна существовать только в отдельном `layout.json`.
 
-Markdown Atom должен содержать достаточно Phosphora metadata, чтобы после повторного import восстановиться максимально близко к исходному состоянию.
+Markdown Atom должен содержать достаточно Posphorea metadata, чтобы после повторного import восстановиться максимально близко к исходному состоянию.
 
 Технические properties можно скрывать в обычном UI.
 
@@ -1327,7 +1327,7 @@ Movement updates:
 
 # 37. Offline-first
 
-Phosphora прежде всего local-first application.
+Posphorea прежде всего local-first application.
 
 После первого успешного запуска без интернета должны работать:
 
@@ -1599,6 +1599,6 @@ Camera interaction всегда должно иметь priority над backgrou
 
 Финальное ощущение:
 
-**Phosphora не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
+**Posphorea не показывает знания. Он превращает их в пространство, по которому можно двигаться.**
 
 Graph должен выглядеть так, будто вырос сам, вести себя так, будто живой, и подчиняться пользователю так естественно, словно это физический объект.

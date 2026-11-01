@@ -3,8 +3,24 @@
  import {edgeCurve} from './edge-curve';
  import RelationshipLayer from '../ui/RelationshipLayer.svelte';
  import {pickLink} from './relationships';
+ import {dragLinkTarget,dwellLink,linkReady,linkedPair,LINK_DWELL_MS,type LinkDwell} from './drag-link';
+ import {makeLink} from '../core/model';
  import type {Link} from '../core/model';
  let activeLink=$state('');let linkInteracting=$state(false);let gestureActive=$state(false);let lassoing=$state(false);let connectFrom=$state('');
+ let relationships:{apply:(before:Link|null,after:Link|null)=>Promise<void>}|undefined;
+ let linkDwell:LinkDwell|null=null,linkTimer:ReturnType<typeof setTimeout>|undefined;
+ let proposal=$state<{source:string;target:string;from:Point;ready:boolean;duplicate:boolean}|null>(null);
+ const screenPoint=(p:Point)=>({x:width/2+camera.x+p.x*camera.zoom,y:height/2+camera.y+p.y*camera.zoom});
+ function clearProposal(){clearTimeout(linkTimer);linkTimer=undefined;linkDwell=null;proposal=null;}
+ function proposeLink(p:Point){
+  if(!moving||moving.members||pointers.size!==1||!start?.dragOrigin){clearProposal();return;}
+  const target=dragLinkTarget(painted,moving.id,p,camera,{width,height});
+  const next=dwellLink(linkDwell,target,p,performance.now());
+  if(next!==linkDwell){clearTimeout(linkTimer);linkTimer=undefined;linkDwell=next;
+   if(next)linkTimer=setTimeout(()=>{linkTimer=undefined;if(moving&&pointers.size===1){const point=[...pointers.values()][0];proposeLink(point);}},LINK_DWELL_MS+1);
+  }
+  proposal=next?{source:moving.id,target:next.target,from:{...start.dragOrigin},ready:linkReady(next,performance.now()),duplicate:linkedPair(data.links,moving.id,next.target)}:null;
+ }
  $effect(()=>{if(linkInteracting)rig.halt();controller?.setInteracting(linkInteracting);});
  import type {GpuMapRenderer,GpuNode,GpuEdge,GpuLabel,GpuRing,GpuDot,GpuEdgeLabel} from './gpu-renderer';
  import {visualAttention} from './attention';
@@ -27,7 +43,7 @@
  import type {GraphProviders} from './providers';
  import type {Preferences} from '../core/preferences';
  import type {PositionUpdate} from '../core/model';
- let {data,selected='',lens='all',camera=$bindable({x:0,y:0,zoom:1}),providers,prefs,providerVersion,paused=false,onselect,onopen,oncontext,onbranch,oncreate,onpositions,onstate,onstates,onlinkchange,oncamera,onhover=()=>{},onviewport=()=>{},revealRequest=null,connectRequest=null,preservePositions=false,oninteraction=()=>{},onerror}: {data:Snapshot;selected:string;lens:string;camera:Camera;providers:GraphProviders;prefs:Preferences;providerVersion:number;paused:boolean;onselect:(id:string)=>void;onopen:(id:string,section?:string)=>void;oncontext:(id:string)=>void;onbranch:(ids:string[])=>void;oncreate:(x:number,y:number)=>void;onpositions:(positions:PositionUpdate[],manual:boolean)=>Promise<void>;onstate:(id:string,state:AtomState)=>void;onstates:(ids:string[],state:AtomState)=>void;onlinkchange:(before:Link|null,after:Link|null)=>Promise<void>;oncamera:()=>void;onhover?:(id:string)=>void;onviewport?:(size:{width:number;height:number})=>void;revealRequest?:{id:string;nonce:number}|null;preservePositions?:boolean;connectRequest?:{id:string;nonce:number}|null;oninteraction?:(active:boolean)=>void;onerror:(e:Error)=>void}=$props();
+ let {data,selected='',lens='all',camera=$bindable({x:0,y:0,zoom:1}),providers,prefs,providerVersion,paused=false,onselect,onselection=()=>{},onopen,oncontext,onbranch,oncreate,onpositions,onstate,onstates,onlinkchange,oncamera,onhover=()=>{},onviewport=()=>{},revealRequest=null,connectRequest=null,preservePositions=false,oninteraction=()=>{},onerror}: {data:Snapshot;selected:string;lens:string;camera:Camera;providers:GraphProviders;prefs:Preferences;providerVersion:number;paused:boolean;onselect:(id:string)=>void;onselection?:(ids:string[])=>void;onopen:(id:string,section?:string)=>void;oncontext:(id:string)=>void;onbranch:(ids:string[])=>void;oncreate:(x:number,y:number)=>void;onpositions:(positions:PositionUpdate[],manual:boolean)=>Promise<void>;onstate:(id:string,state:AtomState)=>void;onstates:(ids:string[],state:AtomState)=>void;onlinkchange:(before:Link|null,after:Link|null)=>Promise<void>;oncamera:()=>void;onhover?:(id:string)=>void;onviewport?:(size:{width:number;height:number})=>void;revealRequest?:{id:string;nonce:number;point?:Point;zoom?:number}|null;preservePositions?:boolean;connectRequest?:{id:string;nonce:number}|null;oninteraction?:(active:boolean)=>void;onerror:(e:Error)=>void}=$props();
  $effect(()=>{if(connectRequest)connectFrom=connectRequest.id;});
  $effect(()=>oninteraction(dragging||lassoing));
  let structureSeen=false,currentStructure:string|undefined,frameStructure=false;
@@ -37,7 +53,7 @@
   const zoom=Math.max(MIN_ZOOM,Math.min(1,(width-64)/(right-left),(height-190)/(bottom-top)));rig.retarget({x:-(left+right)/2*zoom,y:-(top+bottom)/2*zoom,zoom});schedule();
  }
  // A focus request arrives from outside, but the camera is still ours to animate.
- $effect(()=>{const request=revealRequest;if(!request)return;untrack(()=>{const atom=data.atoms.find(a=>a.id===request.id);if(atom)reveal({x:atom.x,y:atom.y},1);});});
+ $effect(()=>{const request=revealRequest;if(!request)return;untrack(()=>{if(request.point){reveal(request.point,request.zoom??1);return;}const atom=data.atoms.find(a=>a.id===request.id);if(atom)reveal({x:atom.x,y:atom.y},request.zoom??1);});});
  let transitioning=$state(false);let canvas!:HTMLCanvasElement;let width=$state(1200),height=$state(700);let dragging=$state(false);let model=$state.raw<GraphModel>({nodes:[],links:[],hidden:0});let controller=$state<GraphController|null>(null);let reduced=$state(false);let hover=$state('');
  $effect(()=>controller?.sync($state.snapshot(data),$state.snapshot(prefs),providerVersion,preservePositions));
  $effect(()=>controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced));
@@ -60,8 +76,10 @@
  let hitCache:ReturnType<typeof hitRegions>|null=null;
  const targets=()=>hitCache??(hitCache=hitRegions(painted,camera,{width,height},selected));
  let painted=$state.raw<PaintedNode[]>([]);let frame=0;let lastFrame=0;let candidate='';let cameraMoving=false;
+ const proposalTarget=$derived(painted.find(n=>n.id===proposal?.target));
  const DRAG_THRESHOLD=6;
  let lasso:Point[]|null=null;let lassoSelection=$state.raw<string[]>([]);
+ $effect(()=>{const ids=[...lassoSelection];untrack(()=>onselection(ids));});
  $effect(()=>{providerVersion;if(!providers.hasTool('lasso')){lasso=null;lassoing=false;lassoSelection=[];schedule();}});
  function inside(point:Point,polygon:Point[]){let found=false;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){const a=polygon[i],b=polygon[j];if((a.y>point.y)!==(b.y>point.y)&&point.x<(b.x-a.x)*(point.y-a.y)/(b.y-a.y)+a.x)found=!found;}return found;}
  function finishLasso(){const path=lasso;lasso=null;lassoing=false;if(!path||path.length<3){schedule();return;}lassoSelection=[...new Set(painted.filter(n=>n.opacity>.5&&inside({x:width/2+camera.x+n.x*camera.zoom,y:height/2+camera.y+n.y*camera.zoom},path)).flatMap(n=>n.members||[n.id]))];schedule();}
@@ -93,10 +111,14 @@
   const accelerated=Boolean(gpu?.available&&!gpuFailed);
   const edgeBatches=new Map<string,{path:Path2D;alpha:number;skeleton:boolean}>();
   const edgeLabels:{id:string;text:string;x:number;y:number}[]=[];const gpuDots:GpuDot[]=[];const gpuEdges:GpuEdge[]=[];const gpuNodes:GpuNode[]=[];renderBackend=accelerated?'webgl':'canvas';
-  for(const l of visual.links){
+  // A lens changes emphasis, while local relationships between visible atoms
+  // remain readable even when the structural provider reduces its skeleton.
+  const shownEdges=new Set(visual.links.flatMap(l=>[l.id,l.id.replace(/^(detail|cluster):/,'')]));
+  const localEdges=ambient?data.links.flatMap(l=>{const a=nodes.get(l.from),b=nodes.get(l.to);return !shownEdges.has(l.id)&&a&&b&&visible(a)&&visible(b)?[{...l,opacity:.55*Math.min(a.opacity,b.opacity)}]:[];}):[];
+  for(const l of [...visual.links,...localEdges]){
    const na=nodes.get(l.from),nb=nodes.get(l.to);const a=na,b=nb;
    if(!a||!b||(!visible(a)&&!visible(b)))continue;
-   const skeleton=inBranch.has(l.from)&&inBranch.has(l.to),alpha=Math.round(l.opacity*Math.max(a.attention??1,b.attention??1)*(skeleton?1:.5)*16)/16;
+   const skeleton=inBranch.has(l.from)&&inBranch.has(l.to),alpha=Math.round(l.opacity*Math.max(ambient?.4:0,a.attention??1,b.attention??1)*(skeleton?1:.5)*16)/16;
    if(alpha<=0)continue;const key=Number(skeleton)+':'+alpha;let batch=edgeBatches.get(key);
    if(!accelerated&&!batch){batch={path:new Path2D(),alpha,skeleton};edgeBatches.set(key,batch);}
    const curve=edgeCurve(a,b);if(!curve)continue;
@@ -183,7 +205,7 @@
  /** Focus helps the camera only when the target is genuinely poorly placed. */
  function reveal(point:Point,desired:number){const next=revealCamera(camera,point,{width,height},desired);if(next)rig.retarget(next);}
  function down(e:PointerEvent){if(paused||!rendererSettled||data.atoms.length&&!painted.length||e.button!==0)return;frameStructure=false;connectFrom='';activeLink='';gestureActive=true;rig.halt();e.preventDefault();canvas.focus();adopt();controller?.setInteracting(true);const p=position(e);panSample={...p,time:performance.now()};panVelocity={x:0,y:0};pointers.set(e.pointerId,p);canvas.setPointerCapture(e.pointerId);
-  if(pointers.size===2){clearTimeout(longTimer);lasso=null;lassoing=false;holdReady=false;start=null;moving=null;pendingDrag=false;dragging=false;controller?.cancelDrag();fromPinch=true;const [a,b]=[...pointers.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);const screen={x:(a.x+b.x)/2,y:(a.y+b.y)/2};pinchStart={distance:pinch,zoom:camera.zoom};focal=screen;rig.pinchTo(screen,camera.zoom);schedule();return;}
+  if(pointers.size===2){clearProposal();clearTimeout(longTimer);lasso=null;lassoing=false;holdReady=false;start=null;moving=null;pendingDrag=false;dragging=false;controller?.cancelDrag();fromPinch=true;const [a,b]=[...pointers.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);const screen={x:(a.x+b.x)/2,y:(a.y+b.y)/2};pinchStart={distance:pinch,zoom:camera.zoom};focal=screen;rig.pinchTo(screen,camera.zoom);schedule();return;}
   if(pointers.size>2)return;
   if(e.shiftKey&&providers.hasTool('lasso')){lassoing=true;lasso=[p];start=null;schedule();return;}
   const w=world(p),hit=targetAt(p,e.pointerType==='touch'),node=hit.id?(displayed.get(hit.id)??model.nodes.find(n=>n.id===hit.id)??null):null;candidate=node?.id||'';hover=candidate;recent=candidate;recentAt=performance.now();fromPinch=false;
@@ -213,11 +235,11 @@
    if(start.moved||Math.hypot(p.x-start.x,p.y-start.y)>DRAG_THRESHOLD){start.moved=true;clearTimeout(longTimer);
     if(holdReady&&!start.target&&!fromPinch&&providers.hasTool('lasso')){lassoing=true;lasso=[{x:start.x,y:start.y},p];start=null;candidate='';hover='';schedule();return;}
     if(touchStart&&!holdReady)start.node=undefined;
-    if(start.node){if(!dragging)start.dragOrigin=controller?.beginDrag(start.node.id,start.node.members);dragging=true;candidate='';hover='';const w=world(p);moving={...start.node,x:(start.dragOrigin?.x??start.node.x)+w.x-(start.worldX??w.x),y:(start.dragOrigin?.y??start.node.y)+w.y-(start.worldY??w.y)};pendingDrag=true;}
+    if(start.node){if(!dragging)start.dragOrigin=controller?.beginDrag(start.node.id,start.node.members);dragging=true;candidate='';hover='';const w=world(p);moving={...start.node,x:(start.dragOrigin?.x??start.node.x)+w.x-(start.worldX??w.x),y:(start.dragOrigin?.y??start.node.y)+w.y-(start.worldY??w.y)};pendingDrag=true;proposeLink(p);}
    else{holdReady=false;holdStarted=Infinity;const now=performance.now(),dt=Math.max(1,now-panSample.time);panVelocity={x:Math.max(-3,Math.min(3,(p.x-panSample.x)/dt)),y:Math.max(-3,Math.min(3,(p.y-panSample.y)/dt))};panSample={...p,time:now};rig.trackTo({x:start.panX+(p.x-start.x),y:start.panY+(p.y-start.y),zoom:camera.zoom});}}
    else aim(p,e.pointerType==='touch');
    schedule();}
- function up(e:PointerEvent){clearTimeout(longTimer);pointers.delete(e.pointerId);gestureActive=pointers.size>0;
+ function up(e:PointerEvent){if(!pointers.has(e.pointerId))return;if(moving)proposeLink(position(e));const drop=proposal?.ready?proposal:null;clearProposal();clearTimeout(longTimer);pointers.delete(e.pointerId);gestureActive=pointers.size>0;
   if(lasso){if(!pointers.size){finishLasso();start=null;holdReady=false;fromPinch=false;suppressReleaseClick=true;controller?.setInteracting(false);}return;}
   // A drag or a pinch ends: hand the camera back to the rig at its rest, then let
   // the spring carry whatever momentum is left over into a short settle.
@@ -228,7 +250,7 @@
     else start=null;
     schedule();return;}
   if(start){const p=position(e),travel=Math.hypot(p.x-start.x,p.y-start.y);
-   if(moving){if(pendingDrag){pendingDrag=false;controller?.drag(moving.id,moving.x,moving.y);}controller?.endDrag(false).catch(onerror);schedule();}
+   if(moving){if(drop){pendingDrag=false;controller?.cancelDrag();suppressReleaseClick=true;if(!linkedPair(data.links,drop.source,drop.target))void relationships?.apply(null,makeLink(drop.source,drop.target));}else{if(pendingDrag){pendingDrag=false;controller?.drag(moving.id,moving.x,moving.y);}controller?.endDrag(false).catch(onerror);}schedule();}
     else if(travel<=DRAG_THRESHOLD&&!start.moved&&!fromPinch&&Number.isFinite(holdStarted)){
      const tapped=start.target;
      if(tapped&&lassoSelection.length>1&&(tapped.members||[tapped.id]).some(id=>lassoSelection.includes(id))){if(holdReady)onbranch(lassoSelection);else onselect(tapped.members?.[0]||tapped.id);}
@@ -236,10 +258,10 @@
      else
      if(tapped?.members){const root=resolveSelection(tapped.id,painted)||tapped.members[0];onselect(root);reveal({x:tapped.x,y:tapped.y},1);}
      else if(tapped){lassoSelection=[];onselect(tapped.id);onopen(tapped.id,start.section);}
-     else{candidate='';hover='';onselect('');activeLink=holdReady?'':pickLink([...(model.expanded?.links||[]),...model.links].filter(l=>data.links.some(original=>original.id===l.id)),painted.filter(n=>n.opacity>.3),camera,{width,height},p);if(holdReady){suppressReleaseClick=true;oncreate(start.worldX??world(start).x,start.worldY??world(start).y);}else lassoSelection=[];}}
+     else{candidate='';hover='';onselect('');activeLink=holdReady?'':pickLink([...(model.expanded?.links||[]),...model.links,...(providers.hasTool('ambient-lens')&&lens!=='all'?data.links:[])].filter(l=>data.links.some(original=>original.id===l.id)),painted.filter(n=>n.opacity>.3),camera,{width,height},p);if(holdReady){suppressReleaseClick=true;oncreate(start.worldX??world(start).x,start.worldY??world(start).y);}else lassoSelection=[];}}
     else if(!start.node&&!reduced&&performance.now()-panSample.time<90){rig.endPinch();rig.release(panVelocity);}}
   if(rig.gesturing)rig.endPinch();start=null;holdReady=false;moving=null;pendingDrag=false;dragging=false;candidate='';hover='';fromPinch=false;focal=undefined;controller?.setInteracting(false);schedule();}
- function cancel(){rig.halt();clearTimeout(longTimer);holdReady=false;holdStarted=Infinity;pinchStart=null;fromPinch=false;gestureActive=false;lassoing=false;lasso=null;pointers.clear();controller?.setInteracting(false);start=null;moving=null;pendingDrag=false;dragging=false;pinch=0;controller?.cancelDrag();schedule();}
+ function cancel(){clearProposal();rig.halt();clearTimeout(longTimer);holdReady=false;holdStarted=Infinity;pinchStart=null;fromPinch=false;gestureActive=false;lassoing=false;lasso=null;pointers.clear();controller?.setInteracting(false);start=null;moving=null;pendingDrag=false;dragging=false;pinch=0;controller?.cancelDrag();schedule();}
  function leave(){candidate='';hover='';schedule();}
  onMount(()=>{let disposed=false;void import('./gpu-renderer').then(m=>m.GpuMapRenderer.create(schedule)).then(value=>{if(disposed)value.destroy();else{pendingGpu=value;schedule();}}).catch(error=>{console.warn('WebGL unavailable; using Canvas',error);}).finally(()=>{gpuStarting=false;rendererSettled=true;if(!disposed)schedule();});return()=>{disposed=true;gpu?.destroy();pendingGpu?.destroy();pendingGpu=null;};});
  onMount(()=>{window.addEventListener('phosphora-theme-change',invalidatePalette);const resetClick=()=>{suppressReleaseClick=false;rig.halt();};const releaseClick=(e:MouseEvent)=>{if(suppressReleaseClick){suppressReleaseClick=false;e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('pointerdown',resetClick,true);window.addEventListener('click',releaseClick,true);adopt();onviewport({width,height});rig.set(camera);controller=new GraphController(providers,m=>model=m,onpositions,onerror);const media=matchMedia('(prefers-reduced-motion: reduce)');reduced=media.matches;rig.setReduced(reduced);const motion=()=>{reduced=media.matches;rig.setReduced(reduced);};media.addEventListener('change',motion);const visibility=()=>{controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced);if(document.hidden)controller?.flush();};document.addEventListener('visibilitychange',visibility);const observer=new ResizeObserver(([entry])=>{width=entry.contentRect.width;height=entry.contentRect.height;onviewport({width,height});adopt();schedule();});observer.observe(canvas);
@@ -247,11 +269,21 @@
   // Safari reports trackpad pinch as gesture events instead of a ctrl-modified wheel.
   let lastGesture=1;const gestureStart=(e:any)=>{lastGesture=e.scale;},gestureMove=(e:any)=>{e.preventDefault();adopt();const r=canvas.getBoundingClientRect();rig.zoomAt({x:e.clientX-r.left,y:e.clientY-r.top},gestureZoomFactor(e.scale,lastGesture));lastGesture=e.scale;schedule();};
   canvas.addEventListener('gesturestart',gestureStart);canvas.addEventListener('gesturechange',gestureMove);
-  return()=>{window.removeEventListener('phosphora-theme-change',invalidatePalette);window.removeEventListener('pointerdown',resetClick,true);window.removeEventListener('click',releaseClick,true);rig.halt();controller?.close();observer.disconnect();media.removeEventListener('change',motion);document.removeEventListener('visibilitychange',visibility);canvas.removeEventListener('wheel',wheel);canvas.removeEventListener('gesturestart',gestureStart);canvas.removeEventListener('gesturechange',gestureMove);clearTimeout(longTimer);cancelAnimationFrame(frame);};});
+  return()=>{clearTimeout(linkTimer);window.removeEventListener('phosphora-theme-change',invalidatePalette);window.removeEventListener('pointerdown',resetClick,true);window.removeEventListener('click',releaseClick,true);rig.halt();controller?.close();observer.disconnect();media.removeEventListener('change',motion);document.removeEventListener('visibilitychange',visibility);canvas.removeEventListener('wheel',wheel);canvas.removeEventListener('gesturestart',gestureStart);canvas.removeEventListener('gesturechange',gestureMove);clearTimeout(longTimer);cancelAnimationFrame(frame);};});
 </script>
 <!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role (Canvas implements a keyboard-operated graph application; search supplies an accessible list.) -->
 <canvas data-renderer-loading={gpuStarting} data-renderer-pending={gpuStarting||Boolean(pendingGpu)} data-selection-count={lassoSelection.length} data-gesture={lassoing?'lasso':dragging?'drag':gestureActive?'touch':'idle'} data-renderer={renderBackend} data-camera-x={camera.x} data-camera-y={camera.y} data-zoom={camera.zoom} data-layout={model.arranging?'running':'idle'} data-transition={transitioning?'running':'idle'} data-visual-focus={visualFocus} data-focus={selected} data-hover={hover} data-context={painted.filter(n=>(n.attention??1)>.4).length} data-nodes={painted.filter(n=>n.opacity>.5).length} bind:this={canvas} class="map" class:gpu-active={renderBackend==='webgl'} role="application" aria-label="Карта атомов. Долгое нажатие или N для создания. Поиск для выбора, Enter для открытия, клавиши 1–4 для состояния." tabindex="0" onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={cancel} onpointerleave={leave} oncontextmenu={e=>{e.preventDefault();if(pointers.size||dragging||'pointerType' in e&&e.pointerType==='touch')return;const n=nodeAt(position(e),true);if(n){if(lassoSelection.length>1&&(n.members||[n.id]).some(id=>lassoSelection.includes(id)))onbranch(lassoSelection);else n.members?onbranch(n.members):oncontext(n.id);}}} onkeydown={e=>{adopt();if(e.key.toLowerCase()==='n'){e.preventDefault();const point=world({x:width/2,y:height/2});onselect('');oncreate(point.x,point.y);}if(selected&&e.key==='Enter'){e.preventDefault();onopen(selected);}if(selected&&['1','2','3','4'].includes(e.key)){const state=(['normal','now','paused','archived'] as AtomState[])[Number(e.key)-1];if(lassoSelection.length>1&&lassoSelection.includes(selected))onstates(lassoSelection,state);else onstate(selected,state);}if(e.key==='Escape'){cancel();activeLink='';connectFrom='';lassoSelection=[];onselect('');}if(e.key==='+'||e.key==='=')rig.zoomStep(1.2);if(e.key==='-')rig.zoomStep(1/1.2);if(e.key.startsWith('Arrow')){e.preventDefault();rig.panBy(e.key==='ArrowLeft'?60:e.key==='ArrowRight'?-60:0,e.key==='ArrowUp'?60:e.key==='ArrowDown'?-60:0);}schedule();}}></canvas>
 <div bind:this={gpuHost} class="gpu-map-host" hidden={renderBackend!=='webgl'} aria-hidden="true"></div>
 <div class="content-previews" style:opacity={gestureActive||model.arranging?0:1} style:position="fixed" style:inset="0" style:pointer-events="none" style:transform-origin="0 0" style:transform={`translate(${width/2+camera.x-(width/2+previewCamera.x)*camera.zoom/previewCamera.zoom}px,${height/2+camera.y-(height/2+previewCamera.y)*camera.zoom/previewCamera.zoom}px) scale(${camera.zoom/previewCamera.zoom})`}>{#each previews as preview (preview.id)}{#await loadPreview() then m}<m.default {preview} onheight={previewHeight}/>{:catch}{/await}{/each}</div>
 <div class="zoom-controls"><button aria-label="Приблизить" onclick={()=>{adopt();rig.zoomStep(1.25);schedule();}}>+</button><span>{Math.round(camera.zoom*100)}%</span><button aria-label="Отдалить" onclick={()=>{adopt();rig.zoomStep(.8);schedule();}}>−</button><button aria-label="К центру карты" onclick={()=>{adopt();if(!data.atoms.length){rig.set({x:0,y:0,zoom:1});oncamera();return;}frameMap();}}>⌖</button></div>
-<RelationshipLayer {data} nodes={painted} {camera} {width} {height} selected={connectFrom} paused={paused||gestureActive} bind:activeLink bind:interacting={linkInteracting} onchange={onlinkchange}/>
+{#if proposal&&proposalTarget&&!paused}
+ {@const a=screenPoint(proposal.from)}{@const b=screenPoint(proposalTarget)}
+ <div class="drag-link-proposal" data-ready={proposal.ready} data-target={proposal.target}>
+  <svg width={width} height={height} aria-hidden="true"><path d={`M ${a.x} ${a.y} Q ${(a.x+b.x)/2-12} ${(a.y+b.y)/2-20} ${b.x} ${b.y}`}/><circle cx={b.x} cy={b.y} r={proposalTarget.radius*camera.zoom+8}/></svg>
+  <div class="drag-link-hint" role="status" style:left={`${Math.max(90,Math.min(width-90,b.x))}px`} style:top={`${Math.max(60,b.y-proposalTarget.radius*camera.zoom-48)}px`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2"/></svg><span>{proposal.duplicate?'Связаны':proposal.ready?'Отпустите для связи':'Задержите для связи'}</span></div>
+ </div>
+{/if}
+<RelationshipLayer bind:this={relationships} {data} nodes={painted} {camera} {width} {height} selected={connectFrom} paused={paused||gestureActive} bind:activeLink bind:interacting={linkInteracting} onchange={onlinkchange}/>
+<style>
+ .drag-link-proposal{position:absolute;inset:0;pointer-events:none;z-index:4;color:var(--theme-text)}.drag-link-proposal>svg{position:absolute;inset:0;fill:none;stroke:currentColor;stroke-width:1.5;stroke-dasharray:5 5;opacity:.6}.drag-link-proposal[data-ready=true]>svg{stroke-dasharray:none;opacity:1}.drag-link-hint{position:absolute;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:16px;background:var(--theme-surface);box-shadow:0 3px 14px #0003;white-space:nowrap;font-size:13px}.drag-link-hint svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+</style>

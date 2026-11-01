@@ -171,7 +171,7 @@ it('direct relationships reconnect atomically, reject conflicts and can be undon
 
 it('keeps recurring task identity and history through rollover and SQLite reload',async()=>{
  const h=await setup();try{
-  const atom=await h.core.create({title:'Routine',content:'- [ ] Walk'});
+  const atom=await h.core.create({title:'Routine',content:'- [ ] #task Walk'});
   const {readTasks,dayKey}=await import('../src/core/tasks');const id=readTasks(atom)[0].id;
   await h.core.setTask(atom.id,id,{recurrence:'daily',checked:true});
   const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
@@ -184,7 +184,7 @@ it('keeps recurring task identity and history through rollover and SQLite reload
 it('snapshots plugin write arguments before queued work and returns isolated task data',async()=>{
  const h=await setup();try{
   let api:PluginAPI;await h.runtime.enable({manifest:{...manifest,id:'test.task-writes'},activate(app){api=app;}});
-  const input={title:'Original',content:'- [ ] Read',properties:{nested:{value:1}}};const creating=api!.atoms.create(input);input.title='Mutated';input.properties.nested.value=9;const created=await creating;
+  const input={title:'Original',content:'- [ ] #task Read',properties:{nested:{value:1}}};const creating=api!.atoms.create(input);input.title='Mutated';input.properties.nested.value=9;const created=await creating;
   expect(created.title).toBe('Original');expect(created.properties.nested).toEqual({value:1});
   const patch={title:'Updated',properties:{nested:{value:2}}};const updating=api!.atoms.update(created.id,patch);patch.title='Mutated again';patch.properties.nested.value=10;await updating;
   expect(h.core.data.atoms[0].title).toBe('Updated');expect(h.core.data.atoms[0].properties.nested).toEqual({value:2});

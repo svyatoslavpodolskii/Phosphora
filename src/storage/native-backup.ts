@@ -6,7 +6,7 @@ async function digest(bytes:Uint8Array){return [...new Uint8Array(await crypto.s
 export function backupFilename(name:string,date=new Date()){
  const safe=name.normalize('NFC').replace(/[<>:"/\\|?*\u0000-\u001f]/g,'_').replace(/[. ]+$/g,'').slice(0,80)||'Хранилище';
  const pad=(n:number)=>String(n).padStart(2,'0');
- return `${safe}_${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}.phosphora`;
+ return `${safe}_${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}.posphorea`;
 }
 export async function packStorage(database:Uint8Array,name:string){
  if(database.length>LIMIT)throw Error('Копия превышает 256 МБ.');

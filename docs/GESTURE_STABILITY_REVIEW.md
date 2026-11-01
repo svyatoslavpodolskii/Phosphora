@@ -1,4 +1,4 @@
-# Phosphora 0.3.0: gesture and structure repair
+# Posphorea 0.3.0: gesture and structure repair
 
 ## Reproduced causes
 

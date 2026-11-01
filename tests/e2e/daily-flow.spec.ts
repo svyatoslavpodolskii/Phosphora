@@ -1,3 +1,4 @@
+import {sourceText} from './helpers';
 import {test,expect} from '@playwright/test';
 import {openSettings,closeSettings,readMap,importMap} from './helpers';
 import {makeAtom,makeLink} from '../../src/core/model';
@@ -6,8 +7,8 @@ test.use({viewport:{width:390,height:844}});
 test('search capture in Now survives reload as a draft, commits once and keeps its lens',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',dialog=>dialog.accept());await page.goto('/');await expect(page.locator('canvas.map')).toBeVisible();
  await page.getByRole('button',{name:'Сейчас',exact:true}).click();await page.getByRole('button',{name:'Открыть поиск',exact:true}).click();await page.getByRole('textbox',{name:'Поиск',exact:true}).fill('Quick daily thought');await page.locator('.search-create').click();
- await expect(page.getByRole('textbox',{name:'Название',exact:true})).toHaveValue('Quick daily thought');await expect(page.getByRole('combobox',{name:'Состояние',exact:true})).toHaveValue('now');await page.getByRole('textbox',{name:'Текст',exact:true}).fill('Unfinished text survives a mobile restart');await page.waitForTimeout(650);
- await page.reload();await expect(page.getByRole('dialog',{name:'Редактор атома',exact:true})).toBeVisible();await expect(page.getByRole('textbox',{name:'Название',exact:true})).toHaveValue('Quick daily thought');await expect(page.getByRole('textbox',{name:'Текст',exact:true})).toHaveValue('Unfinished text survives a mobile restart');await page.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(page.getByRole('dialog',{name:'Редактор атома',exact:true})).toBeHidden();await expect(page.getByRole('button',{name:'Сейчас',exact:true})).toHaveAttribute('aria-pressed','true');
+ await expect(page.getByRole('textbox',{name:'Название',exact:true})).toHaveValue('Quick daily thought');await expect(page.getByRole('combobox',{name:'Состояние',exact:true})).toHaveValue('now');await (await sourceText(page)).fill('Unfinished text survives a mobile restart');await page.waitForTimeout(650);
+ await page.reload();await expect(page.getByRole('dialog',{name:'Редактор атома',exact:true})).toBeVisible();await expect(page.getByRole('textbox',{name:'Название',exact:true})).toHaveValue('Quick daily thought');await expect((await sourceText(page))).toHaveValue('Unfinished text survives a mobile restart');await page.getByRole('button',{name:'Готово',exact:true}).click();await expect(page.getByRole('dialog',{name:'Редактор атома',exact:true})).toBeHidden();await expect(page.getByRole('button',{name:'Сейчас',exact:true})).toHaveAttribute('aria-pressed','true');
  await page.reload();await expect(page.locator('canvas.map')).toBeVisible();await expect(page.getByRole('dialog',{name:'Редактор атома',exact:true})).toHaveCount(0);const data=await readMap(page);expect(data.atoms).toHaveLength(1);expect(data.atoms[0]).toMatchObject({title:'Quick daily thought',state:'now',content:'Unfinished text survives a mobile restart'});expect(errors).toEqual([]);
 });
 

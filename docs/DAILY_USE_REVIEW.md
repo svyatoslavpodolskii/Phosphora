@@ -18,4 +18,4 @@ No physical Nothing Phone 1 is connected. Desktop Gecko and software-WebGL work 
 
 ## One-time transition from older builds
 
-Save open edits, close all Phosphora tabs/installed windows, then reopen online. If the old worker has just fetched an update, closing all old clients allows it to activate. Verify 0.2.0 in Settings. Subsequent releases show an Update action. Do not clear site data or uninstall to force an update.
+Save open edits, close all Posphorea tabs/installed windows, then reopen online. If the old worker has just fetched an update, closing all old clients allows it to activate. Verify 0.2.0 in Settings. Subsequent releases show an Update action. Do not clear site data or uninstall to force an update.
