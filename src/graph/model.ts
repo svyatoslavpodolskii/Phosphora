@@ -8,6 +8,7 @@ export interface Camera{x:number;y:number;zoom:number}
 export interface GraphNode{ id:string;x:number;y:number;radius:number;label:string;color:string;icon:string;shape:string;style:string;state:string;members?:string[];content?:string;pinned?:boolean;attention?:number;landmark?:boolean }
 export interface GraphModel{expanded?:GraphModel;arranging?:boolean;branch?:string[];satellites?:{id:string;x:number;y:number;color:string}[];nodes:GraphNode[];links:Link[];hidden:number}
 export function reduceLinks(atoms:Atom[],links:Link[],selected=''):Link[]{
+ if(links.length<=600){const ids=new Set(atoms.map(a=>a.id));return links.filter(l=>ids.has(l.from)&&ids.has(l.to));}
  const parent=new Map(atoms.map(a=>[a.id,a.id]));const degree=new Map<string,number>();
  const find=(id:string):string=>{let root=id;while(parent.get(root)!==root&&parent.has(root))root=parent.get(root)!;while(parent.get(id)!==root&&parent.has(id)){const p=parent.get(id)!;parent.set(id,root);id=p;}return root;};
  for(const l of links){degree.set(l.from,(degree.get(l.from)||0)+1);degree.set(l.to,(degree.get(l.to)||0)+1);}

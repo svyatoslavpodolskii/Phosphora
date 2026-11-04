@@ -181,3 +181,11 @@ main.map-interacting header,main.map-interacting footer,main.map-interacting .zo
 .note-fields{display:flex;flex-direction:column;gap:12px;flex-shrink:0}.note-editor .inline-error{position:sticky;top:52px;z-index:2}
 
 .note-editor.expanded .note-fields{flex:1}.note-editor.expanded .note-fields>.note-content{flex:1}
+.camera-slider{position:absolute;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:4;display:flex;align-items:center;gap:9px;max-width:calc(100% - 32px);padding:3px 10px;border:1px solid var(--theme-border);border-radius:24px;background:var(--theme-surface);color:var(--theme-muted)}
+.camera-slider input{width:128px;min-height:44px;padding:0;accent-color:var(--theme-accent);touch-action:none}.camera-slider span{font-size:10px;min-width:35px;text-align:right;font-variant-numeric:tabular-nums}
+.note-editor .note-toolbar{display:flex;flex-wrap:wrap;gap:10px}.note-toolbar>label{flex:1;min-width:130px}.editor-modes{display:flex;flex-basis:100%;padding:3px;gap:3px;border-radius:14px;background:var(--theme-surfaceAlt);min-width:0}.editor-modes button{flex:1;min-width:0;font-size:12px;padding:8px 5px;border:0;border-radius:11px;background:transparent}.editor-modes button[aria-pressed=true]{background:var(--theme-surface);color:var(--theme-text)}
+.note-editor .inline-suggestions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 0}.inline-suggestions>small{width:100%;color:var(--theme-muted)}.inline-suggestions .suggestion{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;padding:8px 10px}.note-editor .note-fields{gap:14px}.note-editor .note-heading{padding-top:0}.note-editor .writing-tools{margin:0;padding:2px 0}
+.toast{background:var(--theme-surface);color:var(--theme-text);border:1px solid var(--theme-border);box-shadow:0 6px 22px color-mix(in srgb,var(--theme-shadow),transparent 85%)}
+
+
+.toast{top:auto;bottom:calc(160px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 32px);padding:6px 10px 6px 14px;border-radius:16px;font-size:12px}.toast button{min-height:32px;padding:4px 8px}.toast .notice-action{min-height:44px}

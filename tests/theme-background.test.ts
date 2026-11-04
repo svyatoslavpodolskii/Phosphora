@@ -29,8 +29,8 @@ describe('camera background layers',()=>{
    const camera={x:197,y:-91,zoom};
    const t=backgroundTransform('world',camera,view,.18);
    expect(t.scale).toBeCloseTo(zoom);
-   expect(t.x).toBeCloseTo(wrap(view.width/2+camera.x-BACKGROUND_TILE.width*zoom/2,BACKGROUND_TILE.width*zoom));
-   expect(t.y).toBeCloseTo(wrap(view.height/2+camera.y-BACKGROUND_TILE.height*zoom/2,BACKGROUND_TILE.height*zoom));
+   expect(t.x).toBeCloseTo(view.width/2+camera.x-BACKGROUND_TILE.width*zoom/2);
+   expect(t.y).toBeCloseTo(view.height/2+camera.y-BACKGROUND_TILE.height*zoom/2);
    expect(backgroundTransform('world',camera,view,.7)).toEqual(t);
   }
  });
@@ -51,8 +51,8 @@ describe('camera background layers',()=>{
    const camera={x:sign*1e9,y:sign*-1e9,zoom:MIN_ZOOM};
    const t=backgroundTransform(mode,camera,view,depth);
    expect(t.scale).toBeGreaterThan(0);
-   expect(t.x).toBeGreaterThanOrEqual(0);expect(t.x).toBeLessThan(BACKGROUND_TILE.width*t.scale);
-   expect(t.y).toBeGreaterThanOrEqual(0);expect(t.y).toBeLessThan(BACKGROUND_TILE.height*t.scale);
+   expect(Number.isFinite(t.x)).toBe(true);expect(Math.abs(t.x)).toBeLessThan(2e9);
+   expect(Number.isFinite(t.y)).toBe(true);expect(Math.abs(t.y)).toBeLessThan(2e9);
   }
  });
 });

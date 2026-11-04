@@ -10,7 +10,7 @@ export async function createDaily(app:PluginAPI,date=new Date()){
  const title=format.replace(/\{(YYYY|MMMM|MM|DD|D)\}/g,(_,token:string)=>({YYYY:year,MMMM:date.toLocaleDateString('ru-RU',{day:'numeric',month:'long'}).replace(/^\d+\s*/,''),MM:day.slice(5,7),DD:day.slice(8),D:String(date.getDate())}[token]!));
  async function ensure(key:string,title:string,parent?:string,position={x:0,y:0}){
   let atom=atoms.find(a=>a.properties.calendarKey===key||(key===day&&a.properties.dailyDate===day));
-  if(!atom){atom=await app.atoms.create({title,...position,properties:{calendarKey:key,...(key===day?{dailyDate:day}:{})},...(key===day?{state:'now' as const,content:'## Что сегодня важно\n\n- \n\n## Мысли\n\n'}:{})});atoms.push(atom);}
+  if(!atom){atom=await app.atoms.create({title,...position,properties:{calendarKey:key,...(key===day?{dailyDate:day}:{})},...(key===day?{state:'normal' as const,content:'## Что сегодня важно\n\n- \n\n## Мысли\n\n'}:{})});atoms.push(atom);}
   if(parent&&!links.some(l=>(l.from===parent&&l.to===atom!.id)||(l.to===parent&&l.from===atom!.id)))links.push(await app.links.create(parent,atom.id));
   return atom;
  }

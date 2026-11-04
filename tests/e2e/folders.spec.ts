@@ -27,7 +27,7 @@ test('lasso folder stays in one world and survives disable/re-enable with inheri
  await page.keyboard.down('Shift');await page.mouse.move(a.x,a.y);await page.mouse.down();
  for(const p of [{x:b.x,y:a.y},b,{x:a.x,y:b.y},a])await page.mouse.move(p.x,p.y,{steps:5});
  await page.mouse.up();await page.keyboard.up('Shift');await expect(map).toHaveAttribute('data-selection-count','2');
- await page.getByRole('button',{name:'Новая папка',exact:true}).click();await page.getByRole('textbox',{name:'Название папки',exact:true}).fill('Работа');
+ await page.getByRole('button',{name:'Создать папку из выделения',exact:true}).click();await page.getByRole('textbox',{name:'Название папки',exact:true}).fill('Работа');
  await page.locator('.folder-strip').getByRole('button',{name:'Создать',exact:true}).click();
  await expect(page.locator('.folder-strip').getByRole('button',{name:'Работа 2',exact:true})).toBeVisible();
  await expect(page.locator('.folder-territories path').first()).toBeAttached();

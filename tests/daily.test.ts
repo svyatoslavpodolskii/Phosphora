@@ -5,7 +5,7 @@ import {validateManifest,type PluginAPI} from '../src/plugins/api';
 it('starts with a single daily note and no calendar setup',async()=>{
  const h=harness({});await createDaily(h.api,new Date(2026,8,17));
  expect(h.atoms).toHaveLength(1);expect(h.links).toHaveLength(0);
- expect(h.atoms[0].properties.dailyDate).toBe('2026-09-17');
+ expect(h.atoms[0].properties.dailyDate).toBe('2026-09-17');expect(h.atoms[0].state).toBe('normal');
 });
 it('rapid daily commands share one creation and open the same day',async()=>{
  const h=harness({years:true,months:true,weeks:true});let run:(()=>unknown)|undefined;

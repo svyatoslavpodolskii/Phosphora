@@ -14,8 +14,8 @@
 <svg class="folder-territories" {width} {height} aria-hidden="true">
  <g {transform}>
   {#each visible as territory (territory.id)}
-   <path d={territory.path} fill={territory.color} stroke={territory.color} fill-opacity={activeId===territory.id ? .075 : .035} stroke-opacity={activeId===territory.id ? .22 : .10} stroke-width="12" vector-effect="non-scaling-stroke"/>
-   <path d={territory.path} fill="none" stroke={territory.color} stroke-opacity={activeId===territory.id ? .25 : .12} stroke-width="1" vector-effect="non-scaling-stroke"/>
+   <path d={territory.path} fill={territory.color} stroke={territory.color} fill-opacity={activeId===territory.id ? .035 : .014} stroke-opacity={activeId===territory.id ? .06 : .025} stroke-width="5" vector-effect="non-scaling-stroke"/>
+   <path d={territory.path} fill="none" stroke={territory.color} stroke-opacity={activeId===territory.id ? .10 : .045} stroke-width="1" vector-effect="non-scaling-stroke"/>
   {/each}
  </g>
 </svg>

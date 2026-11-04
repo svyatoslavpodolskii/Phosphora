@@ -1,7 +1,11 @@
 import {it,expect} from 'vitest';
-import {flightCamera,validLocation} from '../src/graph/navigation';
+import {flightCamera,validLocation,fitCamera} from '../src/graph/navigation';
 import {neighborhood} from '../src/graph/neighborhood';
 import {makeAtom,makeLink} from '../src/core/model';
+it('fits a distant folder inside phone chrome even when the camera must zoom out',()=>{
+ const bounds={minX:1500,minY:800,maxX:2600,maxY:1900},view={width:390,height:844},c=fitCamera(bounds,view);
+ expect(c.zoom).toBeLessThan(1);for(const x of [bounds.minX,bounds.maxX])for(const y of [bounds.minY,bounds.maxY]){expect(195+c.x+x*c.zoom).toBeGreaterThanOrEqual(40);expect(195+c.x+x*c.zoom).toBeLessThanOrEqual(350);expect(422+c.y+y*c.zoom).toBeGreaterThan(100);expect(422+c.y+y*c.zoom).toBeLessThan(740);}
+});
 it('camera flights preserve endpoints, remain bounded and reveal long spatial journeys',()=>{
  const from={x:120,y:-50,zoom:2},to={x:-9000,y:4500,zoom:1};expect(flightCamera(from,to,0)).toEqual(from);expect(flightCamera(from,to,1).x).toBeCloseTo(to.x);const middle=flightCamera(from,to,.5);expect(middle.zoom).toBeLessThan(1);for(let i=0;i<=100;i++){const p=flightCamera(from,to,i/100);expect(p.zoom).toBeGreaterThanOrEqual(.035);expect(p.zoom).toBeLessThanOrEqual(3);expect(Number.isFinite(p.x+p.y)).toBe(true);}expect(validLocation({camera:to,selected:'a',lens:'all'})).toBe(true);expect(validLocation({camera:{...to,zoom:NaN},selected:'a',lens:'all'})).toBe(false);
 });

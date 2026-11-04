@@ -16,6 +16,9 @@ async function setup(){
  await runtime.enable(plugin);
  return {core,runtime,plugin,controller,notify,changed,focus,requestCreate,select(ids:string[]){selected=ids;},close(){runtime.dispose();raw.close();}};
 }
+it('adds raw selections and deletes only the folder through ordinary plugin writes',async()=>{
+ const h=await setup();try{const a=await h.core.create({title:'A',properties:{custom:'keep'}}),b=await h.core.create({title:'B',x:500,y:300});const id=await h.controller.create('Work',[a.id]);await h.controller.add(id,[b.id,b.id]);expect(projectFolders(h.core.data).folders[0].count).toBe(2);const positions=h.core.data.atoms.map(a=>[a.id,a.x,a.y]);await h.controller.update(id,'Renamed','#eda8ae');expect(projectFolders(h.core.data).folders[0]).toMatchObject({name:'Renamed',color:'#eda8ae'});await h.controller.remove(id);expect(projectFolders(h.core.data).folders).toHaveLength(0);expect(h.core.data.atoms.map(a=>[a.id,a.x,a.y])).toEqual(positions);expect(h.core.data.atoms[0].properties.custom).toBe('keep');}finally{h.close();}
+});
 it('creates a folder atomically using one public update without moving or linking notes',async()=>{
  const h=await setup();try{
   const a=await h.core.create({title:'A',x:100,y:200,properties:{custom:42}}),b=await h.core.create({title:'B',x:400,y:500});h.select([a.id,b.id,a.id]);

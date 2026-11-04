@@ -54,9 +54,11 @@ export function projectFolders(data:Snapshot):FolderProjection{
  for(const atom of data.atoms)for(const definition of folderDefinitions(atom)){
   if(!definitions.has(definition.id)&&definitions.size<MAX_FOLDERS)definitions.set(definition.id,{...definition,ownerId:atom.id});
  }
- const children=new Map<string,string[]>();
- for(const link of data.links)if(folderBranchLink(link)&&atoms.has(link.from)&&atoms.has(link.to)){
-  const list=children.get(link.from)||[];list.push(link.to);children.set(link.from,list);
+ const owners=new Map<string,Set<string>>();for(const folder of definitions.values())for(const id of folder.roots){const set=owners.get(id)||new Set<string>();set.add(folder.id);owners.set(id,set);}
+ const mayEnter=(id:string,folder:string)=>!owners.has(id)||owners.get(id)!.has(folder);
+ const children=new Map<string,string[]>(),parented=new Set<string>();
+ for(const link of [...data.links].sort((a,b)=>a.created_at.localeCompare(b.created_at)))if(folderBranchLink(link)&&atoms.has(link.from)&&atoms.has(link.to)&&!parented.has(link.to)){
+  parented.add(link.to);const list=children.get(link.from)||[];list.push(link.to);children.set(link.from,list);
  }
  const raw=new Map<string,Record<string,number>>();
  const put=(id:string,folder:string,weight:number)=>{const entry=raw.get(id)||Object.create(null) as Record<string,number>;entry[folder]=Math.max(entry[folder]||0,weight);raw.set(id,entry);};
@@ -66,7 +68,7 @@ export function projectFolders(data:Snapshot):FolderProjection{
  for(const folder of definitions.values()){
   // Descendants of explicit roots get full strength regardless of branch depth.
   const seen=new Set<string>(),queue=folder.roots.filter(id=>atoms.has(id));
-  for(let i=0;i<queue.length;i++){const id=queue[i];if(seen.has(id))continue;seen.add(id);put(id,folder.id,1);for(const child of children.get(id)||[])if(!seen.has(child))queue.push(child);}
+  for(let i=0;i<queue.length;i++){const id=queue[i];if(seen.has(id)||!mayEnter(id,folder.id))continue;seen.add(id);put(id,folder.id,1);for(const child of children.get(id)||[])if(!seen.has(child))queue.push(child);}
  }
  // Persisted memberships also seed branches, including children born via a draft policy.
  // Process high strengths first so each edge is visited at most once per folder.
@@ -74,7 +76,7 @@ export function projectFolders(data:Snapshot):FolderProjection{
   const seeds=[...raw].filter(([,w])=>w[folder.id]>0).map(([id,w])=>({id,w:w[folder.id]})).sort((a,b)=>b.w-a.w);
   const seen=new Set<string>();
   for(const seed of seeds){const queue=[seed.id];for(let i=0;i<queue.length;i++){
-   const id=queue[i];if(seen.has(id))continue;seen.add(id);put(id,folder.id,seed.w);for(const child of children.get(id)||[])if(!seen.has(child))queue.push(child);
+   const id=queue[i];if(seen.has(id)||!mayEnter(id,folder.id))continue;seen.add(id);put(id,folder.id,seed.w);for(const child of children.get(id)||[])if(!seen.has(child))queue.push(child);
   }}
  }
  const memberships=new Map([...raw].map(([id,weights])=>[id,normalizeFolderWeights(weights)]));

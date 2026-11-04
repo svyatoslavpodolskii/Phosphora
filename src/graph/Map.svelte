@@ -26,7 +26,7 @@
  import {visualAttention} from './attention';
  import {fromAnchor,clampZoom,type Anchor} from './camera';
  import {CameraRig,wheelZoomFactor,gestureZoomFactor,screenToWorld,type Point} from './camera';
- import {revealCamera} from './navigation';
+ import {revealCamera,fitCamera} from './navigation';
  import {hitRegions,pickTarget,resolveSelection} from './intent';
  import {collapseAmount} from './lod';
  const loadPreview=()=>import('../ui/ContentPreview.svelte');
@@ -43,22 +43,23 @@
  import type {GraphProviders} from './providers';
  import type {Preferences} from '../core/preferences';
  import type {PositionUpdate} from '../core/model';
- let {data,selected='',lens='all',camera=$bindable({x:0,y:0,zoom:1}),providers,prefs,providerVersion,paused=false,onselect,onselection=()=>{},onopen,oncontext,onbranch,oncreate,onpositions,onstate,onstates,onlinkchange,oncamera,onhover=()=>{},onviewport=()=>{},revealRequest=null,connectRequest=null,preservePositions=false,oninteraction=()=>{},onerror}: {data:Snapshot;selected:string;lens:string;camera:Camera;providers:GraphProviders;prefs:Preferences;providerVersion:number;paused:boolean;onselect:(id:string)=>void;onselection?:(ids:string[])=>void;onopen:(id:string,section?:string)=>void;oncontext:(id:string)=>void;onbranch:(ids:string[])=>void;oncreate:(x:number,y:number)=>void;onpositions:(positions:PositionUpdate[],manual:boolean)=>Promise<void>;onstate:(id:string,state:AtomState)=>void;onstates:(ids:string[],state:AtomState)=>void;onlinkchange:(before:Link|null,after:Link|null)=>Promise<void>;oncamera:()=>void;onhover?:(id:string)=>void;onviewport?:(size:{width:number;height:number})=>void;revealRequest?:{id:string;nonce:number;point?:Point;zoom?:number}|null;preservePositions?:boolean;connectRequest?:{id:string;nonce:number}|null;oninteraction?:(active:boolean)=>void;onerror:(e:Error)=>void}=$props();
+ let {data,selected='',lens='all',camera=$bindable({x:0,y:0,zoom:1}),providers,prefs,providerVersion,paused=false,onselect,onselection=()=>{},onfolderdrop=async()=>{},onopen,oncontext,onbranch,oncreate,onpositions,onstate,onstates,onlinkchange,oncamera,onhover=()=>{},onviewport=()=>{},revealRequest=null,connectRequest=null,preservePositions=false,oninteraction=()=>{},onerror}: {data:Snapshot;selected:string;lens:string;camera:Camera;providers:GraphProviders;prefs:Preferences;providerVersion:number;paused:boolean;onselect:(id:string)=>void;onselection?:(ids:string[])=>void;onfolderdrop?:(folder:string,ids:string[])=>Promise<void>;onopen:(id:string,section?:string)=>void;oncontext:(id:string)=>void;onbranch:(ids:string[])=>void;oncreate:(x:number,y:number)=>void;onpositions:(positions:PositionUpdate[],manual:boolean)=>Promise<void>;onstate:(id:string,state:AtomState)=>void;onstates:(ids:string[],state:AtomState)=>void;onlinkchange:(before:Link|null,after:Link|null)=>Promise<void>;oncamera:()=>void;onhover?:(id:string)=>void;onviewport?:(size:{width:number;height:number})=>void;revealRequest?:{id:string;nonce:number;point?:Point;zoom?:number}|null;preservePositions?:boolean;connectRequest?:{id:string;nonce:number}|null;oninteraction?:(active:boolean)=>void;onerror:(e:Error)=>void}=$props();
  $effect(()=>{if(connectRequest)connectFrom=connectRequest.id;});
  $effect(()=>oninteraction(dragging||lassoing));
+ let sliderHeld=$state(false),sliderDraft=$state(0);let scopeCamera:Camera|null=null;let folderCamera:Camera|null=null;let lastEmptyTap={x:0,y:0,time:-Infinity};
  let structureSeen=false,currentStructure:string|undefined,frameStructure=false;
  $effect(()=>{const mode=prefs.graphModel;if(structureSeen&&mode!==currentStructure)frameStructure=true;currentStructure=mode;structureSeen=true;});
- function frameMap(onlyOutside=false){const nodes=model.expanded?.nodes||model.nodes;if(!nodes.length)return;const left=Math.min(...nodes.map(n=>n.x-n.radius))-80,right=Math.max(...nodes.map(n=>n.x+n.radius))+80,top=Math.min(...nodes.map(n=>n.y-n.radius))-70,bottom=Math.max(...nodes.map(n=>n.y+n.radius))+100;
-  if(onlyOutside&&left*camera.zoom+width/2+camera.x>=24&&right*camera.zoom+width/2+camera.x<=width-24&&top*camera.zoom+height/2+camera.y>=90&&bottom*camera.zoom+height/2+camera.y<=height-90)return;
-  const zoom=Math.max(MIN_ZOOM,Math.min(1,(width-64)/(right-left),(height-190)/(bottom-top)));rig.retarget({x:-(left+right)/2*zoom,y:-(top+bottom)/2*zoom,zoom});schedule();
- }
+ function fitted(ids?:string[]){const nodes=(model.expanded?.nodes||model.nodes).filter(n=>!ids||ids.includes(n.id));if(!nodes.length)return {x:0,y:0,zoom:1};return fitCamera({minX:Math.min(...nodes.map(n=>n.x-n.radius-20)),maxX:Math.max(...nodes.map(n=>n.x+n.radius+20)),minY:Math.min(...nodes.map(n=>n.y-n.radius-15)),maxY:Math.max(...nodes.map(n=>n.y+n.radius+55))},{width,height});}
+ function frameMap(onlyOutside=false){const target=fitted();if(onlyOutside&&target.zoom>=camera.zoom)return;scopeCamera=null;rig.retarget(target);schedule();}
+ function zoomSlider(value:number){const all=fitted(),min=all.zoom,zoom=Math.exp(Math.log(min)+(Math.log(MAX_ZOOM)-Math.log(min))*value/100);if(value<2){frameMap();return;}if(folderCamera&&Math.abs(Math.log(zoom/folderCamera.zoom))<.1)rig.retarget(folderCamera);else if(scopeCamera&&Math.abs(Math.log(zoom/scopeCamera.zoom))<.1)rig.retarget(scopeCamera);else rig.retarget({...camera,x:camera.x*zoom/camera.zoom,y:camera.y*zoom/camera.zoom,zoom});schedule();}
+ const sliderValue=()=>Math.max(0,Math.min(100,100*Math.log(camera.zoom/fitted().zoom)/Math.log(MAX_ZOOM/fitted().zoom)));
  // A focus request arrives from outside, but the camera is still ours to animate.
- $effect(()=>{const request=revealRequest;if(!request)return;untrack(()=>{if(request.point){reveal(request.point,request.zoom??1);return;}const atom=data.atoms.find(a=>a.id===request.id);if(atom)reveal({x:atom.x,y:atom.y},request.zoom??1);});});
+ $effect(()=>{const request=revealRequest;if(!request)return;untrack(()=>{if(request.point){const target={x:-request.point.x*(request.zoom??1),y:-request.point.y*(request.zoom??1),zoom:request.zoom??1};scopeCamera=target;folderCamera=target;rig.retarget(target);schedule();return;}const atom=data.atoms.find(a=>a.id===request.id);if(atom)reveal({x:atom.x,y:atom.y},request.zoom??1);});});
  let transitioning=$state(false);let canvas!:HTMLCanvasElement;let width=$state(1200),height=$state(700);let dragging=$state(false);let model=$state.raw<GraphModel>({nodes:[],links:[],hidden:0});let controller=$state<GraphController|null>(null);let reduced=$state(false);let hover=$state('');
  $effect(()=>controller?.sync($state.snapshot(data),$state.snapshot(prefs),providerVersion,preservePositions));
  $effect(()=>controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced));
  let visualFocus=$state('');let recent='';let recentAt=0;let focal:Point|undefined;let previewCamera=$state({x:0,y:0,zoom:1});
- $effect(()=>{model;selected;paused;schedule();});
+ $effect(()=>{model;selected;paused;prefs.liveliness;schedule();});
  $effect(()=>{if(paused)untrack(cancel);});
  const rig=new CameraRig();let publishedCamera:Camera|undefined;
  const sameCamera=(a:Camera,b:Camera)=>a.x===b.x&&a.y===b.y&&a.zoom===b.zoom;
@@ -71,7 +72,7 @@
   function readPalette(){if(paletteCache)return paletteCache;const style=getComputedStyle(canvas);return paletteCache={background:style.getPropertyValue('--theme-background').trim(),text:style.getPropertyValue('--theme-text').trim(),muted:style.getPropertyValue('--theme-muted').trim(),accent:style.getPropertyValue('--theme-accent').trim(),edge:style.getPropertyValue('--theme-edge').trim()};}
   const invalidatePalette=()=>{gpu?.invalidate();paletteCache=null;inkCache.clear();clearSprites();schedule();};
  const scene=new SemanticScene();const satelliteCache=new Map<string,{id:string;x:number;y:number;color:string}>();const displayed=new Map<string,PaintedNode>();
- let gpuHost:HTMLDivElement;let gpu=$state.raw<GpuMapRenderer|null>(null);let gpuFailed=$state(false);let renderBackend=$state('canvas');let rendererSettled=true;let pendingGpu=$state.raw<GpuMapRenderer|null>(null);let gpuStarting=$state(true);let firstMap=false;
+ let gpuHost:HTMLDivElement;let gpu=$state.raw<GpuMapRenderer|null>(null);let gpuFailed=$state(false);let renderBackend=$state('canvas');let rendererSettled=true;let pendingGpu=$state.raw<GpuMapRenderer|null>(null);let gpuStarting=$state(true);let firstMap=false;let driftTime=0;
  let overlayDirty=false;let drawingContext:CanvasRenderingContext2D|null=null;
  let hitCache:ReturnType<typeof hitRegions>|null=null;
  const targets=()=>hitCache??(hitCache=hitRegions(painted,camera,{width,height},selected));
@@ -95,7 +96,8 @@
    if(!sameCamera(camera,next)){publishedCamera={x:next.x,y:next.y,zoom:next.zoom};camera=publishedCamera;cameraMoving=true;}
    controller?.setInteracting(pointers.size>0||rig.moving||linkInteracting);
   const visual=scene.advance(model,dt,reduced,moving?.id,collapseAmount(camera.zoom));
-  const unsettled=visual.active;transitioning=unsettled;const attention=visualAttention(visual.nodes,camera,{width,height},selected,now-recentAt<3000?recent:'',focal);visualFocus=attention.focus;painted=visual.nodes.map(n=>({...n,attention:attention.scores.get(n.id)??.4}));hitCache=null;displayed.clear();for(const n of painted)displayed.set(n.id,n);
+  const unsettled=visual.active;transitioning=unsettled;const attention=visualAttention(visual.nodes,camera,{width,height},selected,now-recentAt<3000?recent:'',focal);visualFocus=attention.focus;if(prefs.liveliness&&!reduced&&!paused&&!pointers.size&&!rig.moving&&!document.hidden)driftTime+=dt;
+ painted=visual.nodes.map(n=>{const phase=[...n.id].reduce((v,c)=>v+c.charCodeAt(0),0),amplitude=!n.pinned&&!reduced?prefs.liveliness*5:0;return {...n,x:n.x+Math.sin(driftTime/3800+phase)*amplitude,y:n.y+Math.cos(driftTime/4700+phase)*amplitude,attention:attention.scores.get(n.id)??.4};});hitCache=null;displayed.clear();for(const n of painted)displayed.set(n.id,n);
   const ctx=drawingContext??(drawingContext=canvas.getContext('2d')!);const palette=readPalette();/* Software fallback quality follows scene size, never pointer state. */const dpr=Math.min(devicePixelRatio,2)*(data.atoms.length>250&&(!gpu?.available||gpuFailed)?.75:1);if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
   const nodes=new Map(painted.map(n=>[n.id,n]));const visible=(n:GraphNode)=>{const x=width/2+camera.x+n.x*camera.zoom,y=height/2+camera.y+n.y*camera.zoom;return x>-200&&x<width+200&&y>-100&&y<height+100;};
   const ambient=providers.hasTool('ambient-lens')&&lens!=='all',states=new Map(data.atoms.map(a=>[a.id,a.paused?'paused':a.state])),selectedIds=new Set(lassoSelection);const branch=model.branch||[],inBranch=new Set(branch);
@@ -194,7 +196,7 @@
   // The camera is recorded once it comes to rest, independently of any level of
   // detail crossfade happening at the same moment.
   if(cameraMoving&&!rig.moving&&!pointers.size){cameraMoving=false;oncamera();}
-  if(rig.moving&&!rig.gesturing||unsettled||start&&Number.isFinite(holdStarted)&&pointers.size===1&&!dragging&&!lasso&&!holdReady&&!reduced)schedule();
+  if(prefs.liveliness&&painted.some(n=>!n.pinned)&&!reduced&&!paused&&!document.hidden&&!pointers.size||rig.moving&&!rig.gesturing||unsettled||start&&Number.isFinite(holdStarted)&&pointers.size===1&&!dragging&&!lasso&&!holdReady&&!reduced)schedule();
  }
  function position(e:{clientX:number;clientY:number}){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
  function world(p:Point){return screenToWorld(p,camera,{width,height});}
@@ -250,21 +252,23 @@
     else start=null;
     schedule();return;}
   if(start){const p=position(e),travel=Math.hypot(p.x-start.x,p.y-start.y);
-   if(moving){if(drop){pendingDrag=false;controller?.cancelDrag();suppressReleaseClick=true;if(!linkedPair(data.links,drop.source,drop.target))void relationships?.apply(null,makeLink(drop.source,drop.target));}else{if(pendingDrag){pendingDrag=false;controller?.drag(moving.id,moving.x,moving.y);}controller?.endDrag(false).catch(onerror);}schedule();}
+   const folderTarget=(document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-folder-id]') as HTMLElement|null)?.dataset.folderId;
+   if(moving&&folderTarget){pendingDrag=false;controller?.cancelDrag();void onfolderdrop(folderTarget,lassoSelection.length?lassoSelection:moving.members||[moving.id]).catch(onerror);schedule();}
+   else if(moving){if(drop){pendingDrag=false;controller?.cancelDrag();suppressReleaseClick=true;if(!linkedPair(data.links,drop.source,drop.target))void relationships?.apply(null,makeLink(drop.source,drop.target));}else{if(pendingDrag){pendingDrag=false;controller?.drag(moving.id,moving.x,moving.y);}controller?.endDrag(false).catch(onerror);}schedule();}
     else if(travel<=DRAG_THRESHOLD&&!start.moved&&!fromPinch&&Number.isFinite(holdStarted)){
      const tapped=start.target;
      if(tapped&&lassoSelection.length>1&&(tapped.members||[tapped.id]).some(id=>lassoSelection.includes(id))){if(holdReady)onbranch(lassoSelection);else onselect(tapped.members?.[0]||tapped.id);}
      else if(holdReady&&tapped){tapped.members?onbranch(tapped.members):oncontext(tapped.id);}
      else
-     if(tapped?.members){const root=resolveSelection(tapped.id,painted)||tapped.members[0];onselect(root);reveal({x:tapped.x,y:tapped.y},1);}
+     if(tapped?.members){const root=resolveSelection(tapped.id,painted)||tapped.members[0];onselect(root);const target=fitted(tapped.members);scopeCamera=target;rig.retarget(target);schedule();}
      else if(tapped){lassoSelection=[];onselect(tapped.id);onopen(tapped.id,start.section);}
-     else{candidate='';hover='';onselect('');activeLink=holdReady?'':pickLink([...(model.expanded?.links||[]),...model.links,...(providers.hasTool('ambient-lens')&&lens!=='all'?data.links:[])].filter(l=>data.links.some(original=>original.id===l.id)),painted.filter(n=>n.opacity>.3),camera,{width,height},p);if(holdReady){suppressReleaseClick=true;oncreate(start.worldX??world(start).x,start.worldY??world(start).y);}else lassoSelection=[];}}
+     else{if(!holdReady&&performance.now()-lastEmptyTap.time<320&&Math.hypot(p.x-lastEmptyTap.x,p.y-lastEmptyTap.y)<30){lastEmptyTap.time=-Infinity;if(camera.zoom>=MAX_ZOOM*.94)frameMap();else{rig.zoomAt(p,Math.min(2,MAX_ZOOM/camera.zoom));schedule();}start=null;holdReady=false;controller?.setInteracting(false);return;}lastEmptyTap={...p,time:performance.now()};candidate='';hover='';onselect('');activeLink=holdReady?'':pickLink([...(model.expanded?.links||[]),...model.links,...(providers.hasTool('ambient-lens')&&lens!=='all'?data.links:[])].filter(l=>data.links.some(original=>original.id===l.id)),painted.filter(n=>n.opacity>.3),camera,{width,height},p);if(holdReady){suppressReleaseClick=true;oncreate(start.worldX??world(start).x,start.worldY??world(start).y);}else lassoSelection=[];}}
     else if(!start.node&&!reduced&&performance.now()-panSample.time<90){rig.endPinch();rig.release(panVelocity);}}
   if(rig.gesturing)rig.endPinch();start=null;holdReady=false;moving=null;pendingDrag=false;dragging=false;candidate='';hover='';fromPinch=false;focal=undefined;controller?.setInteracting(false);schedule();}
  function cancel(){clearProposal();rig.halt();clearTimeout(longTimer);holdReady=false;holdStarted=Infinity;pinchStart=null;fromPinch=false;gestureActive=false;lassoing=false;lasso=null;pointers.clear();controller?.setInteracting(false);start=null;moving=null;pendingDrag=false;dragging=false;pinch=0;controller?.cancelDrag();schedule();}
  function leave(){candidate='';hover='';schedule();}
  onMount(()=>{let disposed=false;void import('./gpu-renderer').then(m=>m.GpuMapRenderer.create(schedule)).then(value=>{if(disposed)value.destroy();else{pendingGpu=value;schedule();}}).catch(error=>{console.warn('WebGL unavailable; using Canvas',error);}).finally(()=>{gpuStarting=false;rendererSettled=true;if(!disposed)schedule();});return()=>{disposed=true;gpu?.destroy();pendingGpu?.destroy();pendingGpu=null;};});
- onMount(()=>{window.addEventListener('phosphora-theme-change',invalidatePalette);const resetClick=()=>{suppressReleaseClick=false;rig.halt();};const releaseClick=(e:MouseEvent)=>{if(suppressReleaseClick){suppressReleaseClick=false;e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('pointerdown',resetClick,true);window.addEventListener('click',releaseClick,true);adopt();onviewport({width,height});rig.set(camera);controller=new GraphController(providers,m=>model=m,onpositions,onerror);const media=matchMedia('(prefers-reduced-motion: reduce)');reduced=media.matches;rig.setReduced(reduced);const motion=()=>{reduced=media.matches;rig.setReduced(reduced);};media.addEventListener('change',motion);const visibility=()=>{controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced);if(document.hidden)controller?.flush();};document.addEventListener('visibilitychange',visibility);const observer=new ResizeObserver(([entry])=>{width=entry.contentRect.width;height=entry.contentRect.height;onviewport({width,height});adopt();schedule();});observer.observe(canvas);
+ onMount(()=>{window.addEventListener('phosphora-theme-change',invalidatePalette);const resetClick=()=>{suppressReleaseClick=false;rig.halt();};const releaseClick=(e:MouseEvent)=>{if(suppressReleaseClick){suppressReleaseClick=false;e.preventDefault();e.stopImmediatePropagation();}};window.addEventListener('pointerdown',resetClick,true);window.addEventListener('click',releaseClick,true);adopt();onviewport({width,height});rig.set(camera);controller=new GraphController(providers,m=>model=m,onpositions,onerror);const media=matchMedia('(prefers-reduced-motion: reduce)');reduced=media.matches;rig.setReduced(reduced);const motion=()=>{reduced=media.matches;rig.setReduced(reduced);};media.addEventListener('change',motion);const visibility=()=>{controller?.view($state.snapshot(camera),width,height,lens,selected,paused,reduced);if(document.hidden)controller?.flush();else schedule();};document.addEventListener('visibilitychange',visibility);const observer=new ResizeObserver(([entry])=>{width=entry.contentRect.width;height=entry.contentRect.height;onviewport({width,height});adopt();schedule();});observer.observe(canvas);
   const wheel=(e:WheelEvent)=>{e.preventDefault();adopt();const r=canvas.getBoundingClientRect();rig.zoomAt({x:e.clientX-r.left,y:e.clientY-r.top},wheelZoomFactor(e,height));schedule();};canvas.addEventListener('wheel',wheel,{passive:false});
   // Safari reports trackpad pinch as gesture events instead of a ctrl-modified wheel.
   let lastGesture=1;const gestureStart=(e:any)=>{lastGesture=e.scale;},gestureMove=(e:any)=>{e.preventDefault();adopt();const r=canvas.getBoundingClientRect();rig.zoomAt({x:e.clientX-r.left,y:e.clientY-r.top},gestureZoomFactor(e.scale,lastGesture));lastGesture=e.scale;schedule();};
@@ -287,3 +291,5 @@
 <style>
  .drag-link-proposal{position:absolute;inset:0;pointer-events:none;z-index:4;color:var(--theme-text)}.drag-link-proposal>svg{position:absolute;inset:0;fill:none;stroke:currentColor;stroke-width:1.5;stroke-dasharray:5 5;opacity:.6}.drag-link-proposal[data-ready=true]>svg{stroke-dasharray:none;opacity:1}.drag-link-hint{position:absolute;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:16px;background:var(--theme-surface);box-shadow:0 3px 14px #0003;white-space:nowrap;font-size:13px}.drag-link-hint svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
 </style>
+
+<div class="camera-slider"><input aria-label="Масштаб карты" type="range" min="0" max="100" step="1" value={sliderHeld?sliderDraft:sliderValue()} onpointerdown={()=>{sliderDraft=sliderValue();sliderHeld=true;}} onpointerup={()=>sliderHeld=false} onpointercancel={()=>sliderHeld=false} oninput={e=>{sliderDraft=Number(e.currentTarget.value);zoomSlider(sliderDraft);}}/><span>{Math.round(camera.zoom*100)}%</span></div>

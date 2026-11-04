@@ -16,7 +16,8 @@ export function backgroundTransform(mode:BackgroundMode|undefined,camera:Camera,
  // Blend the entire camera affine transform, including zoom about viewport
  // center. Applying only pan would make layers slide apart during a pinch.
  const scale=1+(camera.zoom-1)*d;
- const wrap=(value:number,period:number)=>((value%period)+period)%period;
- return {scale,x:wrap(view.width/2+camera.x*d-BACKGROUND_TILE.width*scale/2,BACKGROUND_TILE.width*scale),
-  y:wrap(view.height/2+camera.y*d-BACKGROUND_TILE.height*scale/2,BACKGROUND_TILE.height*scale)};
+ // Keep a fixed world origin. Modulo wrapping a differently scaled tile shifts the
+ // apparent layer origin during pinch; SVG patterns already repeat infinitely.
+ return {scale,x:view.width/2+camera.x*d-BACKGROUND_TILE.width*scale/2,
+  y:view.height/2+camera.y*d-BACKGROUND_TILE.height*scale/2};
 }

@@ -5,6 +5,9 @@ import {FOLDER_DEFINITIONS,FOLDER_MEMBERSHIP,MAX_FOLDERS,TERRITORY_DIRECTIONS,fo
 const note=(id:string,x=0,y=0)=>makeAtom({id,title:id,x,y});
 function folder(owner:Atom,id:string,roots=[owner.id]){owner.properties[FOLDER_DEFINITIONS]=[...folderDefinitions(owner),{id,name:id,color:'#9bbef2',roots}];}
 describe('folder membership',()=>{
+ it('does not absorb another explicit folder root when branches are connected',()=>{
+  const [a,b,c]=['a','b','c'].map(id=>note(id));folder(a,'work');folder(b,'music');const p=projectFolders({atoms:[a,b,c],links:[makeLink('a','b','grouped'),makeLink('b','c','grouped')]});expect(p.memberships.get('b')).toEqual({music:1});expect(p.memberships.get('c')).toEqual({music:1});
+ });
  it('propagates directed strong branches, never ordinary or reversed cross-links',()=>{
   const [a,b,c,d,e]=['a','b','c','d','e'].map(id=>note(id));folder(a,'work');
   const data={atoms:[a,b,c,d,e],links:[makeLink('a','b','related','context'),makeLink('b','c','grouped'),makeLink('b','d'),makeLink('e','a','grouped')]};
@@ -12,10 +15,10 @@ describe('folder membership',()=>{
   for(const id of ['a','b','c'])expect(p.memberships.get(id)).toEqual({work:1});
   expect(p.memberships.has('d')).toBe(false);expect(p.memberships.has('e')).toBe(false);expect(data).toEqual(before);
  });
- it('normalizes overlaps and deduplicates roots without losing depth strength',()=>{
+ it('keeps the earlier parent when two folder branches meet',()=>{
   const [a,b,c]=['a','b','c'].map(id=>note(id));folder(a,'work',['a','a']);folder(b,'music');
   const p=projectFolders({atoms:[a,b,c],links:[makeLink('a','c','grouped'),makeLink('b','c','grouped')]});
-  expect(p.memberships.get('c')).toEqual({work:.5,music:.5});expect(p.folders.map(f=>[f.count,f.weight])).toEqual([[2,1.5],[2,1.5]]);
+  expect(p.memberships.get('c')).toEqual({work:1});expect(p.folders.map(f=>[f.count,f.weight])).toEqual([[2,2],[1,1]]);
   expect(normalizeFolderWeights({work:Infinity,music:-2,other:NaN,ok:.3})).toEqual({ok:.3});
  });
  it('supports cycles and 5000 descendants iteratively',()=>{

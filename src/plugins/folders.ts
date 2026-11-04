@@ -12,6 +12,9 @@ export interface FolderHost {
  focus?:(target:FolderFocus)=>void;
 }
 export interface FolderController {
+ update:(id:string,name:string,color:string)=>Promise<void>;
+ remove:(id:string)=>Promise<void>;
+ add:(id:string,ids:readonly string[])=>Promise<void>;
  create:(name:string,ids?:readonly string[],color?:string)=>Promise<string>;
  focus:(folderId:string|null)=>Promise<FolderFocus|null>;
  refresh:()=>Promise<void>;
@@ -34,16 +37,19 @@ export function folderDraftPolicy():DraftPolicy{
 /** The factory binds only host presentation callbacks; all persistent access goes
  * through PluginAPI. Retain `controller` for the strip's create/focus callbacks. */
 export function createFoldersPlugin(host:FolderHost={}) : {plugin:Plugin;controller:FolderController}{
- let app:PluginAPI|undefined,epoch=0,dirty=false,pending:{version:number;promise:Promise<void>}|undefined,creating=false;
+ let hasFolders=false;let app:PluginAPI|undefined,epoch=0,dirty=false,pending:{version:number;promise:Promise<void>}|undefined,creating=false;
  const requireApp=()=>{if(!app)throw Error('Плагин «Папки» выключен.');return app;};
  async function read(api:PluginAPI){const [atoms,links]=await Promise.all([api.atoms.list(),api.links.list()]);return projectFolders({atoms,links});}
  async function refresh(){
   const api=requireApp(),version=epoch;dirty=true;
   if(pending?.version===version)return pending.promise;
-  const promise=(async()=>{while(dirty&&app===api&&epoch===version){dirty=false;const projection=await read(api);if(app===api&&epoch===version)host.changed?.(projection);}})().finally(()=>{if(pending?.promise===promise)pending=undefined;});
+  const promise=(async()=>{while(dirty&&app===api&&epoch===version){dirty=false;const projection=await read(api);if(app===api&&epoch===version){hasFolders=projection.folders.length>0;host.changed?.(projection);}}})().finally(()=>{if(pending?.promise===promise)pending=undefined;});
   pending={version,promise};return promise;
  }
  const controller:FolderController={
+  async update(id,name,color){const api=requireApp();name=name.trim();if(!name||name.length>80||!/^#[0-9a-f]{6}$/i.test(color))throw Error('Проверьте название и цвет папки.');const atoms=await api.atoms.list(),owner=atoms.find(a=>folderDefinitions(a).some(f=>f.id===id));if(!owner)throw Error('Папка уже удалена.');await api.atoms.update(owner.id,{revision:owner.revision,properties:{...owner.properties,[FOLDER_DEFINITIONS]:folderDefinitions(owner).map(f=>f.id===id?{...f,name,color}:f)}});if(app===api)await refresh();},
+  async remove(id){const api=requireApp(),atoms=await api.atoms.list(),owner=atoms.find(a=>folderDefinitions(a).some(f=>f.id===id));if(!owner)return;await api.atoms.update(owner.id,{revision:owner.revision,properties:{...owner.properties,[FOLDER_DEFINITIONS]:folderDefinitions(owner).filter(f=>f.id!==id)}});if(app===api)await refresh();},
+  async add(id,ids){const api=requireApp(),atoms=await api.atoms.list(),owner=atoms.find(a=>folderDefinitions(a).some(f=>f.id===id));if(!owner)throw Error('Папка уже удалена.');const valid=new Set(atoms.map(a=>a.id));if(!ids.length||ids.some(id=>!valid.has(id)))throw Error('Выделение изменилось. Выберите заметки заново.');const definitions=folderDefinitions(owner).map(f=>f.id===id?{...f,roots:[...new Set([...f.roots,...ids.filter(id=>valid.has(id))])]}:f);if(definitions.some(f=>f.roots.length>MAX_FOLDER_ROOTS))throw Error('В папке слишком много заметок.');await api.atoms.update(owner.id,{revision:owner.revision,properties:{...owner.properties,[FOLDER_DEFINITIONS]:definitions}});if(app===api)await refresh();},
   async create(name,ids,color){
    if(creating)throw Error('Дождитесь создания предыдущей папки.');creating=true;
    try{
@@ -86,7 +92,7 @@ export function createFoldersPlugin(host:FolderHost={}) : {plugin:Plugin;control
     offs.push(api.commands.add({id:'create',name:'Создать папку из выделения',run:request}));
     offs.push(api.ui.registerContextAction({id:'create',name:'Создать папку из выделения',run:request}));
     const schedule=()=>{void refresh().catch(error=>{if(app===api)api.ui.notify((error as Error).message);});};
-    for(const event of ['atom:create','atom:update','atom:delete','link:create','link:delete','graph:positions'])offs.push(api.events.on(event,schedule));
+    for(const event of ['atom:create','atom:update','atom:delete','link:create','link:delete','graph:positions'])offs.push(api.events.on(event,()=>{if(event!=='graph:positions'||hasFolders)schedule();}));
     await refresh();return dispose;
    }catch(error){dispose();throw error;}
   }};
