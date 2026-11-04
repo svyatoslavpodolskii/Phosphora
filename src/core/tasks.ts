@@ -39,10 +39,10 @@ export function syncTasks(atom:Atom,before?:Atom,now=new Date(),rolling=false):A
  const properties={...atom.properties};if(tasks.length||KEY in properties)properties[KEY]=tasks;
  return {...atom,content:contentChanged?lines.join(atom.content.includes('\r\n')?'\r\n':'\n'):atom.content,properties};
 }
-export function taskPatch(atom:Atom,id:string,patch:{checked?:boolean;recurrence?:Recurrence|null},now=new Date()){
- if(patch.checked!==undefined&&typeof patch.checked!=='boolean'||patch.recurrence!==undefined&&patch.recurrence!==null&&!['daily','weekly'].includes(patch.recurrence))throw Error('Invalid task update.');
+export function taskPatch(atom:Atom,id:string,patch:{checked?:boolean;recurrence?:Recurrence|null;remove?:true},now=new Date()){
+ if(patch.remove!==undefined&&patch.remove!==true||patch.checked!==undefined&&typeof patch.checked!=='boolean'||patch.recurrence!==undefined&&patch.recurrence!==null&&!['daily','weekly'].includes(patch.recurrence))throw Error('Invalid task update.');
  const tasks=readTasks(atom),task=tasks.find(t=>t.id===id);if(!task)throw Error('Task no longer exists.');
- const lines=atom.content.split(/\r?\n/);if(patch.recurrence!==undefined){if(patch.recurrence){if(task.recurrence!==patch.recurrence&&task.checked)task.history[occurrence(patch.recurrence,now)]=true;task.recurrence=patch.recurrence;}else delete task.recurrence;}
+ const lines=atom.content.split(/\r?\n/);if(patch.remove){lines.splice(task.line,1);const remaining=tasks.filter(t=>t.id!==id).map(t=>({...t,line:t.line>task.line?t.line-1:t.line}));return{content:lines.join(atom.content.includes('\r\n')?'\r\n':'\n'),properties:{...atom.properties,[KEY]:remaining}};}if(patch.recurrence!==undefined){if(patch.recurrence){if(task.recurrence!==patch.recurrence&&task.checked)task.history[occurrence(patch.recurrence,now)]=true;task.recurrence=patch.recurrence;}else delete task.recurrence;}
  if(patch.checked!==undefined){task.checked=patch.checked;if(task.recurrence)task.history[occurrence(task.recurrence,now)]=patch.checked;}
  if(task.recurrence)task.checked=Boolean(task.history[occurrence(task.recurrence,now)]);
  lines[task.line]=lines[task.line].replace(/\[([ xX])\]/,task.checked?'[x]':'[ ]');

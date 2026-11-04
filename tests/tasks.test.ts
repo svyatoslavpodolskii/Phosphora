@@ -2,6 +2,12 @@ import {it,expect} from 'vitest';
 import {makeAtom} from '../src/core/model';
 import {readTasks,syncTasks,taskPatch,tasksAt,occurrence,taskHistory} from '../src/core/tasks';
 import {formatText} from '../src/ui/text-edit';
+it('deletes one task line while retaining other IDs, history, CRLF and ordinary checks',()=>{
+ let atom=syncTasks(makeAtom({title:'Deletion',content:'Intro\r\n- [ ] #task First\r\n- [ ] Plain\r\n- [ ] #task Second\r\nOutro',properties:{custom:'keep'}}));
+ let tasks=readTasks(atom);atom=syncTasks({...atom,...taskPatch(atom,tasks[1].id,{recurrence:'daily',checked:true})},atom);tasks=readTasks(atom);
+ const result=syncTasks({...atom,...taskPatch(atom,tasks[0].id,{remove:true})},atom);expect(result.content).toBe('Intro\r\n- [ ] Plain\r\n- [x] #task Second\r\nOutro');
+ expect(readTasks(result)).toEqual([{...tasks[1],line:2}]);expect(result.properties.custom).toBe('keep');expect(()=>taskPatch(result,tasks[0].id,{remove:true})).toThrow();
+});
 it('distinguishes explicit tasks from Markdown checkboxes and marker-like prose',()=>{
  const atom=makeAtom({title:'Mixed',content:'- [ ] Shopping\n- [x] Done\n- [ ] #task Buy tickets\n  + [X] #task\tBook hotel\n1. [ ] #task Pack\n- [ ] #tasks Nope\n- [ ] Mention #task later\n~~~md\n- [ ] #task Example\n~~~'});
  expect(readTasks(atom).map(t=>[t.text,t.line,t.checked])).toEqual([['Buy tickets',2,false],['Book hotel',3,true],['Pack',4,false]]);

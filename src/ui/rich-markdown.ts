@@ -1,7 +1,7 @@
 import {Extension,Node,mergeAttributes,type JSONContent} from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
+import {NoteTaskItem} from './note-task-item';
 import {Markdown,type MarkdownManager} from '@tiptap/markdown';
 import {Marked,type Token} from 'marked';
 
@@ -20,10 +20,22 @@ export const WikiReference=Node.create({
 /** Unknown syntax is visible and removable, but its source never passes through HTML. */
 export const SourceBlock=Node.create({
  name:'sourceBlock',group:'block',atom:true,selectable:true,
- addAttributes(){return{raw:{default:''}};},
+ addAttributes(){return{raw:{default:''},editing:{default:false,rendered:false},cursor:{default:0,rendered:false}};},
  parseHTML(){return[{tag:'div[data-source-block]'}];},
  renderHTML({node}){return['div',{'data-source-block':'',contenteditable:'false'},['small',{},'Markdown · редактируется в исходнике'],['pre',{},node.attrs.raw]];},
  renderMarkdown(node){return String(node.attrs?.raw||'');},
+ addNodeView(){return({node,editor,getPos})=>{
+  const dom=document.createElement('div');dom.dataset.sourceBlock='';dom.contentEditable='false';
+  const label=document.createElement('button');label.type='button';label.textContent='Редактировать Markdown';
+  const pre=document.createElement('pre'),input=document.createElement('textarea');input.setAttribute('aria-label','Исходник блока');input.dataset.escapeLocal='';input.spellcheck=false;dom.append(label,pre,input);let current=node,alive=true;
+  function position(){const pos=getPos();return typeof pos==='number'&&editor.state.doc.nodeAt(pos)?.type.name==='sourceBlock'?pos:null;}
+  function attrs(patch:Record<string,unknown>){const pos=position();if(pos!==null)editor.view.dispatch(editor.state.tr.setNodeMarkup(pos,undefined,{...current.attrs,...patch}));}
+  function finish(){if(!alive||!editor.isEditable||!current.attrs.editing)return;const pos=position();if(pos===null)return;const raw=String(current.attrs.raw),manager=editor.markdown;if(manager){const session=new MarkdownSession(),parsed=session.load(raw,manager).content||[];if(parsed.length===1&&parsed[0].type!=='sourceBlock'){const replacement=editor.schema.nodeFromJSON({...parsed[0],attrs:{...parsed[0].attrs,sourceKey:current.attrs.sourceKey}});editor.view.dispatch(editor.state.tr.replaceWith(pos,pos+current.nodeSize,replacement));return;}}attrs({editing:false});}
+  function paint(){pre.textContent=String(current.attrs.raw);pre.hidden=Boolean(current.attrs.editing);label.hidden=Boolean(current.attrs.editing);input.hidden=!current.attrs.editing;if(input.value!==current.attrs.raw)input.value=String(current.attrs.raw);if(current.attrs.editing)queueMicrotask(()=>{if(alive&&current.attrs.editing&&document.activeElement!==input){input.focus();const cursor=Math.min(input.value.length,Number(current.attrs.cursor)||0);input.setSelectionRange(cursor,cursor);}});}
+  label.onclick=()=>{if(editor.isEditable)attrs({editing:true,cursor:0});};input.onbeforeinput=e=>{if(!editor.isEditable)e.preventDefault();};input.oninput=()=>{if(!editor.isEditable){input.value=String(current.attrs.raw);return;}input.style.height='auto';input.style.height=`${Math.min(440,Math.max(60,input.scrollHeight))}px`;attrs({raw:input.value});};input.onblur=finish;
+  input.onkeydown=e=>{e.stopPropagation();if(!editor.isEditable){if(e.key==='Backspace'||e.key==='Delete')e.preventDefault();return;}if(e.key==='Escape'){e.preventDefault();finish();editor.view.focus();}else if(e.key==='Backspace'&&!input.value){e.preventDefault();const pos=position();if(pos!==null){alive=false;editor.commands.deleteRange({from:pos,to:pos+current.nodeSize});editor.view.focus();}}};paint();
+  return{dom,stopEvent:e=>e.target instanceof Element&&Boolean(e.target.closest('textarea,button')),ignoreMutation:()=>true,update(next){if(next.type!==current.type)return false;current=next;paint();return true;},destroy(){alive=false;}};
+ };},
 });
 
 const SourceIdentity=Extension.create({
@@ -31,10 +43,10 @@ const SourceIdentity=Extension.create({
  addGlobalAttributes(){return[{types:['paragraph','heading','bulletList','orderedList','taskList','blockquote','codeBlock','horizontalRule','sourceBlock'],attributes:{sourceKey:{default:null,rendered:false}}}];},
 });
 
-export function richExtensions(){return[StarterKit.configure({underline:false,trailingNode:false,link:{openOnClick:false,autolink:false,linkOnPaste:false}}),TaskList,TaskItem.configure({nested:true}),WikiReference,SourceBlock,SourceIdentity,Markdown];}
+export function richExtensions(){return[StarterKit.configure({underline:false,trailingNode:false,link:{openOnClick:false,autolink:false,linkOnPaste:false}}),TaskList,NoteTaskItem,WikiReference,SourceBlock,SourceIdentity,Markdown];}
 
 const lexer=new Marked();
-const supported=new Set(['space','paragraph','text','heading','blockquote','list','list_item','code','hr','strong','em','codespan','br','del','link','escape']);
+const supported=new Set(['space','paragraph','text','heading','blockquote','list','list_item','checkbox','code','hr','strong','em','codespan','br','del','link','escape']);
 function supportedToken(token:Token):boolean{
  if(!supported.has(token.type))return false;
  // Preserve dialect-specific syntax and ambiguous soft breaks in source blocks.
@@ -44,7 +56,7 @@ function supportedToken(token:Token):boolean{
 }
 function fingerprint(node:JSONContent):string{
  const copy=structuredClone(node);
- function strip(n:JSONContent){if(n.attrs){delete n.attrs.sourceKey;if(!Object.keys(n.attrs).length)delete n.attrs;}n.content?.forEach(strip);}
+ function strip(n:JSONContent){if(n.attrs){delete n.attrs.sourceKey;if(n.type==='sourceBlock'){delete n.attrs.editing;delete n.attrs.cursor;}if(!Object.keys(n.attrs).length)delete n.attrs;}n.content?.forEach(strip);}
  strip(copy);return JSON.stringify(copy);
 }
 type Original={raw:string;json:string};
@@ -78,6 +90,7 @@ export class MarkdownSession{
  private block(raw:string):JSONContent{const key=crypto.randomUUID();this.originals.set(key,{raw,json:''});return{type:'sourceBlock',attrs:{raw,sourceKey:key}};}
  private document(content:JSONContent[]):JSONContent{return{type:'doc',content:content.length?content:[{type:'paragraph'}]};}
  capture(doc:JSONContent){this.baseline=fingerprint(doc);for(const node of doc.content||[]){const original=this.originals.get(node.attrs?.sourceKey);if(original)original.json=fingerprint(node);}}
+ blockMarkdown(node:JSONContent,manager:MarkdownManager){const original=this.originals.get(node.attrs?.sourceKey);return original?.json===fingerprint(node)?original.raw:node.type==='sourceBlock'?String(node.attrs?.raw||''):manager.serialize({type:'doc',content:[node]});}
  serialize(doc:JSONContent,manager:MarkdownManager):string{
   if(fingerprint(doc)===this.baseline)return this.source;
   let result=this.prefix;let previousChanged=false;const used=new Set<string>();

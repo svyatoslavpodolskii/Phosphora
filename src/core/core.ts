@@ -101,7 +101,7 @@ export class Core {
   await this.commit([...removed.map(l=>({kind:'unlink' as const,id:l.id})),...added.map(link=>({kind:'link' as const,link}))]);
   for(const l of removed)this.emit('link:delete',{id:l.id});for(const l of added)this.emit('link:create',l);
  });}
- setTask(id:string,taskId:string,patch:{checked?:boolean;recurrence?:Recurrence|null}){const atom=this.data.atoms.find(a=>a.id===id);if(!atom)return Promise.reject(Error('Atom no longer exists.'));return this.update(id,taskPatch(atom,taskId,patch));}
+ setTask(id:string,taskId:string,patch:{checked?:boolean;recurrence?:Recurrence|null;remove?:true}){const atom=this.data.atoms.find(a=>a.id===id);if(!atom)return Promise.reject(Error('Atom no longer exists.'));return this.update(id,taskPatch(atom,taskId,patch),atom.revision);}
  rollTasks(now=new Date()){return this.serial(async()=>{const ops:Mutation[]=[];for(const atom of this.data.atoms){const next=syncTasks(atom,undefined,now,true);if(next.content!==atom.content)ops.push({kind:'atom',expectedRevision:atom.revision,atom:{...next,revision:atom.revision+1,updated_at:new Date().toISOString()}});}if(ops.length){await this.commit(ops);for(const op of ops)if(op.kind==='atom')this.emit('atom:update',op.atom);}});}
  search(query:string):Atom[]{return this.searchIndex.search(query,this.data.atoms);}
 }

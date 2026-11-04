@@ -18,6 +18,8 @@ Manifest: `id`, `name`, `version`, `apiVersion: 1`, `permissions`. Префик�
 
 Полная типизация: `src/plugins/api.ts`.
 
+Настройки manifest поддерживают `boolean`, `text`, `range` (`min`, `max`, `step`, числовой `default`) и `select` (`options: [{value, label}]`, строковый `default`). Требуется разрешение `settings`. Поля проверяются при загрузке плагина. После изменения через панель или `app.settings.set` приходит событие `preferences:plugin-setting` с `{plugin, key}`; значение читается из собственного `app.settings`. Встроенные `builtin.zoom` и `builtin.kanban` используют этот контракт. `app.atoms.setTask(id, taskId, {remove: true})` удаляет одну задачу из Markdown и её metadata, сохраняя остальные строки и историю других задач.
+
 Контракты пяти providers: `src/graph/providers.ts`. Последний включённый provider соответствующего вида становится активным; выключение возвращает предыдущий, включая встроенный. Physics получает тела, связи, настройки, dt и reducedMotion, возвращает тела и energy. Координаты и радиусы — world space; pinned, dragged и boundary контроллер дополнительно защищает от перемещения. Layout возвращает позицию нового атома. Clustering возвращает визуальную проекцию; link reduction — подмножество существующих Links; node weight — радиусы по ID. Встроенный `builtin.graph` использует эти же контракты и выполняет вычисления в graph Worker.
 
 ### Инструменты карты
