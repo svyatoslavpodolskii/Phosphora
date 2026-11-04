@@ -192,3 +192,5 @@ main.map-interacting header,main.map-interacting footer,main.map-interacting .zo
 
 .footer-controls nav.inactive{visibility:hidden;pointer-events:none}.footer-controls{justify-content:flex-start}.footer-controls .view-toggle{flex-shrink:0}
 .markdown input[type=checkbox]{width:17px;height:17px;min-height:17px;margin:0 5px 0 0;vertical-align:middle;accent-color:var(--theme-accent)}.task-mark{display:inline-block;font-size:12px;margin-right:5px;color:var(--theme-accent);vertical-align:middle}
+
+button,a,input,canvas,[role=button]{-webkit-tap-highlight-color:transparent}canvas.map:focus{outline:none}canvas.map:focus-visible{outline:1px solid var(--theme-border);outline-offset:-1px}button::-moz-focus-inner{border:0}

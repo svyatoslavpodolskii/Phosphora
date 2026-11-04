@@ -6,6 +6,7 @@ import {snapshot,transact} from '../src/storage/operations';
 import {PluginRuntime} from '../src/plugins/runtime';
 import {createFoldersPlugin} from '../src/plugins/folders';
 import {FOLDER_DEFINITIONS,FOLDER_MEMBERSHIP,projectFolders} from '../src/graph/folders';
+import {createDaily} from '../src/plugins/daily';
 
 async function setup(){
  const raw=new DatabaseSync(':memory:');const db:Database={exec(q){if(typeof q==='string')raw.exec(q);else raw.prepare(q.sql).run(...q.bind||[]);},selectValue(q,b=[]){const row=raw.prepare(q).get(...b);return row?Object.values(row)[0]:undefined;},selectObjects(q,b=[]){return raw.prepare(q).all(...b);}};migrate(db);
@@ -16,6 +17,15 @@ async function setup(){
  await runtime.enable(plugin);
  return {core,runtime,plugin,controller,notify,changed,focus,requestCreate,select(ids:string[]){selected=ids;},close(){runtime.dispose();raw.close();}};
 }
+it('explicitly removes one membership, retains notes and links, and can add it back',async()=>{
+ const h=await setup();try{const a=await h.core.create({title:'A'}),b=await h.core.create({title:'B'},a.id);const work=await h.controller.create('Work',[a.id]),other=await h.controller.create('Other',[b.id]);await h.controller.add(work,[b.id]);const before=structuredClone(h.core.data);await h.controller.removeMembers(work,[b.id]);let p=projectFolders(h.core.data);expect(p.memberships.get(b.id)?.[work]).toBeUndefined();expect(p.memberships.get(b.id)?.[other]).toBe(1);expect(h.core.data.atoms.map(a=>[a.id,a.content,a.x,a.y])).toEqual(before.atoms.map(a=>[a.id,a.content,a.x,a.y]));expect(h.core.data.links).toEqual(before.links);await h.controller.add(work,[b.id]);p=projectFolders(h.core.data);expect(p.memberships.get(b.id)?.[work]).toBeGreaterThan(0);}finally{h.close();}
+});
+it('creates a daily note through the contextual placement provider and folder metadata',async()=>{
+ const h=await setup();try{const root=await h.core.create({title:'Root',x:1000,y:400}),folder=await h.controller.create('Diary',[root.id]);let dailyAPI:any;const place=vi.fn(()=>({x:root.x+180,y:root.y+50}));h.core.placementProvider=place;await h.runtime.enable({manifest:{id:'test.daily',name:'Daily context',version:'1',apiVersion:1,permissions:['atoms.read','atoms.write','links.read','links.write','graph','settings']},activate(api){dailyAPI=api;}});const day=await createDaily(dailyAPI,new Date(2026,10,5),root.id,folder);expect(place).toHaveBeenCalledWith(expect.objectContaining({parent:root.id}));expect(day).toMatchObject({x:1180,y:450,state:'normal'});expect(projectFolders(h.core.data).memberships.get(day.id)).toEqual({[folder]:1});expect(h.core.data.links.filter(l=>l.to===day.id)).toHaveLength(1);}finally{h.close();}
+});
+it('rejects stale plugin revisions instead of overwriting newer metadata',async()=>{
+ const h=await setup();try{const a=await h.core.create({title:'A'});await h.core.update(a.id,{properties:{newer:'keep'}});await expect(h.core.update(a.id,{revision:a.revision,properties:{stale:true}})).rejects.toThrow();expect(h.core.data.atoms[0].properties).toEqual({newer:'keep'});}finally{h.close();}
+});
 it('adds raw selections and deletes only the folder through ordinary plugin writes',async()=>{
  const h=await setup();try{const a=await h.core.create({title:'A',properties:{custom:'keep'}}),b=await h.core.create({title:'B',x:500,y:300});const id=await h.controller.create('Work',[a.id]);await h.controller.add(id,[b.id,b.id]);expect(projectFolders(h.core.data).folders[0].count).toBe(2);const positions=h.core.data.atoms.map(a=>[a.id,a.x,a.y]);await h.controller.update(id,'Renamed','#eda8ae');expect(projectFolders(h.core.data).folders[0]).toMatchObject({name:'Renamed',color:'#eda8ae'});await h.controller.remove(id);expect(projectFolders(h.core.data).folders).toHaveLength(0);expect(h.core.data.atoms.map(a=>[a.id,a.x,a.y])).toEqual(positions);expect(h.core.data.atoms[0].properties.custom).toBe('keep');}finally{h.close();}
 });

@@ -70,10 +70,10 @@ test('legacy task type is preserved but cannot be chosen for other atoms',async(
  await editor.getByRole('button',{name:'Отмена',exact:true}).click();
 });
 
-test('pause is a secondary action and preserves the atom category',async({page})=>{
+test('legacy pause can be resumed without offering new postponement',async({page})=>{
  await page.setViewportSize({width:1280,height:720});
  await page.goto('/');
- await importMap(page,{atoms:[makeAtom({title:'Pause me',state:'now',pinned:true})],links:[]});
+ await importMap(page,{atoms:[makeAtom({title:'Pause me',state:'now',paused:true,pinned:true})],links:[]});
  const menu=page.getByRole('dialog',{name:'Действия с атомом'});
  const open=async()=>{
   await page.locator('canvas.map').click({position:{x:640,y:360},button:'right'});
@@ -83,7 +83,7 @@ test('pause is a secondary action and preserves the atom category',async({page})
  await open();
  await expect(menu.locator('.state-shortcuts').getByRole('button',{name:'Поле',exact:true})).toBeVisible();
  await expect(menu.locator('.state-shortcuts').getByRole('button',{name:/Отложить|Пауза|Возобновить/})).toHaveCount(0);
- await menu.getByRole('button',{name:'Отложить',exact:true}).click();
+ await expect(menu.getByRole('button',{name:'Отложить',exact:true})).toHaveCount(0);await menu.getByRole('button',{name:'Закрыть меню атома',exact:true}).click();
  expect((await readMap(page)).atoms[0]).toMatchObject({state:'now',paused:true});
  await open();
  await menu.getByRole('button',{name:'Возобновить',exact:true}).click();

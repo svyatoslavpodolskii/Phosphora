@@ -48,7 +48,7 @@ export class Core {
  for(const l of additions)ops.push({kind:'link',link:makeLink(atom.id,l.to,l.relation,l.source||'manual')});await this.commit(ops);this.emit(before?'atom:update':'atom:create',atom);for(const op of ops){if(op.kind==='link')this.emit('link:create',op.link);if(op.kind==='unlink')this.emit('link:delete',{id:op.id});}return atom;
  });}
  create(input:Partial<Atom>&{title:string},parent?:string){return this.saveDraft(input,[],[],parent);}
- update(id:string,patch:Partial<Atom>,expectedRevision?:number){const a=this.data.atoms.find(a=>a.id===id);if(!a)return Promise.reject(Error('Атом не найден.'));return this.saveDraft({...a,...patch,id,revision:expectedRevision??a.revision},[],[],undefined,false);}
+ update(id:string,patch:Partial<Atom>,expectedRevision?:number){const a=this.data.atoms.find(a=>a.id===id);if(!a)return Promise.reject(Error('Атом не найден.'));return this.saveDraft({...a,...patch,id,revision:expectedRevision??patch.revision??a.revision},[],[],undefined,false);}
  setState(id:string,state:AtomState){return this.update(id,{state});}
  setPaused(id:string,paused:boolean){return this.update(id,{paused});}
  setPinned(id:string,pinned:boolean){return this.update(id,{pinned});}

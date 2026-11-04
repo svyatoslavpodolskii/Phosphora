@@ -6,7 +6,7 @@ export const FOLDER_MEMBERSHIP = 'builtin.folders.membership';
 export const MAX_FOLDERS = 64;
 export const MAX_FOLDER_ROOTS = 4096;
 export const TERRITORY_DIRECTIONS = 24;
-export interface FolderDefinition {id:string;name:string;color:string;roots:string[]}
+export interface FolderDefinition {id:string;name:string;color:string;roots:string[];excluded?:string[]}
 export interface Folder extends FolderDefinition {ownerId:string}
 export interface FolderBounds {minX:number;minY:number;maxX:number;maxY:number}
 export interface FolderFocus {folderId:string|null;center:{x:number;y:number};bounds:FolderBounds}
@@ -24,7 +24,8 @@ export function folderDefinitions(atom:Pick<Atom,'properties'>):FolderDefinition
  return raw.slice(0,MAX_FOLDERS).flatMap(value=>{
   if(!record(value)||!validId(value.id)||typeof value.name!=='string'||!value.name.trim()||value.name.length>80||typeof value.color!=='string'||!/^#[0-9a-f]{6}$/i.test(value.color)||!Array.isArray(value.roots))return [];
   const roots=[...new Set(value.roots.slice(0,MAX_FOLDER_ROOTS).filter((id):id is string=>typeof id==='string'&&id.length>0&&id.length<=100))];
-  return roots.length?[{id:value.id,name:value.name.trim(),color:value.color,roots}]:[];
+  const excluded=Array.isArray(value.excluded)?[...new Set(value.excluded.slice(0,MAX_FOLDER_ROOTS).filter((id):id is string=>typeof id==='string'&&id.length>0&&id.length<=100))]:[];
+  return roots.length?[{id:value.id,name:value.name.trim(),color:value.color,roots,...(excluded.length?{excluded}:{})}]:[];
  });
 }
 
@@ -55,13 +56,14 @@ export function projectFolders(data:Snapshot):FolderProjection{
   if(!definitions.has(definition.id)&&definitions.size<MAX_FOLDERS)definitions.set(definition.id,{...definition,ownerId:atom.id});
  }
  const owners=new Map<string,Set<string>>();for(const folder of definitions.values())for(const id of folder.roots){const set=owners.get(id)||new Set<string>();set.add(folder.id);owners.set(id,set);}
- const mayEnter=(id:string,folder:string)=>!owners.has(id)||owners.get(id)!.has(folder);
+ const exclusions=new Map([...definitions].map(([id,folder])=>[id,new Set(folder.excluded||[])]));
+ const mayEnter=(id:string,folder:string)=>!exclusions.get(folder)?.has(id)&&(!owners.has(id)||owners.get(id)!.has(folder));
  const children=new Map<string,string[]>(),parented=new Set<string>();
  for(const link of [...data.links].sort((a,b)=>a.created_at.localeCompare(b.created_at)))if(folderBranchLink(link)&&atoms.has(link.from)&&atoms.has(link.to)&&!parented.has(link.to)){
   parented.add(link.to);const list=children.get(link.from)||[];list.push(link.to);children.set(link.from,list);
  }
  const raw=new Map<string,Record<string,number>>();
- const put=(id:string,folder:string,weight:number)=>{const entry=raw.get(id)||Object.create(null) as Record<string,number>;entry[folder]=Math.max(entry[folder]||0,weight);raw.set(id,entry);};
+ const put=(id:string,folder:string,weight:number)=>{if(exclusions.get(folder)?.has(id))return;const entry=raw.get(id)||Object.create(null) as Record<string,number>;entry[folder]=Math.max(entry[folder]||0,weight);raw.set(id,entry);};
  for(const atom of data.atoms){const weights=atom.properties[FOLDER_MEMBERSHIP];if(!record(weights))continue;
   for(const [id,w] of Object.entries(weights).slice(0,MAX_FOLDERS))if(definitions.has(id)&&typeof w==='number'&&Number.isFinite(w)&&w>0)put(atom.id,id,Math.min(1,w));
  }

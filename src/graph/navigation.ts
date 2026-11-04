@@ -1,6 +1,6 @@
 import {MIN_ZOOM,MAX_ZOOM,type Camera} from './model';
 export interface SpatialLocation{camera:Camera;selected:string;lens:string}
-export function fitCamera(bounds:{minX:number;minY:number;maxX:number;maxY:number},view:{width:number;height:number},maxZoom=1.4):Camera{
+export function fitCamera(bounds:{minX:number;minY:number;maxX:number;maxY:number},view:{width:number;height:number},maxZoom=.85):Camera{
  const top=105,bottom=110,pad=50;
  const zoom=Math.max(MIN_ZOOM,Math.min(maxZoom,(Math.max(100,view.width)-pad*2)/Math.max(120,bounds.maxX-bounds.minX),(Math.max(260,view.height)-top-bottom)/Math.max(140,bounds.maxY-bounds.minY)));
  return {x:-(bounds.minX+bounds.maxX)/2*zoom,y:-(bounds.minY+bounds.maxY)/2*zoom+(top-bottom)/2,zoom};

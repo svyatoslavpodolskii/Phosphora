@@ -33,7 +33,7 @@
  <svg width={width} height={height} aria-hidden="true">{#if path}<path d={path}/>{/if}{#if rubber}<path class="rubber" d={rubber}/>{/if}{#if drag?.target}{@const target=positions.get(drag.target)!}{@const p=screen(target)}<circle cx={p.x} cy={p.y} r={target.radius*camera.zoom+7}/>{/if}</svg>
  {#if source&&!link}{@const p=screen(source)}<button class="link-handle create" style:left={`${p.x+source.radius*camera.zoom+22}px`} style:top={`${p.y}px`} disabled={busy} aria-label="Создать связь" title="Перетяните к другому атому" onpointerdown={e=>begin(e,source.id,'to',null)} onpointermove={move} onpointerup={end} onpointercancel={cancel}>&#8599;</button>{/if}
  {#if link&&curve}
- {#each ['from','to'] as side}{@const p=screen(side==='from'?{x:curve.ax,y:curve.ay}:{x:curve.bx,y:curve.by})}<button class="link-handle endpoint" style:left={`${p.x}px`} style:top={`${p.y}px`} disabled={busy} aria-label={side==='from'?'Переподключить начало связи':'Переподключить конец связи'} title="Перетяните к другому атому" onpointerdown={e=>begin(e,side==='from'?link.to:link.from,side as 'from'|'to',link)} onpointermove={move} onpointerup={end} onpointercancel={cancel}>&#9675;</button>{/each}
+ {#each ['from','to'] as side}{@const p=screen(side==='from'?{x:curve.ax,y:curve.ay}:{x:curve.bx,y:curve.by})}<button class="link-handle endpoint" style:--endpoint-size={`${Math.max(6,Math.min(18,22*camera.zoom))}px`} style:left={`${p.x}px`} style:top={`${p.y}px`} disabled={busy} aria-label={side==='from'?'Переподключить начало связи':'Переподключить конец связи'} title="Перетяните к другому атому" onpointerdown={e=>begin(e,side==='from'?link.to:link.from,side as 'from'|'to',link)} onpointermove={move} onpointerup={end} onpointercancel={cancel}><i></i></button>{/each}
  <div class="link-actions"><span>{link.relation==='related'?'Связь':link.relation}</span><button disabled={busy} onclick={()=>apply(link,null)}>Разорвать</button><button disabled={busy} onclick={()=>activeLink=''} aria-label="Закрыть">&#215;</button></div>
  {/if}
  {#if drag}<div class="link-hint" role="status">Отпустите на атоме для связи</div>{/if}
@@ -46,7 +46,7 @@
  .relationship-layer svg{position:absolute;inset:0;overflow:visible;fill:none;stroke:var(--theme-accent);stroke-width:2.5;stroke-linecap:round}
  .rubber{stroke-dasharray:5 5}
  .link-handle{position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;min-height:44px;border-radius:50%;padding:0;pointer-events:auto;touch-action:none;user-select:none;background:var(--theme-surface);color:var(--theme-text);box-shadow:0 3px 14px #0003}
- .endpoint{border:2px solid var(--theme-accent);font-size:22px}.create{font-size:22px}
+ .endpoint{border:0;background:transparent;box-shadow:none}.endpoint i{display:block;margin:auto;width:var(--endpoint-size);height:var(--endpoint-size);border:1.5px solid var(--theme-accent);border-radius:50%;background:var(--theme-surface)}.create{font-size:22px}
  .link-actions,.link-hint,.link-error,.link-undo{position:absolute;left:50%;transform:translateX(-50%);bottom:130px;border-radius:16px;background:var(--theme-surface);padding:6px;pointer-events:auto;box-shadow:0 4px 20px #0003}
  .link-actions{display:flex;align-items:center;gap:8px;max-width:90vw}
  .link-actions span{padding-left:10px;font-size:12px;max-width:30vw;overflow:hidden;text-overflow:ellipsis}
